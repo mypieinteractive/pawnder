@@ -2,28 +2,42 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Pawnder - Game Board</title>
+    <title>Pawnder - Digital Tabletop</title>
     <style>
         body { 
-            margin: 0; padding: 20px; display: flex; 
-            justify-content: center; background-color: #f0f0f0; 
-            font-family: Arial, sans-serif;
-        }
-        .board-container { 
-            background-color: white; box-shadow: 0 4px 12px rgba(0,0,0,0.15); 
-            padding: 20px; border-radius: 8px; position: relative;
-            display: flex; flex-direction: column; align-items: center;
+            margin: 0; 
+            padding: 20px; 
+            display: flex; 
+            justify-content: center; 
+            background-color: #0b0b0b; /* Deep tabletop black */
+            font-family: 'Georgia', serif;
+            color: #e8d0a8; /* Aged gold/tan */
         }
         
-        /* UI Panels */
-        #status-panel {
-            width: 100%;
-            background: rgba(255, 255, 255, 0.9); padding: 15px 20px;
-            border: 2px solid #000; border-radius: 6px; z-index: 20;
-            box-sizing: border-box; margin-bottom: 20px;
+        .board-container { 
+            position: relative;
+            display: flex; 
+            flex-direction: column; 
+            align-items: center;
         }
-        #status-panel h2 { margin: 0 0 10px 0; font-family: Georgia, serif; }
-        .info-text { font-size: 16px; margin-bottom: 5px; }
+        
+        /* UI Panels styled to match the dark theme */
+        #status-panel {
+            width: 800px;
+            background: #111; 
+            padding: 15px 20px;
+            border: 1px solid #e8d0a8; 
+            border-radius: 4px; 
+            z-index: 20;
+            box-sizing: border-box; 
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        #status-panel h2 { margin: 0; font-size: 20px; letter-spacing: 2px; }
+        .info-text { font-size: 14px; margin-bottom: 0; }
 
         /* The combined visual and interactive wrapper */
         #game-area {
@@ -31,6 +45,7 @@
             width: 800px;
             height: 800px;
             transition: transform 0.6s ease-in-out; /* Smooth rotation */
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8); /* Shadow to lift it off the background */
         }
 
         .rotate-180 {
@@ -40,12 +55,9 @@
         /* Interactive Grid Layer perfectly mapped to the scaled SVG */
         #interactive-grid {
             position: absolute; 
-            /* The SVG is 1200x1200px internally, scaled down to 800x800px. 
-               The inner grid starts at x=200, y=200. 
-               200 * (800/1200) = 133.33px */
+            /* SVG 1200x1200 scaled to 800x800. Inner grid starts at 200,200 -> 133.33px */
             top: 133.33px; 
             left: 133.33px;
-            /* Inner grid width is 800px internally. 800 * (800/1200) = 533.33px */
             width: 533.33px; 
             height: 533.33px; 
             display: grid;
@@ -59,66 +71,149 @@
             display: flex; justify-content: center; align-items: center; cursor: pointer;
         }
         
+        /* 3D-styled Pawns */
         .pawn {
             width: 44px; height: 44px; border-radius: 50%;
-            border: 3px solid #333; box-shadow: 0 4px 6px rgba(0,0,0,0.4);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.6), inset 0 -4px 4px rgba(0,0,0,0.3);
             transition: transform 0.2s;
+            position: relative;
         }
         
-        .pawn-white { background-color: #fdfdfd; }
-        .pawn-black { background-color: #222222; }
+        /* Outer rim effect */
+        .pawn::before {
+            content: ''; position: absolute; top: 4px; left: 4px; right: 4px; bottom: 4px;
+            border-radius: 50%; border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .pawn-white { 
+            background: radial-gradient(circle at 30% 30%, #ffffff, #d4d4d4 60%, #888888); 
+            border: 2px solid #555;
+        }
+        
+        .pawn-black { 
+            background: radial-gradient(circle at 30% 30%, #555555, #222222 60%, #000000); 
+            border: 2px solid #111;
+        }
     </style>
 </head>
 <body>
     <div class="board-container">
         
         <div id="status-panel">
-            <h2>Game: <span id="display-game-code">----</span></h2>
-            <div class="info-text">You are playing: <strong id="display-color">...</strong></div>
-            <div class="info-text">Current Turn: <strong id="display-turn">...</strong></div>
-            <div class="info-text" style="margin-top: 10px; font-size: 14px; color: #666;" id="sync-status">Connecting to server...</div>
+            <h2>GAME: <span id="display-game-code" style="color: #fff;">----</span></h2>
+            <div>
+                <div class="info-text">Playing as: <strong id="display-color" style="color: #fff;">...</strong></div>
+                <div class="info-text">Turn: <strong id="display-turn" style="color: #fff;">...</strong></div>
+            </div>
+            <div class="info-text" id="sync-status">Connecting to server...</div>
         </div>
 
         <div id="game-area">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 1200" width="800" height="800" style="display: block; position: absolute; top: 0; left: 0;">
                 <defs>
                     <pattern id="safeHatch" width="12" height="12" patternTransform="rotate(45 0 0)" patternUnits="userSpaceOnUse">
-                        <line x1="0" y1="0" x2="0" y2="12" stroke="#000" stroke-width="1" stroke-opacity="0.25"/>
+                        <line x1="0" y1="0" x2="0" y2="12" stroke="#e8d0a8" stroke-width="1.5" stroke-opacity="0.3"/>
                     </pattern>
                 </defs>
 
-                <rect x="10" y="10" width="1180" height="1180" fill="none" stroke="#000" stroke-width="4"/>
-                <rect x="20" y="20" width="1160" height="1160" fill="none" stroke="#000" stroke-width="1"/>
+                <rect width="1200" height="1200" fill="#000000"/>
 
-                <rect x="200" y="200" width="800" height="800" fill="#ffffff" stroke="#000" stroke-width="2"/>
-                <path d="M200,200 h100 v100 h-100 Z M400,200 h100 v100 h-100 Z M600,200 h100 v100 h-100 Z M800,200 h100 v100 h-100 Z M300,300 h100 v100 h-100 Z M500,300 h100 v100 h-100 Z M700,300 h100 v100 h-100 Z M900,300 h100 v100 h-100 Z M200,400 h100 v100 h-100 Z M400,400 h100 v100 h-100 Z M600,400 h100 v100 h-100 Z M800,400 h100 v100 h-100 Z M300,500 h100 v100 h-100 Z M500,500 h100 v100 h-100 Z M700,500 h100 v100 h-100 Z M900,500 h100 v100 h-100 Z M200,600 h100 v100 h-100 Z M400,600 h100 v100 h-100 Z M600,600 h100 v100 h-100 Z M800,600 h100 v100 h-100 Z M300,700 h100 v100 h-100 Z M500,700 h100 v100 h-100 Z M700,700 h100 v100 h-100 Z M900,700 h100 v100 h-100 Z M200,800 h100 v100 h-100 Z M400,800 h100 v100 h-100 Z M600,800 h100 v100 h-100 Z M800,800 h100 v100 h-100 Z M300,900 h100 v100 h-100 Z M500,900 h100 v100 h-100 Z M700,900 h100 v100 h-100 Z M900,900 h100 v100 h-100 Z" fill="#e6e6e6" />
+                <rect x="20" y="20" width="1160" height="1160" fill="none" stroke="#e8d0a8" stroke-width="2"/>
                 
-                <path d="M300 200 v800 M400 200 v800 M500 200 v800 M600 200 v800 M700 200 v800 M800 200 v800 M900 200 v800" stroke="#000" stroke-width="1"/>
-                <path d="M200 300 h800 M200 400 h800 M200 500 h800 M200 600 h800 M200 700 h800 M200 800 h800 M200 900 h800" stroke="#000" stroke-width="1"/>
+                <rect x="200" y="200" width="800" height="800" fill="#000" stroke="#e8d0a8" stroke-width="3"/>
+                
+                <g fill="#e8d0a8" opacity="0.85">
+                    <rect x="200" y="200" width="100" height="100"/><rect x="400" y="200" width="100" height="100"/><rect x="600" y="200" width="100" height="100"/><rect x="800" y="200" width="100" height="100"/>
+                    <rect x="300" y="300" width="100" height="100"/><rect x="500" y="300" width="100" height="100"/><rect x="700" y="300" width="100" height="100"/><rect x="900" y="300" width="100" height="100"/>
+                    <rect x="200" y="400" width="100" height="100"/><rect x="400" y="400" width="100" height="100"/><rect x="600" y="400" width="100" height="100"/><rect x="800" y="400" width="100" height="100"/>
+                    <rect x="300" y="500" width="100" height="100"/><rect x="500" y="500" width="100" height="100"/><rect x="700" y="500" width="100" height="100"/><rect x="900" y="500" width="100" height="100"/>
+                    <rect x="200" y="600" width="100" height="100"/><rect x="400" y="600" width="100" height="100"/><rect x="600" y="600" width="100" height="100"/><rect x="800" y="600" width="100" height="100"/>
+                    <rect x="300" y="700" width="100" height="100"/><rect x="500" y="700" width="100" height="100"/><rect x="700" y="700" width="100" height="100"/><rect x="900" y="700" width="100" height="100"/>
+                    <rect x="200" y="800" width="100" height="100"/><rect x="400" y="800" width="100" height="100"/><rect x="600" y="800" width="100" height="100"/><rect x="800" y="800" width="100" height="100"/>
+                    <rect x="300" y="900" width="100" height="100"/><rect x="500" y="900" width="100" height="100"/><rect x="700" y="900" width="100" height="100"/><rect x="900" y="900" width="100" height="100"/>
+                </g>
+
+                <path d="M300 200 v800 M400 200 v800 M500 200 v800 M600 200 v800 M700 200 v800 M800 200 v800 M900 200 v800" stroke="#000" stroke-width="2"/>
+                <path d="M200 300 h800 M200 400 h800 M200 500 h800 M200 600 h800 M200 700 h800 M200 800 h800 M200 900 h800" stroke="#000" stroke-width="2"/>
+                
                 <rect x="200" y="200" width="800" height="200" fill="url(#safeHatch)" stroke="none" pointer-events="none"/>
                 <rect x="200" y="800" width="800" height="200" fill="url(#safeHatch)" stroke="none" pointer-events="none"/>
 
-                <g stroke="#000" stroke-width="3" stroke-linecap="square">
+                <g stroke="#000" stroke-width="4" stroke-linecap="square">
                     <line x1="500" y1="400" x2="600" y2="500"/> <line x1="600" y1="400" x2="500" y2="500"/>
                     <line x1="700" y1="500" x2="800" y2="600"/> <line x1="800" y1="500" x2="700" y2="600"/>
                     <line x1="400" y1="600" x2="500" y2="700"/> <line x1="500" y1="600" x2="400" y2="700"/>
                     <line x1="600" y1="700" x2="700" y2="800"/> <line x1="700" y1="700" x2="600" y2="800"/>
                 </g>
 
-                <g transform="translate(100, 600) rotate(90)">
+                <g transform="translate(100, 600) rotate(270)">
                     <image href="Pawnder Logo-transparent bg.png" x="-350" y="-120" width="700" height="240" preserveAspectRatio="xMidYMid meet" />
                 </g>
+
                 <g transform="translate(1120, 600) rotate(270)">
-                    <rect x="-300" y="-20" width="600" height="40" fill="none" stroke="#000" stroke-width="1"/>
-                    <text x="0" y="0" text-anchor="middle" dominant-baseline="central" font-size="22" font-family="Georgia, serif" letter-spacing="4">DRAW / DISCARD PILES</text>
+                    <rect x="-300" y="-30" width="600" height="60" fill="none" stroke="#e8d0a8" stroke-width="2"/>
+                    <text x="0" y="0" text-anchor="middle" dominant-baseline="central" font-size="22" font-family="Georgia, serif" fill="#e8d0a8" letter-spacing="4">DRAW / DISCARD PILES</text>
                 </g>
 
-                <path d="M1010 200 h10 v200 h-10" fill="none" stroke="#000" stroke-width="1"/>
-                <g transform="translate(1035, 300) rotate(270)"><text x="0" y="0" text-anchor="middle" dominant-baseline="central" font-size="16" font-family="Georgia, serif">SAFE ZONE</text></g>
-                <path d="M1010 400 h10 v400 h-10" fill="none" stroke="#000" stroke-width="1"/>
-                <g transform="translate(1035, 600) rotate(270)"><text x="0" y="0" text-anchor="middle" dominant-baseline="central" font-size="16" font-family="Georgia, serif">FIELD OF PLAY</text></g>
-                <path d="M1010 800 h10 v200 h-10" fill="none" stroke="#000" stroke-width="1"/>
-                <g transform="translate(1035, 900) rotate(270)"><text x="0" y="0" text-anchor="middle" dominant-baseline="central" font-size="16" font-family="Georgia, serif">SAFE ZONE</text></g>
+                <path d="M1010 200 h10 v200 h-10" fill="none" stroke="#e8d0a8" stroke-width="2"/>
+                <g transform="translate(1035, 300) rotate(270)"><text x="0" y="0" text-anchor="middle" dominant-baseline="central" font-size="14" font-family="Georgia, serif" fill="#e8d0a8" letter-spacing="2">SAFE ZONE</text></g>
+                <path d="M1010 400 h10 v400 h-10" fill="none" stroke="#e8d0a8" stroke-width="2"/>
+                <g transform="translate(1035, 600) rotate(270)"><text x="0" y="0" text-anchor="middle" dominant-baseline="central" font-size="14" font-family="Georgia, serif" fill="#e8d0a8" letter-spacing="2">FIELD OF PLAY</text></g>
+                <path d="M1010 800 h10 v200 h-10" fill="none" stroke="#e8d0a8" stroke-width="2"/>
+                <g transform="translate(1035, 900) rotate(270)"><text x="0" y="0" text-anchor="middle" dominant-baseline="central" font-size="14" font-family="Georgia, serif" fill="#e8d0a8" letter-spacing="2">SAFE ZONE</text></g>
+
+                <g transform="translate(390, 60) rotate(180)">
+                    <rect x="-190" y="-25" width="380" height="50" fill="none" stroke="#e8d0a8" stroke-width="2"/>
+                    <text x="0" y="0" text-anchor="middle" dominant-baseline="central" font-size="18" font-family="Georgia, serif" fill="#e8d0a8" letter-spacing="2">RESERVE CARD 2</text>
+                </g>
+                <g transform="translate(810, 60) rotate(180)">
+                    <rect x="-190" y="-25" width="380" height="50" fill="none" stroke="#e8d0a8" stroke-width="2"/>
+                    <text x="0" y="0" text-anchor="middle" dominant-baseline="central" font-size="18" font-family="Georgia, serif" fill="#e8d0a8" letter-spacing="2">RESERVE CARD 1</text>
+                </g>
+
+                <rect x="200" y="100" width="800" height="60" fill="none" stroke="#e8d0a8" stroke-width="2"/>
+                <path d="M280 100 v60 M360 100 v60 M440 100 v60 M520 100 v60 M600 100 v60 M680 100 v60 M760 100 v60 M840 100 v60 M920 100 v60" stroke="#e8d0a8" stroke-width="2"/>
+                <g transform="translate(600, 180) rotate(180)">
+                    <text x="0" y="0" text-anchor="middle" dominant-baseline="central" font-size="20" font-family="Georgia, serif" fill="#e8d0a8" letter-spacing="2">Victories</text>
+                </g>
+                <g fill="#e8d0a8" font-family="Georgia, serif" font-size="34">
+                    <g transform="translate(240, 130) rotate(180)"><text x="0" y="0" text-anchor="middle" dominant-baseline="central">10</text></g>
+                    <g transform="translate(320, 130) rotate(180)"><text x="0" y="0" text-anchor="middle" dominant-baseline="central">9</text></g>
+                    <g transform="translate(400, 130) rotate(180)"><text x="0" y="0" text-anchor="middle" dominant-baseline="central">8</text></g>
+                    <g transform="translate(480, 130) rotate(180)"><text x="0" y="0" text-anchor="middle" dominant-baseline="central">7</text></g>
+                    <g transform="translate(560, 130) rotate(180)"><text x="0" y="0" text-anchor="middle" dominant-baseline="central">6</text></g>
+                    <g transform="translate(640, 130) rotate(180)"><text x="0" y="0" text-anchor="middle" dominant-baseline="central">5</text></g>
+                    <g transform="translate(720, 130) rotate(180)"><text x="0" y="0" text-anchor="middle" dominant-baseline="central">4</text></g>
+                    <g transform="translate(800, 130) rotate(180)"><text x="0" y="0" text-anchor="middle" dominant-baseline="central">3</text></g>
+                    <g transform="translate(880, 130) rotate(180)"><text x="0" y="0" text-anchor="middle" dominant-baseline="central">2</text></g>
+                    <g transform="translate(960, 130) rotate(180)"><text x="0" y="0" text-anchor="middle" dominant-baseline="central">1</text></g>
+                </g>
+
+                <text x="600" y="1020" text-anchor="middle" dominant-baseline="central" font-size="20" font-family="Georgia, serif" fill="#e8d0a8" letter-spacing="2">Victories</text>
+                <rect x="200" y="1040" width="800" height="60" fill="none" stroke="#e8d0a8" stroke-width="2"/>
+                <path d="M280 1040 v60 M360 1040 v60 M440 1040 v60 M520 1040 v60 M600 1040 v60 M680 1040 v60 M760 1040 v60 M840 1040 v60 M920 1040 v60" stroke="#e8d0a8" stroke-width="2"/>
+                
+                <g fill="#e8d0a8" font-family="Georgia, serif" font-size="34">
+                    <text x="240" y="1070" text-anchor="middle" dominant-baseline="central">1</text>
+                    <text x="320" y="1070" text-anchor="middle" dominant-baseline="central">2</text>
+                    <text x="400" y="1070" text-anchor="middle" dominant-baseline="central">3</text>
+                    <text x="480" y="1070" text-anchor="middle" dominant-baseline="central">4</text>
+                    <text x="560" y="1070" text-anchor="middle" dominant-baseline="central">5</text>
+                    <text x="640" y="1070" text-anchor="middle" dominant-baseline="central">6</text>
+                    <text x="720" y="1070" text-anchor="middle" dominant-baseline="central">7</text>
+                    <text x="800" y="1070" text-anchor="middle" dominant-baseline="central">8</text>
+                    <text x="880" y="1070" text-anchor="middle" dominant-baseline="central">9</text>
+                    <text x="960" y="1070" text-anchor="middle" dominant-baseline="central">10</text>
+                </g>
+
+                <g transform="translate(390, 1140)">
+                    <rect x="-190" y="-25" width="380" height="50" fill="none" stroke="#e8d0a8" stroke-width="2"/>
+                    <text x="0" y="0" text-anchor="middle" dominant-baseline="central" font-size="18" font-family="Georgia, serif" fill="#e8d0a8" letter-spacing="2">RESERVE CARD 1</text>
+                </g>
+                <g transform="translate(810, 1140)">
+                    <rect x="-190" y="-25" width="380" height="50" fill="none" stroke="#e8d0a8" stroke-width="2"/>
+                    <text x="0" y="0" text-anchor="middle" dominant-baseline="central" font-size="18" font-family="Georgia, serif" fill="#e8d0a8" letter-spacing="2">RESERVE CARD 2</text>
+                </g>
             </svg>
 
             <div id="interactive-grid"></div>
@@ -143,7 +238,7 @@
 
         // Retrieve local info
         const gameCode = localStorage.getItem("pawnderGameCode");
-        const myColor = localStorage.getItem("pawnderPlayerColor"); // 'white' or 'black'
+        const myColor = localStorage.getItem("pawnderPlayerColor"); 
 
         if(!gameCode || !myColor) {
             alert("No game found! Redirecting to lobby.");
@@ -158,7 +253,6 @@
             document.getElementById('game-area').classList.add('rotate-180');
         }
 
-        // The Master Deck Definition
         const masterDeck = [
             ...Array(2).fill({ name: 'Queen Move', action: 'move_chess', piece: 'queen' }),
             ...Array(2).fill({ name: 'King Move', action: 'move_chess', piece: 'king' }),
@@ -176,7 +270,6 @@
             ...Array(2).fill({ name: 'Skip Turn', action: 'skip_opponent_turn' })
         ];
 
-        // Shuffle Array Helper
         function shuffle(array) {
             let currentIndex = array.length, randomIndex;
             while (currentIndex > 0) {
@@ -187,7 +280,6 @@
             return array;
         }
 
-        // Initialize Board State (White sets this up when creating game)
         async function setupInitialGameState() {
             let initialBoard = Array(8).fill(null).map(() => Array(8).fill(null));
             for(let r = 0; r < 8; r++) {
@@ -197,11 +289,10 @@
                 }
             }
 
-            // Shuffle deck and assign unique IDs to each card for tracking
             let shuffledDeck = shuffle([...masterDeck]).map((card, index) => ({...card, id: `card_${index}`}));
 
             await updateDoc(doc(db, "games", gameCode), {
-                boardState: JSON.stringify(initialBoard), // Stringify to store 2D array easily
+                boardState: JSON.stringify(initialBoard),
                 deck: shuffledDeck,
                 discardPile: [],
                 playerWhiteHand: [],
@@ -210,12 +301,10 @@
             });
         }
 
-        // Listen for Real-Time Updates
         const unsubscribe = onSnapshot(doc(db, "games", gameCode), (snapshot) => {
             if (snapshot.exists()) {
                 const data = snapshot.data();
                 
-                // If the game hasn't been initialized with pawns/cards yet, White does it.
                 if(!data.isInitialized && myColor === 'white') {
                     setupInitialGameState();
                     return;
@@ -223,7 +312,7 @@
 
                 if(data.isInitialized) {
                     document.getElementById('sync-status').innerText = "Live Synced \u25CF";
-                    document.getElementById('sync-status').style.color = "green";
+                    document.getElementById('sync-status').style.color = "#4CAF50";
                     document.getElementById('display-turn').innerText = data.currentTurn.toUpperCase();
                     
                     renderBoard(JSON.parse(data.boardState));
@@ -231,7 +320,6 @@
             }
         });
 
-        // Draw the pawns on the screen based on Firestore data
         function renderBoard(boardArray) {
             const grid = document.getElementById('interactive-grid');
             grid.innerHTML = ''; 
