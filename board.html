@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Pawnder - Game Board</title>
+    <style>
+        body { 
+            margin: 0; padding: 20px; display: flex; 
+            justify-content: center; background-color: #f0f0f0; 
+            font-family: Arial, sans-serif;
+        }
+        .board-container { 
+            background-color: white; box-shadow: 0 4px 12px rgba(0,0,0,0.15); 
+            padding: 20px; border-radius: 8px; position: relative;
+        }
+        
+        /* Interactive Grid Layer */
+        #interactive-grid {
+            position: absolute; top: 220px; left: 220px;
+            width: 800px; height: 800px; display: grid;
+            grid-template-columns: repeat(8, 100px);
+            grid-template-rows: repeat(8, 100px); z-index: 10;
+        }
+        .grid-cell {
+            width: 100px; height: 100px; box-sizing: border-box;
+            display: flex; justify-content: center; align-items: center; cursor: pointer;
+        }
+        .pawn {
+            width: 60px; height: 60px; border-radius: 50%;
+            border: 3px solid #333; box-shadow: 0 4px 6px rgba(0,0,0,0.4);
+            transition: transform 0.2s;
+        }
+        .pawn-white { background-color: #fdfdfd; }
+        .pawn-black { background-color: #222222; }
+
+        /* UI Panels */
+        #status-panel {
+            position: absolute; top: 20px; left: 20px;
+            background: rgba(255, 255, 255, 0.9); padding: 15px 20px;
+            border: 2px solid #000; border-radius: 6px; z-index: 20;
+        }
+        #status-panel h2 { margin: 0 0 10px 0; font-family: Georgia, serif; }
+        .info-text { font-size: 16px; margin-bottom: 5px; }
+    </style>
+</head>
+<body>
+    <div class="board-container">
+        
+        <div id="status-panel">
+            <h2>Game: <span id="display-game-code">----</span></h2>
+            <div class="info-text">You are playing: <strong id="display-color">...</strong></div>
+            <div class="info-text">Current Turn: <strong id="display-turn">...</strong></div>
+            <div class="info-text" style="margin-top: 10px; font-size: 14px; color: #666;" id="sync-status">Connecting to server...</div>
+        </div>
+
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 1200" width="800" height="800" style="display: block;">
+            <defs>
+                <pattern id="safeHatch" width="12" height="12" patternTransform="rotate(45 0 0)" patternUnits="userSpaceOnUse">
+                    <line x1="0" y1="0" x2="0" y2="12" stroke="#000" stroke-width="1" stroke-opacity="0.25"/>
+                </pattern>
+            </defs>
+
+            <rect x="10" y="10" width="1180" height="1180" fill="none" stroke="#000" stroke-width="4"/>
+            <rect x="20" y="20" width="1160" height="1160" fill="none" stroke="#000" stroke-width="1"/>
+
+            <rect x="200" y="200" width="800" height="800" fill="#ffffff" stroke="#000" stroke-width="2"/>
+            <path d="M200,200 h100 v100 h-100 Z M400,200 h100 v100 h-100 Z M600,200 h100 v100 h-100 Z M800,200 h100 v100 h-100 Z M300,300 h100 v100 h-100 Z M500,300 h100 v100 h-100 Z M700,300 h100 v100 h-100 Z M900,300 h100 v100 h-100 Z M200,400 h100 v100 h-100 Z M400,400 h100 v100 h-100 Z M600,400 h100 v100 h-100 Z M800,400 h100 v100 h-100 Z M300,500 h100 v100 h-100 Z M500,500 h100 v100 h-100 Z M700,500 h100 v100 h-100 Z M900,500 h100 v100 h-100 Z M200,600 h100 v100 h-100 Z M400,600 h100 v100 h-100 Z M600,600 h100 v100 h-100 Z M800,600 h100 v100 h-100 Z M300,700 h100 v100 h-100 Z M500,700 h100 v100 h-100 Z M700,700 h100 v100 h-100 Z M900,700 h100 v100 h-100 Z M200,800 h100 v100 h-100 Z M400,800 h100 v100 h-100 Z M600,800 h100 v100 h-100 Z M800,800 h100 v100 h-100 Z M300,900 h100 v100 h-100 Z M500,900 h100 v100 h-100 Z M700,900 h100 v100 h-100 Z M900,900 h100 v100 h-100 Z" fill="#e6e6e6" />
+            
+            <path d="M300 200 v800 M400 200 v800 M500 200 v800 M600 200 v800 M700 200 v800 M800 200 v800 M900 200 v800" stroke="#000" stroke-width="1"/>
+            <path d="M200 300 h800 M200 400 h800 M200 500 h800 M200 600 h800 M200 700 h800 M200 800 h800 M200 900 h800" stroke="#000" stroke-width="1"/>
+            <rect x="200" y="200" width="800" height="200" fill="url(#safeHatch)" stroke="none" pointer-events="none"/>
+            <rect x="200" y="800" width="800" height="200" fill="url(#safeHatch)" stroke="none" pointer-events="none"/>
+
+            <g stroke="#000" stroke-width="3" stroke-linecap="square">
+                <line x1="500" y1="400" x2="600" y2="500"/> <line x1="600" y1="400" x2="500" y2="500"/>
+                <line x1="700" y1="500" x2="800" y2="600"/> <line x1="800" y1="500" x2="700" y2="600"/>
+                <line x1="400" y1="600" x2="500" y2="700"/> <line x1="500" y1="600" x2="400" y2="700"/>
+                <line x1="600" y1="700" x2="700" y2="800"/> <line x1="700" y1="700" x2="600" y2="800"/>
+            </g>
+
+            <g transform="translate(100, 600) rotate(90)">
+                <image href="Pawnder Logo-transparent bg.png" x="-350" y="-120" width="700" height="240" preserveAspectRatio="xMidYMid meet" />
+            </g>
+            <g transform="translate(1120, 600) rotate(270)">
+                <rect x="-300" y="-20" width="600" height="40" fill="none" stroke="#000" stroke-width="1"/>
+                <text x="0" y="0" text-anchor="middle" dominant-baseline="central" font-size="22" font-family="Georgia, serif" letter-spacing="4">DRAW / DISCARD PILES</text>
+            </g>
+
+            <path d="M1010 200 h10 v200 h-10" fill="none" stroke="#000" stroke-width="1"/>
+            <g transform="translate(1035, 300) rotate(270)"><text x="0" y="0" text-anchor="middle" dominant-baseline="central" font-size="16" font-family="Georgia, serif">SAFE ZONE</text></g>
+            <path d="M1010 400 h10 v400 h-10" fill="none" stroke="#000" stroke-width="1"/>
+            <g transform="translate(1035, 600) rotate(270)"><text x="0" y="0" text-anchor="middle" dominant-baseline="central" font-size="16" font-family="Georgia, serif">FIELD OF PLAY</text></g>
+            <path d="M1010 800 h10 v200 h-10" fill="none" stroke="#000" stroke-width="1"/>
+            <g transform="translate(1035, 900) rotate(270)"><text x="0" y="0" text-anchor="middle" dominant-baseline="central" font-size="16" font-family="Georgia, serif">SAFE ZONE</text></g>
+        </svg>
+
+        <div id="interactive-grid"></div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, doc, onSnapshot, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDtHHDrRlcnsug93x3hWF3jEx8rFA8QPcw",
+            authDomain: "pawnder-59af7.firebaseapp.com",
+            projectId: "pawnder-59af7",
+            storageBucket: "pawnder-59af7.firebasestorage.app",
+            messagingSenderId: "372213409476",
+            appId: "1:372213409476:web:bc9945205d1c3fd99c8b91"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // Retrieve local info
+        const gameCode = localStorage.getItem("pawnderGameCode");
+        const myColor = localStorage.getItem("pawnderPlayerColor"); // 'white' or 'black'
+
+        if(!gameCode || !myColor) {
+            alert("No game found! Redirecting to lobby.");
+            window.location.href = "index.html";
+        }
+
+        document.getElementById('display-game-code').innerText = gameCode;
+        document.getElementById('display-color').innerText = myColor.toUpperCase();
+
+        // The Master Deck Definition
+        const masterDeck = [
+            ...Array(2).fill({ name: 'Queen Move', action: 'move_chess', piece: 'queen' }),
+            ...Array(2).fill({ name: 'King Move', action: 'move_chess', piece: 'king' }),
+            ...Array(2).fill({ name: 'Knight Move', action: 'move_chess', piece: 'knight' }),
+            ...Array(2).fill({ name: 'Rook Move', action: 'move_chess', piece: 'rook' }),
+            ...Array(2).fill({ name: 'Bishop Move', action: 'move_chess', piece: 'bishop' }),
+            ...Array(4).fill({ name: 'Remove from Field', action: 'remove_pawn', zone: 'field' }),
+            ...Array(4).fill({ name: 'Remove from Safe Zone', action: 'remove_pawn', zone: 'safe' }),
+            ...Array(4).fill({ name: 'Retreat', action: 'move_backwards' }),
+            ...Array(4).fill({ name: 'Hop', action: 'hop_over_opponent' }),
+            ...Array(4).fill({ name: 'Charge', action: 'move_forward_attack' }),
+            ...Array(4).fill({ name: 'Sidestep', action: 'move_sideways_attack' }),
+            ...Array(4).fill({ name: 'Block', action: 'play_to_reserve', type: 'reaction' }),
+            ...Array(4).fill({ name: 'Reset Position', action: 'return_to_start' }),
+            ...Array(2).fill({ name: 'Skip Turn', action: 'skip_opponent_turn' })
+        ];
+
+        // Shuffle Array Helper
+        function shuffle(array) {
+            let currentIndex = array.length, randomIndex;
+            while (currentIndex > 0) {
+                randomIndex = Math.floor(Math.random() * currentIndex);
+                currentIndex--;
+                [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+            }
+            return array;
+        }
+
+        // Initialize Board State (White sets this up when creating game)
+        async function setupInitialGameState() {
+            let initialBoard = Array(8).fill(null).map(() => Array(8).fill(null));
+            for(let r = 0; r < 8; r++) {
+                for(let c = 0; c < 8; c++) {
+                    if(r === 0 || r === 1) initialBoard[r][c] = 'black';
+                    if(r === 6 || r === 7) initialBoard[r][c] = 'white';
+                }
+            }
+
+            // Shuffle deck and assign unique IDs to each card for tracking
+            let shuffledDeck = shuffle([...masterDeck]).map((card, index) => ({...card, id: `card_${index}`}));
+
+            await updateDoc(doc(db, "games", gameCode), {
+                boardState: JSON.stringify(initialBoard), // Stringify to store 2D array easily
+                deck: shuffledDeck,
+                discardPile: [],
+                playerWhiteHand: [],
+                playerBlackHand: [],
+                isInitialized: true
+            });
+        }
+
+        // Listen for Real-Time Updates
+        const unsubscribe = onSnapshot(doc(db, "games", gameCode), (snapshot) => {
+            if (snapshot.exists()) {
+                const data = snapshot.data();
+                
+                // If the game hasn't been initialized with pawns/cards yet, White does it.
+                if(!data.isInitialized && myColor === 'white') {
+                    setupInitialGameState();
+                    return;
+                }
+
+                if(data.isInitialized) {
+                    document.getElementById('sync-status').innerText = "Live Synced \u25CF";
+                    document.getElementById('sync-status').style.color = "green";
+                    document.getElementById('display-turn').innerText = data.currentTurn.toUpperCase();
+                    
+                    renderBoard(JSON.parse(data.boardState));
+                }
+            }
+        });
+
+        // Draw the pawns on the screen based on Firestore data
+        function renderBoard(boardArray) {
+            const grid = document.getElementById('interactive-grid');
+            grid.innerHTML = ''; 
+
+            for(let row = 0; row < 8; row++) {
+                for(let col = 0; col < 8; col++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'grid-cell';
+                    cell.dataset.row = row;
+                    cell.dataset.col = col;
+                    
+                    if(boardArray[row][col]) {
+                        const pawn = document.createElement('div');
+                        pawn.className = `pawn pawn-${boardArray[row][col]}`;
+                        cell.appendChild(pawn);
+                    }
+                    grid.appendChild(cell);
+                }
+            }
+        }
+    </script>
+</body>
+</html>
