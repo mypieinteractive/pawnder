@@ -29,12 +29,13 @@
             max-width: 1600px;
         }
 
-        /* --- LEFT COLUMN: STATUS --- */
+        /* --- LEFT COLUMN: STATUS & INSTRUCTIONS --- */
         .left-column { 
-            width: 220px; 
+            width: 260px; 
             flex-shrink: 0; 
             display: flex;
-            align-items: flex-start;
+            flex-direction: column;
+            gap: 20px;
         }
         
         #status-panel {
@@ -52,6 +53,34 @@
         #status-panel h2 { margin: 0 0 15px 0; font-size: 18px; letter-spacing: 2px; }
         .info-text { font-size: 14px; margin-bottom: 8px; font-family: Arial, sans-serif;}
 
+        /* Official Instruction Card */
+        #instructions-panel {
+            background: #ffffff;
+            color: #888888;
+            padding: 20px;
+            border: 1px solid #cccccc;
+            border-radius: 4px;
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 13px;
+            box-shadow: 0 6px 16px rgba(0,0,0,0.6);
+        }
+        #instructions-panel h3 {
+            margin: 0 0 15px 0;
+            font-size: 14px;
+            text-align: center;
+            font-weight: normal;
+        }
+        #instructions-panel ol {
+            padding-left: 20px;
+            margin: 0;
+            line-height: 1.6;
+        }
+        #instructions-panel ul {
+            padding-left: 10px;
+            list-style-type: none;
+            margin-top: 5px;
+        }
+
         /* --- CENTER COLUMN: BOARD & RESERVES --- */
         .center-column { 
             display: flex; 
@@ -60,17 +89,15 @@
             gap: 20px; 
         }
 
-        /* Outward facing 3-sided brackets */
         .bracket-top {
-            border: 2px solid #e8d0a8; border-top: none; /* Opens upward, away from board */
+            border: 2px solid #e8d0a8; border-top: none;
             padding: 10px 20px 20px 20px; 
             display: flex; flex-direction: column; align-items: center; gap: 10px;
-            /* Rotate 180 so it faces the opponent sitting at the top */
             transform: rotate(180deg);
         }
         
         .bracket-bottom {
-            border: 2px solid #e8d0a8; border-bottom: none; /* Opens downward, away from board */
+            border: 2px solid #e8d0a8; border-bottom: none;
             padding: 20px 20px 10px 20px; 
             display: flex; flex-direction: column; align-items: center; gap: 10px;
         }
@@ -84,7 +111,6 @@
         /* The Game Board Envelope */
         #game-area {
             position: relative;
-            /* Scaling the 1000x1000 native SVG down to 700x700 for better screen fit */
             width: 700px;
             height: 700px;
             transition: transform 0.6s ease-in-out; 
@@ -92,14 +118,10 @@
         }
         .rotate-180 { transform: rotate(180deg); }
 
-        /* Interactive Grid Overlay (Scaled: 640px native * 0.7 scale = 448px) */
         #interactive-grid {
             position: absolute; 
-            /* Top Left of Grid in Native is 180,180. 180 * 0.7 = 126px */
-            top: 126px; 
-            left: 126px;
-            width: 448px; 
-            height: 448px; 
+            top: 126px; left: 126px;
+            width: 448px; height: 448px; 
             display: grid;
             grid-template-columns: repeat(8, 1fr);
             grid-template-rows: repeat(8, 1fr); 
@@ -110,7 +132,6 @@
             display: flex; justify-content: center; align-items: center; cursor: pointer;
         }
         
-        /* 3D-styled Pawns */
         .pawn {
             width: 40px; height: 40px; border-radius: 50%;
             box-shadow: 0 4px 6px rgba(0,0,0,0.6), inset 0 -4px 4px rgba(0,0,0,0.3);
@@ -124,47 +145,77 @@
         .pawn-black { background: radial-gradient(circle at 30% 30%, #555555, #222222 60%, #000000); border: 2px solid #111; }
 
         /* --- RIGHT COLUMN: DRAW / DISCARD --- */
-        .right-column { 
-            display: flex; 
-            align-items: center;
-        }
+        .right-column { display: flex; align-items: center; }
 
         .bracket-right {
-            border: 2px solid #e8d0a8; border-right: none; /* Opens to the right, away from board */
+            border: 2px solid #e8d0a8; border-right: none; 
             padding: 20px 10px 20px 20px;
             display: flex; flex-direction: row; align-items: center; gap: 20px;
         }
         
         .vertical-text {
-            writing-mode: vertical-rl;
-            transform: rotate(180deg); /* Reads bottom to top */
-            font-size: 18px;
-            letter-spacing: 3px;
+            writing-mode: vertical-rl; transform: rotate(180deg); 
+            font-size: 18px; letter-spacing: 3px;
         }
 
-        /* --- CARD SLOTS & STYLING --- */
+        /* --- CARD SLOTS & PDF STYLING --- */
         .card-slot {
             border: 2px dashed rgba(232, 208, 168, 0.6);
-            border-bottom: none; /* User requirement: Open bottom */
+            border-bottom: none;
             display: flex; justify-content: center; align-items: center;
             color: rgba(232, 208, 168, 0.5); font-size: 12px; text-align: center;
-            box-sizing: border-box;
-            background: rgba(0,0,0,0.3);
+            box-sizing: border-box; background: rgba(0,0,0,0.3);
         }
         
-        .horizontal-card { width: 140px; height: 100px; }
-        .vertical-card { width: 100px; height: 140px; }
+        .horizontal-card { width: 160px; height: 110px; }
+        .vertical-card { width: 120px; height: 170px; }
         
-        /* The Pawnder Logo Card Back */
+        /* Official PDF Card Layout (For when cards are rendered face-up) */
+        .card-face {
+            background: #ffffff;
+            color: #999999;
+            width: 100%; height: 100%;
+            border: 1px solid #dddddd;
+            display: flex;
+            flex-direction: row;
+            font-family: Arial, Helvetica, sans-serif;
+            box-shadow: 2px 4px 8px rgba(0,0,0,0.5);
+            box-sizing: border-box;
+            border-bottom: 1px solid #dddddd !important; /* Overrides the open-slot dashed bottom */
+        }
+
+        .card-left {
+            flex: 1;
+            padding: 8px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            text-align: center;
+            font-size: 11px;
+            font-weight: bold;
+        }
+
+        .card-right {
+            flex: 2;
+            padding: 8px;
+            border-left: 1px solid #dddddd;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            font-size: 10px;
+            line-height: 1.4;
+        }
+        
         .face-down {
             background-color: #1a1a1a;
             background-image: url('Pawnder Logo-transparent bg.png');
             background-size: contain; 
             background-repeat: no-repeat; 
             background-position: center;
-            border: 2px solid #e8d0a8; /* Solid border for actual cards */
+            border: 2px solid #e8d0a8; 
         }
-        
     </style>
 </head>
 <body>
@@ -179,6 +230,20 @@
                     <div class="info-text">Turn: <strong id="display-turn" style="color: #fff;">...</strong></div>
                 </div>
                 <div class="info-text" id="sync-status" style="margin-top: 15px; color: #aaa;">Connecting...</div>
+            </div>
+
+            <div id="instructions-panel">
+                <h3>On your turn, perform in order:</h3>
+                <ol>
+                    <li>Make one standard pawn<br><em>Chess move (optional)</em></li>
+                    <li style="margin-top: 15px;">Either:
+                        <ul>
+                            <li>- Draw a card and play it</li>
+                            <li>- Draw a card and place it in a reserve spot</li>
+                            <li>- Play a reserve card</li>
+                        </ul>
+                    </li>
+                </ol>
             </div>
         </div>
 
@@ -204,12 +269,9 @@
                             <line x1="0" y1="0" x2="0" y2="12" stroke="#e8d0a8" stroke-width="1.5" stroke-opacity="0.3"/>
                         </pattern>
                     </defs>
-
                     <rect width="1000" height="1000" fill="#000000"/>
-
                     <rect x="10" y="10" width="980" height="980" fill="none" stroke="#e8d0a8" stroke-width="2"/>
                     <rect x="20" y="20" width="960" height="960" fill="none" stroke="#e8d0a8" stroke-width="1"/>
-                    
                     <rect x="180" y="180" width="640" height="640" fill="#000" stroke="#e8d0a8" stroke-width="3"/>
                     
                     <g fill="#e8d0a8" opacity="0.85">
@@ -242,18 +304,14 @@
 
                     <path d="M 830,180 L 840,180 L 840,340 L 830,340" fill="none" stroke="#e8d0a8" stroke-width="2"/>
                     <g transform="translate(860, 260) rotate(-90)"><text x="0" y="0" text-anchor="middle" dominant-baseline="central" font-size="14" fill="#e8d0a8" letter-spacing="2">SAFE ZONE</text></g>
-                    
                     <path d="M 830,340 L 840,340 L 840,660 L 830,660" fill="none" stroke="#e8d0a8" stroke-width="2"/>
                     <g transform="translate(860, 500) rotate(-90)"><text x="0" y="0" text-anchor="middle" dominant-baseline="central" font-size="14" fill="#e8d0a8" letter-spacing="2">FIELD OF PLAY</text></g>
-                    
                     <path d="M 830,660 L 840,660 L 840,820 L 830,820" fill="none" stroke="#e8d0a8" stroke-width="2"/>
                     <g transform="translate(860, 740) rotate(-90)"><text x="0" y="0" text-anchor="middle" dominant-baseline="central" font-size="14" fill="#e8d0a8" letter-spacing="2">SAFE ZONE</text></g>
 
                     <rect x="180" y="60" width="640" height="80" fill="none" stroke="#e8d0a8" stroke-width="2"/>
                     <path d="M244 60 v80 M308 60 v80 M372 60 v80 M436 60 v80 M500 60 v80 M564 60 v80 M628 60 v80 M692 60 v80 M756 60 v80" stroke="#e8d0a8" stroke-width="2"/>
-                    <g transform="translate(500, 40) rotate(180)">
-                        <text x="0" y="0" text-anchor="middle" dominant-baseline="central" font-size="20" fill="#e8d0a8" letter-spacing="2">Victories</text>
-                    </g>
+                    <g transform="translate(500, 40) rotate(180)"><text x="0" y="0" text-anchor="middle" dominant-baseline="central" font-size="20" fill="#e8d0a8" letter-spacing="2">Victories</text></g>
                     <g fill="#e8d0a8" font-size="34">
                         <g transform="translate(212, 100) rotate(180)"><text x="0" y="0" text-anchor="middle" dominant-baseline="central">10</text></g>
                         <g transform="translate(276, 100) rotate(180)"><text x="0" y="0" text-anchor="middle" dominant-baseline="central">9</text></g>
@@ -283,7 +341,6 @@
                         <text x="788" y="900" text-anchor="middle" dominant-baseline="central">10</text>
                     </g>
                 </svg>
-
                 <div id="interactive-grid"></div>
             </div>
 
@@ -341,21 +398,42 @@
             document.getElementById('game-area').classList.add('rotate-180');
         }
 
+        // The Official 52-Card Deck based explicitly on the PDF specification
         const masterDeck = [
-            ...Array(2).fill({ name: 'Queen Move', action: 'move_chess', piece: 'queen' }),
-            ...Array(2).fill({ name: 'King Move', action: 'move_chess', piece: 'king' }),
-            ...Array(2).fill({ name: 'Knight Move', action: 'move_chess', piece: 'knight' }),
-            ...Array(2).fill({ name: 'Rook Move', action: 'move_chess', piece: 'rook' }),
-            ...Array(2).fill({ name: 'Bishop Move', action: 'move_chess', piece: 'bishop' }),
-            ...Array(4).fill({ name: 'Remove from Field', action: 'remove_pawn', zone: 'field' }),
-            ...Array(4).fill({ name: 'Remove from Safe Zone', action: 'remove_pawn', zone: 'safe' }),
-            ...Array(4).fill({ name: 'Retreat', action: 'move_backwards' }),
-            ...Array(4).fill({ name: 'Hop', action: 'hop_over_opponent' }),
-            ...Array(4).fill({ name: 'Charge', action: 'move_forward_attack' }),
-            ...Array(4).fill({ name: 'Sidestep', action: 'move_sideways_attack' }),
-            ...Array(4).fill({ name: 'Block', action: 'play_to_reserve', type: 'reaction' }),
-            ...Array(4).fill({ name: 'Reset Position', action: 'return_to_start' }),
-            ...Array(2).fill({ name: 'Skip Turn', action: 'skip_opponent_turn' })
+            // Page 1
+            ...Array(2).fill({ title: 'Return', text: 'Move one White pawn in field of play to any starting position', colorTarget: 'white', action: 'return' }),
+            ...Array(2).fill({ title: 'Return', text: 'Move one Black pawn in field of play to any starting position', colorTarget: 'black', action: 'return' }),
+            ...Array(4).fill({ title: 'Block', text: 'Reserve this card. Use at any time to block an opponent from attacking or moving one of your pawns.', action: 'block' }),
+            
+            // Page 2
+            ...Array(2).fill({ title: 'Move Sideways', text: 'Move one White pawn sideways one square. If square is occupied, remove pawn.', colorTarget: 'white', action: 'sideways' }),
+            ...Array(2).fill({ title: 'Move Sideways', text: 'Move one Black pawn sideways one square. If square is occupied, remove pawn.', colorTarget: 'black', action: 'sideways' }),
+            ...Array(2).fill({ title: 'Hop', text: "If stuck in front of an opponent's pawn, hop over. Do not remove opponent's pawn.", action: 'hop' }),
+            ...Array(2).fill({ title: 'Forward Attack', text: "If stuck in front of an opponent's pawn, move forward and remove their pawn.", action: 'forward_attack' }),
+            
+            // Page 3
+            ...Array(2).fill({ title: 'Transport Out', text: 'Move any pawn from a Safe Zone to an X. If square is occupied, remove pawn.', action: 'transport_out' }),
+            ...Array(2).fill({ title: 'Transport In', text: 'Move any pawn from an X to a Safe Zone.', action: 'transport_in' }),
+            ...Array(2).fill({ title: 'Move Backwards', text: 'Move one White pawn one square backwards', colorTarget: 'white', action: 'backwards' }),
+            ...Array(1).fill({ title: 'Skip', text: 'White skips their next turn', colorTarget: 'white', action: 'skip' }),
+            ...Array(1).fill({ title: 'Skip', text: 'Black skips their next turn', colorTarget: 'black', action: 'skip' }),
+            
+            // Page 4
+            ...Array(2).fill({ title: 'Remove', text: 'Remove one White pawn from either Safe Zone', colorTarget: 'white', zone: 'safe', action: 'remove' }),
+            ...Array(2).fill({ title: 'Remove', text: 'Remove one Black pawn from either Safe Zone', colorTarget: 'black', zone: 'safe', action: 'remove' }),
+            ...Array(2).fill({ title: 'Remove', text: 'Remove one White pawn from the Field of Play', colorTarget: 'white', zone: 'field', action: 'remove' }),
+            ...Array(2).fill({ title: 'Remove', text: 'Remove one Black pawn from the Field of Play', colorTarget: 'black', zone: 'field', action: 'remove' }),
+            
+            // Page 5
+            ...Array(4).fill({ title: 'Enhanced Move', text: "Move one pawn as if it's a Queen (Any direction)", piece: 'queen', action: 'enhanced' }),
+            ...Array(4).fill({ title: 'Enhanced Move', text: "Move one pawn as if it's a Knight (L-shape)", piece: 'knight', action: 'enhanced' }),
+            
+            // Page 6
+            ...Array(4).fill({ title: 'Enhanced Move', text: "Move one pawn as if it's a King (One space, Any direction)", piece: 'king', action: 'enhanced' }),
+            ...Array(4).fill({ title: 'Enhanced Move', text: "Move one pawn as if it's a Bishop (Diagonally, in any direction)", piece: 'bishop', action: 'enhanced' }),
+            
+            // Page 7
+            ...Array(4).fill({ title: 'Enhanced Move', text: "Move one pawn as if it's a Rook (Straight, in any direction)", piece: 'rook', action: 'enhanced' })
         ];
 
         function shuffle(array) {
