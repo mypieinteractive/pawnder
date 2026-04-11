@@ -24,7 +24,7 @@
             flex-direction: row;
             justify-content: center;
             align-items: center;
-            gap: 40px;
+            gap: 20px; /* Reduced from 40px to pull elements closer */
             width: 100%;
             max-width: 1600px;
         }
@@ -35,7 +35,7 @@
             flex-shrink: 0; 
             display: flex;
             flex-direction: column;
-            gap: 20px;
+            gap: 15px;
         }
         
         #status-panel {
@@ -53,14 +53,13 @@
         #status-panel h2 { margin: 0 0 15px 0; font-size: 18px; letter-spacing: 2px; }
         .info-text { font-size: 14px; margin-bottom: 8px; font-family: Arial, sans-serif;}
 
-        /* Official Instruction Card */
+        /* Dark Theme Instruction Card */
         #instructions-panel {
-            background: #ffffff;
-            color: #888888;
+            background: linear-gradient(135deg, #1f1a15, #110e0a);
+            color: #e8d0a8;
             padding: 20px;
-            border: 1px solid #cccccc;
+            border: 1px solid #8c7650;
             border-radius: 4px;
-            font-family: Arial, Helvetica, sans-serif;
             font-size: 13px;
             box-shadow: 0 6px 16px rgba(0,0,0,0.6);
         }
@@ -86,26 +85,13 @@
             display: flex; 
             flex-direction: column; 
             align-items: center; 
-            gap: 20px; 
-        }
-
-        .bracket-top {
-            border: 2px solid #e8d0a8; border-top: none;
-            padding: 10px 20px 20px 20px; 
-            display: flex; flex-direction: column; align-items: center; gap: 10px;
-            transform: rotate(180deg);
-        }
-        
-        .bracket-bottom {
-            border: 2px solid #e8d0a8; border-bottom: none;
-            padding: 20px 20px 10px 20px; 
-            display: flex; flex-direction: column; align-items: center; gap: 10px;
+            gap: 10px; /* Reduced to bring reserves closer to board */
         }
 
         .cards-row {
             display: flex;
             flex-direction: row;
-            gap: 60px;
+            gap: 40px;
         }
 
         /* The Game Board Envelope */
@@ -144,44 +130,31 @@
         .pawn-white { background: radial-gradient(circle at 30% 30%, #ffffff, #d4d4d4 60%, #888888); border: 2px solid #555; }
         .pawn-black { background: radial-gradient(circle at 30% 30%, #555555, #222222 60%, #000000); border: 2px solid #111; }
 
-        /* --- RIGHT COLUMN: DRAW / DISCARD --- */
-        .right-column { display: flex; align-items: center; }
-
-        .bracket-right {
-            border: 2px solid #e8d0a8; border-right: none; 
-            padding: 20px 10px 20px 20px;
-            display: flex; flex-direction: row; align-items: center; gap: 20px;
-        }
-        
-        .vertical-text {
-            writing-mode: vertical-rl; transform: rotate(180deg); 
-            font-size: 18px; letter-spacing: 3px;
-        }
-
-        /* --- CARD SLOTS & PDF STYLING --- */
+        /* --- CARD SLOTS & PARLOR STYLING --- */
         .card-slot {
             border: 2px dashed rgba(232, 208, 168, 0.6);
-            border-bottom: none;
             display: flex; justify-content: center; align-items: center;
-            color: rgba(232, 208, 168, 0.5); font-size: 12px; text-align: center;
+            color: rgba(232, 208, 168, 0.5); font-size: 14px; text-align: center;
             box-sizing: border-box; background: rgba(0,0,0,0.3);
+            letter-spacing: 1px;
+            border-radius: 4px;
         }
         
         .horizontal-card { width: 160px; height: 110px; }
         .vertical-card { width: 120px; height: 170px; }
         
-        /* Official PDF Card Layout (For when cards are rendered face-up) */
+        /* Dark Theme Parlor Card Layout */
         .card-face {
-            background: #ffffff;
-            color: #999999;
+            background: linear-gradient(135deg, #1f1a15, #110e0a);
+            color: #e8d0a8;
             width: 100%; height: 100%;
-            border: 1px solid #dddddd;
+            border: 1px solid #8c7650;
             display: flex;
             flex-direction: row;
-            font-family: Arial, Helvetica, sans-serif;
-            box-shadow: 2px 4px 8px rgba(0,0,0,0.5);
+            font-family: 'Cinzel', serif;
+            box-shadow: 2px 4px 8px rgba(0,0,0,0.8);
             box-sizing: border-box;
-            border-bottom: 1px solid #dddddd !important; /* Overrides the open-slot dashed bottom */
+            border-radius: 4px;
         }
 
         .card-left {
@@ -194,27 +167,28 @@
             text-align: center;
             font-size: 11px;
             font-weight: bold;
+            border-right: 1px solid rgba(232, 208, 168, 0.3);
         }
 
         .card-right {
             flex: 2;
             padding: 8px;
-            border-left: 1px solid #dddddd;
             display: flex;
             align-items: center;
             justify-content: center;
             text-align: center;
-            font-size: 10px;
+            font-size: 11px;
             line-height: 1.4;
+            font-family: Arial, sans-serif;
         }
         
         .face-down {
-            background-color: #1a1a1a;
+            background-color: #0b0b0b;
             background-image: url('Pawnder Logo-transparent bg.png');
             background-size: contain; 
             background-repeat: no-repeat; 
             background-position: center;
-            border: 2px solid #e8d0a8; 
+            border: 1px solid #8c7650; 
         }
     </style>
 </head>
@@ -235,7 +209,7 @@
             <div id="instructions-panel">
                 <h3>On your turn, perform in order:</h3>
                 <ol>
-                    <li>Make one standard pawn<br><em>Chess move (optional)</em></li>
+                    <li>Make one standard pawn<br><em style="font-family: 'Cinzel', serif;">Chess move (optional)</em></li>
                     <li style="margin-top: 15px;">Either:
                         <ul>
                             <li>- Draw a card and play it</li>
@@ -249,17 +223,9 @@
 
         <div class="center-column">
             
-            <div class="bracket-top">
-                <div class="cards-row">
-                    <div style="text-align: center;">
-                        <div class="card-slot horizontal-card"></div>
-                        <div style="margin-top: 8px; font-size: 14px; letter-spacing: 2px;">RESERVE CARD 2</div>
-                    </div>
-                    <div style="text-align: center;">
-                        <div class="card-slot horizontal-card"></div>
-                        <div style="margin-top: 8px; font-size: 14px; letter-spacing: 2px;">RESERVE CARD 1</div>
-                    </div>
-                </div>
+            <div class="cards-row" style="transform: rotate(180deg);">
+                <div class="card-slot horizontal-card">RESERVE<br>CARD 2</div>
+                <div class="card-slot horizontal-card">RESERVE<br>CARD 1</div>
             </div>
 
             <div id="game-area">
@@ -298,8 +264,8 @@
                         <line x1="500" y1="580" x2="580" y2="660"/> <line x1="580" y1="580" x2="500" y2="660"/>
                     </g>
 
-                    <g transform="translate(100, 500) rotate(-90)">
-                        <image href="Pawnder Logo-transparent bg.png" x="-320" y="-70" width="640" height="140" preserveAspectRatio="xMidYMid meet" />
+                    <g transform="translate(100, 500) rotate(90)">
+                        <image href="Pawnder Logo-transparent bg.png" x="-400" y="-87.5" width="800" height="175" preserveAspectRatio="xMidYMid meet" />
                     </g>
 
                     <path d="M 830,180 L 840,180 L 840,340 L 830,340" fill="none" stroke="#e8d0a8" stroke-width="2"/>
@@ -344,24 +310,21 @@
                 <div id="interactive-grid"></div>
             </div>
 
-            <div class="bracket-bottom">
-                <div style="display: flex; gap: 40px; margin-bottom: 5px;">
-                    <div style="font-size: 14px; letter-spacing: 2px;">RESERVE CARD 1</div>
-                    <div style="font-size: 14px; letter-spacing: 2px;">RESERVE CARD 2</div>
-                </div>
-                <div class="cards-row">
-                    <div class="card-slot horizontal-card"></div>
-                    <div class="card-slot horizontal-card"></div>
-                </div>
+            <div class="cards-row">
+                <div class="card-slot horizontal-card">RESERVE<br>CARD 1</div>
+                <div class="card-slot horizontal-card">RESERVE<br>CARD 2</div>
             </div>
 
         </div>
 
-        <div class="right-column">
-            <div class="bracket-right">
-                <div class="vertical-text">DRAW / DISCARD PILES</div>
+        <div class="right-column" style="display: flex; gap: 20px;">
+            <div style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
+                <div style="font-size: 16px; letter-spacing: 2px;">DRAW</div>
                 <div class="card-slot vertical-card face-down"></div>
-                <div class="card-slot vertical-card">DRAW<br>(FACE UP)</div>
+            </div>
+            <div style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
+                <div style="font-size: 16px; letter-spacing: 2px;">DISCARD</div>
+                <div class="card-slot vertical-card"></div>
             </div>
         </div>
 
@@ -398,7 +361,6 @@
             document.getElementById('game-area').classList.add('rotate-180');
         }
 
-        // The Official 52-Card Deck based explicitly on the PDF specification
         const masterDeck = [
             // Page 1
             ...Array(2).fill({ title: 'Return', text: 'Move one White pawn in field of play to any starting position', colorTarget: 'white', action: 'return' }),
