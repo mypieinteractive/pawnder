@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Pawnder - Lobby</title>
+    <style>
+        body { 
+            font-family: Georgia, serif; 
+            background-color: #f0f0f0; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            height: 100vh; 
+            margin: 0;
+        }
+        .lobby-container {
+            background-color: white;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            text-align: center;
+            max-width: 400px;
+            border: 2px solid #000;
+        }
+        h1 { letter-spacing: 4px; font-size: 36px; margin-bottom: 30px;}
+        input {
+            width: 80%;
+            padding: 10px;
+            margin: 10px 0;
+            font-size: 16px;
+            text-align: center;
+        }
+        button {
+            background-color: #000;
+            color: #fff;
+            border: none;
+            padding: 12px 24px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 10px;
+            font-family: Georgia, serif;
+            letter-spacing: 1px;
+            transition: background 0.2s;
+        }
+        button:hover { background-color: #333; }
+        .divider { margin: 20px 0; font-style: italic; color: #666; }
+        #status-message { margin-top: 20px; font-weight: bold; color: #d9534f; }
+    </style>
+</head>
+<body>
+
+    <div class="lobby-container">
+        <h1>PAWNDER</h1>
+        
+        <div>
+            <h3>Create a New Game</h3>
+            <button id="create-btn">Create Game</button>
+        </div>
+
+        <div class="divider">--- OR ---</div>
+
+        <div>
+            <h3>Join Existing Game</h3>
+            <input type="text" id="game-code-input" placeholder="Enter 4-Digit Code" maxlength="4">
+            <button id="join-btn">Join Game</button>
+        </div>
+
+        <div id="status-message"></div>
+    </div>
+
+    <script type="module">
+        // Import Firebase SDKs via CDN for vanilla HTML
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js";
+        import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyDtHHDrRlcnsug93x3hWF3jEx8rFA8QPcw",
+            authDomain: "pawnder-59af7.firebaseapp.com",
+            projectId: "pawnder-59af7",
+            storageBucket: "pawnder-59af7.firebasestorage.app",
+            messagingSenderId: "372213409476",
+            appId: "1:372213409476:web:bc9945205d1c3fd99c8b91",
+            measurementId: "G-2V5B08YB26"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const analytics = getAnalytics(app);
+        const db = getFirestore(app);
+
+        // UI Elements
+        const createBtn = document.getElementById('create-btn');
+        const joinBtn = document.getElementById('join-btn');
+        const codeInput = document.getElementById('game-code-input');
+        const statusMsg = document.getElementById('status-message');
+
+        // Generate a random 4-character alphanumeric code
+        function generateGameCode() {
+            return Math.random().toString(36).substring(2, 6).toUpperCase();
+        }
+
+        // CREATE GAME Logic
+        createBtn.addEventListener('click', async () => {
+            const gameCode = generateGameCode();
+            statusMsg.style.color = '#333';
+            statusMsg.innerText = `Creating game ${gameCode}...`;
+
+            try {
+                // Build the initial document in Firestore
+                await setDoc(doc(db, "games", gameCode), {
+                    status: "waiting", // 'waiting', 'playing', or 'finished'
+                    playerWhite: "connected",
+                    playerBlack: null,
+                    currentTurn: "white",
+                    // We will populate the boardState and deck here in Phase 2
+                    createdAt: new Date()
+                });
+
+                // Save to local storage so this browser knows it is playing as White
+                localStorage.setItem("pawnderGameCode", gameCode);
+                localStorage.setItem("pawnderPlayerColor", "white");
+                
+                statusMsg.style.color = 'green';
+                statusMsg.innerText = `Game created! Waiting for opponent to join code: ${gameCode}`;
+                
+                // (In the future, we will redirect to board.html here)
+                
+            } catch (error) {
+                console.error("Error creating game:", error);
+                statusMsg.style.color = '#d9534f';
+                statusMsg.innerText = "Error creating game. Check console.";
+            }
+        });
+
+        // JOIN GAME Logic
+        joinBtn.addEventListener('click', async () => {
+            const code = codeInput.value.trim().toUpperCase();
+            if(code.length !== 4) {
+                statusMsg.style.color = '#d9534f';
+                statusMsg.innerText = "Please enter a valid 4-digit code.";
+                return;
+            }
+
+            statusMsg.style.color = '#333';
+            statusMsg.innerText = `Joining game ${code}...`;
+
+            try {
+                const gameRef = doc(db, "games", code);
+                const gameSnap = await getDoc(gameRef);
+
+                if (gameSnap.exists()) {
+                    const gameData = gameSnap.data();
+                    
+                    if(gameData.status === "waiting" && gameData.playerBlack === null) {
+                        // Update the database to show Black has joined
+                        await setDoc(gameRef, { 
+                            playerBlack: "connected",
+                            status: "playing"
+                        }, { merge: true });
+
+                        // Save to local storage so this browser knows it is playing as Black
+                        localStorage.setItem("pawnderGameCode", code);
+                        localStorage.setItem("pawnderPlayerColor", "black");
+
+                        statusMsg.style.color = 'green';
+                        statusMsg.innerText = `Successfully joined Game ${code}!`;
+                        
+                        // (In the future, we will redirect to board.html here)
+                    } else {
+                        statusMsg.style.color = '#d9534f';
+                        statusMsg.innerText = "Game is already full or has started.";
+                    }
+                } else {
+                    statusMsg.style.color = '#d9534f';
+                    statusMsg.innerText = "Game code not found.";
+                }
+            } catch (error) {
+                console.error("Error joining game:", error);
+                statusMsg.style.color = '#d9534f';
+                statusMsg.innerText = "Error joining game. Check console.";
+            }
+        });
+    </script>
+</body>
+</html>
