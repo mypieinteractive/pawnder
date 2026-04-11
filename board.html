@@ -6,34 +6,33 @@
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&display=swap" rel="stylesheet">
     <style>
         body { margin: 0; padding: 0; display: flex; justify-content: center; align-items: center; height: 100vh; width: 100vw; background-color: #0b0b0b; font-family: 'Cinzel', serif; color: #e8d0a8; overflow: hidden; }
-        .scale-wrapper { transform: scale(min(calc(100vw / 1250), calc(100vh / 850))); transform-origin: center; display: flex; justify-content: center; align-items: center; width: 1250px; height: 850px; }
+        
+        .scale-wrapper { display: flex; justify-content: center; align-items: center; width: 1350px; height: 850px; transform-origin: center; }
+        @media (orientation: portrait) { .scale-wrapper { transform: rotate(90deg); } }
+
         .app-container { display: flex; flex-direction: row; justify-content: center; align-items: center; gap: 20px; width: 100%; }
 
         /* LEFT COLUMN */
         .left-column { width: 260px; flex-shrink: 0; display: flex; flex-direction: column; gap: 15px; }
-        
         #status-panel { width: 100%; background: rgba(17, 17, 17, 0.85); padding: 20px; border-radius: 4px; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.5); }
         #status-panel h2 { margin: 0 0 10px 0; font-size: 16px; letter-spacing: 2px; }
-        
         #leave-game-btn { background-color: transparent; color: #d9534f; border: 1px solid #d9534f; padding: 6px 12px; border-radius: 3px; cursor: pointer; font-family: 'Cinzel', serif; font-size: 12px; font-weight: bold; transition: 0.2s; letter-spacing: 1px; }
         #leave-game-btn:hover { background-color: #d9534f; color: #fff; }
-
         #turn-header { margin-top: 10px; font-size: 18px; font-weight: bold; text-align: center; letter-spacing: 2px; text-shadow: 0 2px 4px rgba(0,0,0,0.8); }
 
         .info-panel { background: linear-gradient(135deg, #1f1a15, #110e0a); color: #e8d0a8; padding: 20px; border: 1px solid #8c7650; border-radius: 4px; font-size: 13px; box-shadow: 0 6px 16px rgba(0,0,0,0.6); display: none; }
         .info-panel h3 { margin: 0 0 15px 0; font-size: 14px; text-align: center; font-weight: normal; }
         #instructions-panel ol { padding-left: 20px; margin: 0; line-height: 1.6; }
         #instructions-panel ul { padding-left: 10px; list-style-type: none; margin-top: 5px; }
-
-        #active-card-container { width: 100%; height: 140px; margin-top: 10px; }
+        #active-card-container { width: 100%; height: 140px; margin-top: 10px; display: flex; justify-content: center; align-items: center; }
 
         .active-step { color: #ffd700; text-shadow: 0 0 8px rgba(255, 215, 0, 0.4); transition: all 0.3s ease; }
         .inactive-step { color: #666; transition: all 0.3s ease; }
 
         /* CENTER COLUMN */
         .center-column { display: flex; flex-direction: column; align-items: center; gap: 10px; }
-        .cards-row { display: flex; flex-direction: row; gap: 40px; }
-
+        .cards-row { display: flex; flex-direction: row; gap: 40px; transition: z-index 0.3s; }
+        
         #game-area { position: relative; width: 700px; height: 700px; transition: transform 0.6s ease-in-out; box-shadow: 0 10px 30px rgba(0,0,0,0.8); }
         .rotate-180 { transform: rotate(180deg); }
 
@@ -49,26 +48,41 @@
         .pawn-black { background: radial-gradient(circle at 30% 30%, #555555, #222222 60%, #000000); border: 2px solid #111; }
         .pawn.selected { border-color: #ffd700; box-shadow: 0 0 12px #ffd700, inset 0 -4px 4px rgba(0,0,0,0.3); transform: scale(1.15); z-index: 5; }
 
-        /* RIGHT COLUMN & CARDS */
-        .card-slot { border: 2px dashed rgba(232, 208, 168, 0.6); display: flex; justify-content: center; align-items: center; color: rgba(232, 208, 168, 0.5); font-size: 14px; text-align: center; box-sizing: border-box; background: rgba(0,0,0,0.3); letter-spacing: 1px; border-radius: 4px; cursor: pointer; transition: background 0.2s; }
+        /* RIGHT COLUMN, STAGING & CARDS */
+        .right-column { display: flex; flex-direction: column; justify-content: space-between; height: 700px; width: 280px; align-items: center;}
+        .staging-area { width: 100%; height: 110px; border: 1px solid rgba(232, 208, 168, 0.3); background: rgba(0,0,0,0.5); display: flex; flex-wrap: wrap; gap: 6px; padding: 12px; box-sizing: border-box; align-content: flex-start; border-radius: 4px;}
+        .staging-title { font-size: 10px; width: 100%; text-align: center; color: #888; margin-bottom: 5px; letter-spacing: 1px;}
+        .mini-pawn { width: 24px; height: 24px; border-radius: 50%; border: 1px solid #555; box-shadow: 0 2px 4px rgba(0,0,0,0.5); }
+        .mini-white { background: radial-gradient(circle at 30% 30%, #ffffff, #d4d4d4 60%, #888888); }
+        .mini-black { background: radial-gradient(circle at 30% 30%, #555555, #222222 60%, #000000); border: 1px solid #111;}
+
+        .card-slot { border: 2px dashed rgba(232, 208, 168, 0.6); display: flex; justify-content: center; align-items: center; color: rgba(232, 208, 168, 0.5); font-size: 14px; text-align: center; box-sizing: border-box; background: rgba(0,0,0,0.3); letter-spacing: 1px; border-radius: 8px; cursor: pointer; transition: all 0.2s; }
         .card-slot:hover { background: rgba(232, 208, 168, 0.1); }
         .horizontal-card { width: 160px; height: 110px; }
-        .vertical-card { width: 120px; height: 170px; }
+        .vertical-card { width: 110px; height: 160px; border-radius: 8px;} 
         
-        .card-face { background: linear-gradient(135deg, #1f1a15, #110e0a); color: #e8d0a8; width: 100%; height: 100%; border: 1px solid #8c7650; display: flex; flex-direction: row; font-family: 'Cinzel', serif; box-shadow: 2px 4px 8px rgba(0,0,0,0.8); box-sizing: border-box; border-radius: 4px; }
-        .card-left { flex: 1; padding: 8px; display: flex; flex-direction: column; justify-content: space-between; align-items: center; text-align: center; font-size: 11px; font-weight: bold; border-right: 1px solid rgba(232, 208, 168, 0.3); }
-        .card-right { flex: 2; padding: 8px; display: flex; align-items: center; justify-content: center; text-align: center; font-size: 11px; line-height: 1.4; font-family: Arial, sans-serif; }
+        /* Unified White-Face Card Styling */
+        .card-face { background: #ffffff; color: #111111; width: 160px; height: 110px; border: 2px solid #8c7650; display: flex; flex-direction: row; font-family: 'Cinzel', serif; box-shadow: 2px 4px 8px rgba(0,0,0,0.8); box-sizing: border-box; border-radius: 8px; overflow: hidden; }
+        .card-left { flex: 1; padding: 6px; display: flex; flex-direction: column; justify-content: space-between; align-items: center; text-align: center; font-size: 11px; font-weight: bold; border-right: 1px solid #ccc; background: #f9f9f9;}
+        .card-right { flex: 1.8; padding: 8px; display: flex; align-items: center; justify-content: center; text-align: center; font-size: 10px; line-height: 1.3; font-family: 'Cinzel', serif; font-weight: bold; }
+        .card-icon { font-size: 36px; margin-top: 5px; color: #555;}
         
-        .face-down { background-color: #0b0b0b; background-image: url('Pawnder Logo-transparent bg.png'); background-size: contain; background-repeat: no-repeat; background-position: center; border: 1px solid #8c7650; }
+        .face-down { background-color: #0b0b0b; background-image: url('Pawnder Logo-transparent bg.png'); background-size: 80%; background-repeat: no-repeat; background-position: center; border: 2px solid #8c7650; }
+
+        /* Discard Rotation logic */
+        .discard-rotater { transform: rotate(90deg); transform-origin: center; }
 
         /* CUSTOM MODAL OVERLAY */
-        #modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.85); z-index: 100; display: none; justify-content: center; align-items: center; }
-        .modal-box { background: linear-gradient(135deg, #1f1a15, #110e0a); border: 2px solid #8c7650; padding: 30px; border-radius: 6px; box-shadow: 0 10px 40px rgba(0,0,0,0.9); text-align: center; max-width: 400px; display: flex; flex-direction: column; align-items: center; gap: 20px; }
-        .modal-text { font-size: 18px; letter-spacing: 1px; line-height: 1.5; }
+        #modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.65); z-index: 100; display: none; justify-content: center; align-items: center; }
+        .modal-box { background: linear-gradient(135deg, #1f1a15, #110e0a); border: 2px solid #8c7650; padding: 30px; border-radius: 6px; box-shadow: 0 10px 40px rgba(0,0,0,0.9); text-align: center; max-width: 400px; display: flex; flex-direction: column; align-items: center; gap: 20px; z-index: 102; }
+        .modal-text { font-size: 18px; letter-spacing: 1px; line-height: 1.5; text-shadow: 0 2px 4px #000; }
         .modal-buttons { display: flex; gap: 15px; justify-content: center; flex-wrap: wrap; }
-        .btn { background: #0b0b0b; color: #e8d0a8; border: 1px solid #e8d0a8; padding: 10px 20px; font-family: 'Cinzel', serif; font-size: 14px; cursor: pointer; border-radius: 3px; transition: 0.2s; letter-spacing: 1px; }
+        .btn { background: #0b0b0b; color: #e8d0a8; border: 1px solid #e8d0a8; padding: 10px 20px; font-family: 'Cinzel', serif; font-size: 14px; cursor: pointer; border-radius: 3px; transition: 0.2s; letter-spacing: 1px; font-weight: bold;}
         .btn:hover { background: #e8d0a8; color: #0b0b0b; }
-        #modal-card-display { width: 240px; height: 160px; margin-bottom: 10px; }
+        #modal-card-display { width: 160px; height: 110px; margin-bottom: 10px; }
+
+        /* Elevation for Reserves when Modal is active */
+        .reserve-elevated { position: relative; z-index: 105 !important; box-shadow: 0 0 25px rgba(255, 215, 0, 0.4); border-radius: 8px;}
 
     </style>
 </head>
@@ -82,7 +96,7 @@
         </div>
     </div>
 
-    <div class="scale-wrapper">
+    <div class="scale-wrapper" id="scaler">
         <div class="app-container">
             
             <div class="left-column">
@@ -114,8 +128,7 @@
             </div>
 
             <div class="center-column">
-                
-                <div class="cards-row" style="transform: rotate(180deg);">
+                <div class="cards-row" style="transform: rotate(180deg);" id="opp-reserve-row">
                     <div class="card-slot horizontal-card" id="opp-reserve-2">RESERVE<br>CARD 2</div>
                     <div class="card-slot horizontal-card" id="opp-reserve-1">RESERVE<br>CARD 1</div>
                 </div>
@@ -150,7 +163,6 @@
                             <line x1="500" y1="580" x2="580" y2="660"/> <line x1="580" y1="580" x2="500" y2="660"/>
                             <line x1="580" y1="420" x2="660" y2="500"/> <line x1="660" y1="420" x2="580" y2="500"/>
                         </g>
-
                         <g transform="translate(100, 500) rotate(90)"><image href="Pawnder Logo-transparent bg.png" x="-400" y="-87.5" width="800" height="175" preserveAspectRatio="xMidYMid meet" /></g>
 
                         <path d="M 830,180 L 840,180 L 840,340 L 830,340" fill="none" stroke="#e8d0a8" stroke-width="2"/>
@@ -195,24 +207,41 @@
                     <div id="interactive-grid"></div>
                 </div>
 
-                <div class="cards-row">
+                <div class="cards-row" id="my-reserve-row">
                     <div class="card-slot horizontal-card" id="my-reserve-1" onclick="handleReserveClick(1)">RESERVE<br>CARD 1</div>
                     <div class="card-slot horizontal-card" id="my-reserve-2" onclick="handleReserveClick(2)">RESERVE<br>CARD 2</div>
                 </div>
 
             </div>
 
-            <div class="right-column" style="display: flex; gap: 20px;">
-                <div style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
-                    <div style="font-size: 16px; letter-spacing: 2px;">DRAW</div>
-                    <div class="card-slot vertical-card face-down" id="draw-pile" onclick="handleDrawClick()"></div>
+            <div class="right-column">
+                
+                <div id="top-staging" class="staging-area">
+                    <div class="staging-title">CAPTURED PAWNS</div>
+                    <div id="top-captured-container" style="display:flex; flex-wrap:wrap; gap:5px; width:100%;"></div>
                 </div>
-                <div style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
-                    <div style="font-size: 16px; letter-spacing: 2px;">DISCARD</div>
-                    <div class="card-slot vertical-card" id="discard-pile"></div>
-                </div>
-            </div>
 
+                <div style="display: flex; gap: 20px;">
+                    <div style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
+                        <div style="font-size: 16px; letter-spacing: 2px;">DRAW</div>
+                        <div class="card-slot vertical-card" id="draw-pile" onclick="handleDrawClick()" style="border: none;">
+                            <div class="card-face face-down discard-rotater"></div>
+                        </div>
+                    </div>
+                    <div style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
+                        <div style="font-size: 16px; letter-spacing: 2px;">DISCARD</div>
+                        <div class="card-slot vertical-card" id="discard-pile" style="border: none;">
+                            <div class="card-slot vertical-card" style="border-radius: 8px;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="bottom-staging" class="staging-area">
+                    <div class="staging-title">CAPTURED PAWNS</div>
+                    <div id="bottom-captured-container" style="display:flex; flex-wrap:wrap; gap:5px; width:100%;"></div>
+                </div>
+
+            </div>
         </div>
     </div>
 
@@ -231,6 +260,18 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
+
+        // Dynamic Resizing Logic for Board
+        function resizeApp() {
+            const scaler = document.getElementById('scaler');
+            const isPortrait = window.innerHeight > window.innerWidth;
+            let scale = isPortrait 
+                ? Math.min(window.innerWidth / 850, window.innerHeight / 1350) 
+                : Math.min(window.innerWidth / 1350, window.innerHeight / 850);
+            scaler.style.transform = isPortrait ? `scale(${scale})` : `scale(${scale})`;
+        }
+        window.addEventListener('resize', resizeApp);
+        resizeApp();
 
         const gameCode = localStorage.getItem("pawnderGameCode");
         const myColor = localStorage.getItem("pawnderPlayerColor"); 
@@ -252,7 +293,6 @@
             window.location.href = "index.html";
         };
 
-        // --- STATE VARIABLES ---
         let localData = null;
         let isMyTurn = false;
         let turnPhase = 1; 
@@ -270,13 +310,33 @@
             }
         }
 
-        // --- CUSTOM MODAL LOGIC ---
+        // Unified Card Generator (Outputs strict 160x110 landscape card)
+        function generateCardHTML(card, isDiscard = false) {
+            const icon = getCardIcon(card);
+            const rotaterClass = isDiscard ? "discard-rotater" : "";
+            return `
+            <div class="card-face ${rotaterClass}">
+                <div class="card-left">
+                    <span>${card.title}</span>
+                    <div class="card-icon">${icon}</div>
+                </div>
+                <div class="card-right">${card.text}</div>
+            </div>`;
+        }
+
+        function getCardIcon(card) {
+            if(card.action === 'enhanced') return '&#9819;'; // Crown
+            if(card.action === 'remove' || card.action === 'forward_attack') return '&#9876;'; // Swords
+            if(card.action === 'block' || card.action === 'skip') return '&#128110;'; // Shield
+            return '&#10021;'; // Cross arrows
+        }
+
         function showModal(text, buttonsHtml, cardHTML = "") {
             document.getElementById('modal-text').innerHTML = text;
             document.getElementById('modal-buttons').innerHTML = buttonsHtml;
             const cardDisplay = document.getElementById('modal-card-display');
             if(cardHTML) {
-                cardDisplay.style.display = "block";
+                cardDisplay.style.display = "flex";
                 cardDisplay.innerHTML = cardHTML;
             } else {
                 cardDisplay.style.display = "none";
@@ -286,24 +346,12 @@
         
         window.closeModal = function() {
             document.getElementById('modal-overlay').style.display = "none";
+            document.getElementById('my-reserve-1').classList.remove('reserve-elevated');
+            document.getElementById('my-reserve-2').classList.remove('reserve-elevated');
         }
 
-        function generateCardHTML(card) {
-            return `
-            <div class="card-face">
-                <div class="card-left">
-                    <span>${card.title}</span>
-                    <span style="font-size: 24px;">&#9876;</span>
-                </div>
-                <div class="card-right">${card.text}</div>
-            </div>`;
-        }
-
-        // --- CARD DRAW & RESERVE LOGIC ---
         window.handleDrawClick = async function() {
-            if(!isMyTurn) return;
-            if(activeCardExecution) return;
-            
+            if(!isMyTurn || activeCardExecution) return;
             if(turnPhase === 1) {
                 showModal("Skip your pawn move and draw card?", 
                     `<button class="btn" onclick="closeModal()">Cancel</button>
@@ -314,9 +362,7 @@
         };
 
         window.confirmSkipToDraw = function() {
-            turnPhase = 2;
-            updateInstructionHighlight();
-            processDraw();
+            turnPhase = 2; updateInstructionHighlight(); processDraw();
         };
 
         function processDraw() {
@@ -331,14 +377,16 @@
                 buttons += `<br><span style="font-size:12px; color:#aaa; width:100%;">Reserves Full:</span><br>
                             <button class="btn" onclick="swapReserveAndPlay(0, 0)">Play Reserve 1</button>
                             <button class="btn" onclick="swapReserveAndPlay(0, 1)">Play Reserve 2</button>`;
+                
+                // Elevate reserves to be visible above modal
+                document.getElementById('my-reserve-1').classList.add('reserve-elevated');
+                document.getElementById('my-reserve-2').classList.add('reserve-elevated');
             }
             showModal("", buttons, generateCardHTML(drawnCard));
         }
 
         window.handleReserveClick = function(slotNum) {
-            if(!isMyTurn) return;
-            if(activeCardExecution) return;
-
+            if(!isMyTurn || activeCardExecution) return;
             const myReserve = myColor === 'white' ? localData.playerWhiteReserve : localData.playerBlackReserve;
             const cardIndex = slotNum - 1;
             if(cardIndex >= myReserve.length) return; 
@@ -353,155 +401,92 @@
         };
 
         window.confirmSkipToReserve = function(cardIndex) {
-            turnPhase = 2;
-            updateInstructionHighlight();
-            showReservePlayModal(cardIndex);
+            turnPhase = 2; updateInstructionHighlight(); showReservePlayModal(cardIndex);
         };
 
         function showReservePlayModal(cardIndex) {
             const myReserve = myColor === 'white' ? localData.playerWhiteReserve : localData.playerBlackReserve;
-            const card = myReserve[cardIndex];
-            showModal("", 
-                `<button class="btn" onclick="closeModal()">Cancel</button>
-                 <button class="btn" onclick="executeCard(${cardIndex}, 'reserve')">Play</button>`, 
-                generateCardHTML(card));
+            showModal("", `<button class="btn" onclick="closeModal()">Cancel</button><button class="btn" onclick="executeCard(${cardIndex}, 'reserve')">Play</button>`, generateCardHTML(myReserve[cardIndex]));
         }
 
-        // --- CARD EXECUTION ROUTING & UI SWAP ---
         window.reserveCard = async function(deckIndex) {
             const card = localData.deck.shift(); 
             const reserveKey = myColor === 'white' ? 'playerWhiteReserve' : 'playerBlackReserve';
             localData[reserveKey].push(card);
-            closeModal();
-            endTurn();
+            closeModal(); endTurn();
         };
 
         window.swapReserveAndPlay = async function(deckIndex, reserveIndex) {
             const reserveKey = myColor === 'white' ? 'playerWhiteReserve' : 'playerBlackReserve';
             const drawnCard = localData.deck.shift();
             const cardToPlay = localData[reserveKey].splice(reserveIndex, 1, drawnCard)[0]; 
-            closeModal();
-            startCardExecution(cardToPlay);
+            closeModal(); startCardExecution(cardToPlay);
         };
 
         window.executeCard = function(index, source) {
-            let card;
-            if(source === 'draw') {
-                card = localData.deck.shift();
-            } else {
-                const reserveKey = myColor === 'white' ? 'playerWhiteReserve' : 'playerBlackReserve';
-                card = localData[reserveKey].splice(index, 1)[0];
-            }
-            closeModal();
-            startCardExecution(card);
+            let card = source === 'draw' ? localData.deck.shift() : (myColor === 'white' ? localData.playerWhiteReserve : localData.playerBlackReserve).splice(index, 1)[0];
+            closeModal(); startCardExecution(card);
         };
 
         function startCardExecution(card) {
-            activeCardExecution = card;
-            selectedPawn = null;
-            validMoves = [];
-            
-            // Swap UI to show the executing card
+            activeCardExecution = card; selectedPawn = null; validMoves = [];
             document.getElementById('instructions-panel').style.display = "none";
             document.getElementById('active-card-panel').style.display = "block";
             document.getElementById('active-card-container').innerHTML = generateCardHTML(card);
 
-            if(card.action === 'skip' || card.action === 'block') {
-                finalizeCardTurn();
-            } else {
-                renderBoard(JSON.parse(localData.boardState)); 
-            }
+            if(card.action === 'skip' || card.action === 'block') finalizeCardTurn();
+            else renderBoard(JSON.parse(localData.boardState)); 
         }
 
-        // --- PATHFINDING & MOVEMENT ---
-        // Helper: True if row is in Field of Play (Rows 3,4,5,6 -> indices 2,3,4,5)
         const isInFieldOfPlay = (r) => r >= 2 && r <= 5;
 
-        // Phase 1 Standard Movement
         function calculateStandardMoves(row, col, color, state) {
             let moves = [];
             const dir = color === 'white' ? -1 : 1;
             const startRow = color === 'white' ? 6 : 1;
 
-            // Forward 1
             const fRow = row + dir;
             if (fRow >= 0 && fRow < 8 && !state[fRow][col]) {
                 moves.push({ r: fRow, c: col, attack: false });
-                
-                // Double move if on starting row and space ahead is clear
                 if (row === startRow) {
                     const fRow2 = row + (dir * 2);
-                    if (!state[fRow2][col]) {
-                        moves.push({ r: fRow2, c: col, attack: false });
-                    }
+                    if (!state[fRow2][col]) moves.push({ r: fRow2, c: col, attack: false });
                 }
             }
 
-            // Diagonal Attacks (ONLY valid if capturing an enemy inside the Field of Play)
-            if (fRow >= 0 && fRow < 8) {
-                if (isInFieldOfPlay(fRow)) {
-                    if (col - 1 >= 0 && state[fRow][col - 1] && state[fRow][col - 1] !== color) {
-                        moves.push({ r: fRow, c: col - 1, attack: true });
-                    }
-                    if (col + 1 < 8 && state[fRow][col + 1] && state[fRow][col + 1] !== color) {
-                        moves.push({ r: fRow, c: col + 1, attack: true });
-                    }
-                }
+            if (fRow >= 0 && fRow < 8 && isInFieldOfPlay(fRow)) {
+                if (col - 1 >= 0 && state[fRow][col - 1] && state[fRow][col - 1] !== color) moves.push({ r: fRow, c: col - 1, attack: true });
+                if (col + 1 < 8 && state[fRow][col + 1] && state[fRow][col + 1] !== color) moves.push({ r: fRow, c: col + 1, attack: true });
             }
             return moves;
         }
 
-        // Phase 2 Card Movement
         function calculateCardMoves(row, col, color, card, state) {
             let moves = [];
-            
             if(card.action === 'remove') return moves; 
-
             if(card.action === 'enhanced') {
                 const piece = card.piece;
-
-                // Raycast for sliding pieces (Rook, Bishop, Queen)
                 const addRay = (dRow, dCol) => {
                     let r = row + dRow, c = col + dCol;
                     while (r >= 0 && r < 8 && c >= 0 && c < 8) {
-                        if (!state[r][c]) {
-                            moves.push({ r, c, attack: false }); // Empty space (even in safe zone)
-                        } else if (state[r][c] !== color) {
-                            if (isInFieldOfPlay(r)) moves.push({ r, c, attack: true }); // Can capture in Field of Play
-                            break; // Blocked by enemy, stop casting ray
-                        } else {
-                            break; // Blocked by own piece
-                        }
+                        if (!state[r][c]) moves.push({ r, c, attack: false });
+                        else if (state[r][c] !== color) { if (isInFieldOfPlay(r)) moves.push({ r, c, attack: true }); break; } 
+                        else break; 
                         r += dRow; c += dCol;
                     }
                 };
-
-                // Single jump for leaping pieces (Knight, King)
                 const addJump = (dRow, dCol) => {
                     let r = row + dRow, c = col + dCol;
                     if (r >= 0 && r < 8 && c >= 0 && c < 8) {
-                        if (!state[r][c]) {
-                            moves.push({ r, c, attack: false });
-                        } else if (state[r][c] !== color && isInFieldOfPlay(r)) {
-                            moves.push({ r, c, attack: true });
-                        }
+                        if (!state[r][c]) moves.push({ r, c, attack: false });
+                        else if (state[r][c] !== color && isInFieldOfPlay(r)) moves.push({ r, c, attack: true });
                     }
                 };
 
-                if (piece === 'rook' || piece === 'queen') {
-                    addRay(-1, 0); addRay(1, 0); addRay(0, -1); addRay(0, 1);
-                }
-                if (piece === 'bishop' || piece === 'queen') {
-                    addRay(-1, -1); addRay(-1, 1); addRay(1, -1); addRay(1, 1);
-                }
-                if (piece === 'knight') {
-                    const jumps = [[-2,-1],[-2,1],[-1,-2],[-1,2],[1,-2],[1,2],[2,-1],[2,1]];
-                    jumps.forEach(j => addJump(j[0], j[1]));
-                }
-                if (piece === 'king') {
-                    const jumps = [[-1,-1],[-1,0],[-1,1],[0,-1],[0,1],[1,-1],[1,0],[1,1]];
-                    jumps.forEach(j => addJump(j[0], j[1]));
-                }
+                if (piece === 'rook' || piece === 'queen') { addRay(-1, 0); addRay(1, 0); addRay(0, -1); addRay(0, 1); }
+                if (piece === 'bishop' || piece === 'queen') { addRay(-1, -1); addRay(-1, 1); addRay(1, -1); addRay(1, 1); }
+                if (piece === 'knight') [[-2,-1],[-2,1],[-1,-2],[-1,2],[1,-2],[1,2],[2,-1],[2,1]].forEach(j => addJump(j[0], j[1]));
+                if (piece === 'king') [[-1,-1],[-1,0],[-1,1],[0,-1],[0,1],[1,-1],[1,0],[1,1]].forEach(j => addJump(j[0], j[1]));
             }
             return moves;
         }
@@ -511,104 +496,75 @@
             const state = JSON.parse(localData.boardState);
             const clickedPieceColor = state[row][col];
 
-            // EXECUTING A CARD
             if(activeCardExecution) {
                 const card = activeCardExecution;
-                
                 if(card.action === 'remove') {
                     if(clickedPieceColor && clickedPieceColor === card.colorTarget) {
                         const isSafe = !isInFieldOfPlay(row);
                         if((card.zone === 'safe' && isSafe) || (card.zone === 'field' && !isSafe)) {
                             state[row][col] = null;
+                            if(clickedPieceColor === 'white') localData.capturedWhite++; else localData.capturedBlack++;
                             localData.boardState = JSON.stringify(state);
                             finalizeCardTurn();
-                        } else {
-                            alert("Target is not in the correct zone for this card.");
-                        }
+                        } else alert("Target is not in the correct zone.");
                     }
                     return;
                 }
 
                 const moveMatch = validMoves.find(m => m.r === row && m.c === col);
                 if (selectedPawn && moveMatch) {
-                    state[row][col] = myColor;
-                    state[selectedPawn.r][selectedPawn.c] = null;
-                    localData.boardState = JSON.stringify(state);
-                    finalizeCardTurn();
-                    return;
+                    if(state[row][col] === (myColor === 'white' ? 'black' : 'white')) {
+                         if(state[row][col] === 'white') localData.capturedWhite++; else localData.capturedBlack++;
+                    }
+                    state[row][col] = myColor; state[selectedPawn.r][selectedPawn.c] = null;
+                    localData.boardState = JSON.stringify(state); finalizeCardTurn(); return;
                 }
 
-                if (clickedPieceColor === myColor) {
-                    selectedPawn = { r: row, c: col };
-                    validMoves = calculateCardMoves(row, col, myColor, card, state);
-                    renderBoard(state);
-                }
+                if (clickedPieceColor === myColor) { selectedPawn = { r: row, c: col }; validMoves = calculateCardMoves(row, col, myColor, card, state); renderBoard(state); }
                 return;
             }
 
-            // PHASE 1: STANDARD PAWN MOVE
             if(turnPhase === 1) {
                 const moveMatch = validMoves.find(m => m.r === row && m.c === col);
                 if (selectedPawn && moveMatch) {
-                    state[row][col] = myColor;
-                    state[selectedPawn.r][selectedPawn.c] = null;
-                    localData.boardState = JSON.stringify(state);
-                    
-                    selectedPawn = null;
-                    validMoves = [];
-                    turnPhase = 2; 
-                    updateInstructionHighlight();
-                    
-                    await updateDoc(doc(db, "games", gameCode), { boardState: localData.boardState });
-                    renderBoard(state);
-                    return;
+                    if(state[row][col] === (myColor === 'white' ? 'black' : 'white')) {
+                         if(state[row][col] === 'white') localData.capturedWhite++; else localData.capturedBlack++;
+                    }
+                    state[row][col] = myColor; state[selectedPawn.r][selectedPawn.c] = null;
+                    localData.boardState = JSON.stringify(state); selectedPawn = null; validMoves = []; turnPhase = 2; updateInstructionHighlight();
+                    await updateDoc(doc(db, "games", gameCode), { boardState: localData.boardState, capturedWhite: localData.capturedWhite, capturedBlack: localData.capturedBlack });
+                    renderBoard(state); renderStagingAreas(); return;
                 }
-
-                if (clickedPieceColor === myColor) {
-                    selectedPawn = { r: row, c: col };
-                    validMoves = calculateStandardMoves(row, col, myColor, state);
-                    renderBoard(state);
-                }
+                if (clickedPieceColor === myColor) { selectedPawn = { r: row, c: col }; validMoves = calculateStandardMoves(row, col, myColor, state); renderBoard(state); }
             }
         };
 
         async function finalizeCardTurn() {
-            localData.discardPile.push(activeCardExecution);
-            activeCardExecution = null;
-            
-            // Re-swap UI immediately
-            document.getElementById('active-card-panel').style.display = "none";
-            document.getElementById('instructions-panel').style.display = "block";
-            
+            localData.discardPile.push(activeCardExecution); activeCardExecution = null;
+            document.getElementById('active-card-panel').style.display = "none"; document.getElementById('instructions-panel').style.display = "block";
             await endTurn();
         }
 
         async function endTurn() {
             const nextTurn = myColor === 'white' ? 'black' : 'white';
             await updateDoc(doc(db, "games", gameCode), {
-                boardState: localData.boardState,
-                deck: localData.deck,
-                discardPile: localData.discardPile,
-                playerWhiteReserve: localData.playerWhiteReserve,
-                playerBlackReserve: localData.playerBlackReserve,
-                currentTurn: nextTurn
+                boardState: localData.boardState, deck: localData.deck, discardPile: localData.discardPile,
+                playerWhiteReserve: localData.playerWhiteReserve, playerBlackReserve: localData.playerBlackReserve,
+                capturedWhite: localData.capturedWhite, capturedBlack: localData.capturedBlack, currentTurn: nextTurn
             });
-            turnPhase = 1;
-            selectedPawn = null;
-            validMoves = [];
+            turnPhase = 1; selectedPawn = null; validMoves = [];
         }
 
-        // --- FIREBASE SYNC & RENDER ---
         const masterDeck = [
             ...Array(2).fill({ title: 'Return', text: 'Move one White pawn in field of play to any starting position', colorTarget: 'white', action: 'return' }),
             ...Array(2).fill({ title: 'Return', text: 'Move one Black pawn in field of play to any starting position', colorTarget: 'black', action: 'return' }),
             ...Array(4).fill({ title: 'Block', text: 'Reserve this card. Use at any time to block an opponent.', action: 'block' }),
-            ...Array(2).fill({ title: 'Move Sideways', text: 'Move one White pawn sideways one square.', colorTarget: 'white', action: 'sideways' }),
-            ...Array(2).fill({ title: 'Move Sideways', text: 'Move one Black pawn sideways one square.', colorTarget: 'black', action: 'sideways' }),
+            ...Array(2).fill({ title: 'Move Sideways', text: 'Move one White pawn sideways.', colorTarget: 'white', action: 'sideways' }),
+            ...Array(2).fill({ title: 'Move Sideways', text: 'Move one Black pawn sideways.', colorTarget: 'black', action: 'sideways' }),
             ...Array(2).fill({ title: 'Remove', text: 'Remove one White pawn from either Safe Zone', colorTarget: 'white', zone: 'safe', action: 'remove' }),
             ...Array(2).fill({ title: 'Remove', text: 'Remove one Black pawn from either Safe Zone', colorTarget: 'black', zone: 'safe', action: 'remove' }),
-            ...Array(2).fill({ title: 'Remove', text: 'Remove one White pawn from the Field of Play', colorTarget: 'white', zone: 'field', action: 'remove' }),
-            ...Array(2).fill({ title: 'Remove', text: 'Remove one Black pawn from the Field of Play', colorTarget: 'black', zone: 'field', action: 'remove' }),
+            ...Array(2).fill({ title: 'Remove', text: 'Remove one White pawn from Field of Play', colorTarget: 'white', zone: 'field', action: 'remove' }),
+            ...Array(2).fill({ title: 'Remove', text: 'Remove one Black pawn from Field of Play', colorTarget: 'black', zone: 'field', action: 'remove' }),
             ...Array(4).fill({ title: 'Enhanced Move', text: "Move one pawn as if it's a Queen", piece: 'queen', action: 'enhanced' }),
             ...Array(4).fill({ title: 'Enhanced Move', text: "Move one pawn as if it's a Knight", piece: 'knight', action: 'enhanced' }),
             ...Array(4).fill({ title: 'Enhanced Move', text: "Move one pawn as if it's a Bishop", piece: 'bishop', action: 'enhanced' }),
@@ -616,11 +572,7 @@
             ...Array(4).fill({ title: 'Enhanced Move', text: "Move one pawn as if it's a King", piece: 'king', action: 'enhanced' })
         ];
 
-        function shuffle(array) {
-            let currentIndex = array.length, randomIndex;
-            while (currentIndex > 0) { randomIndex = Math.floor(Math.random() * currentIndex); currentIndex--; [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]]; }
-            return array;
-        }
+        function shuffle(array) { let c = array.length, r; while (c > 0) { r = Math.floor(Math.random() * c); c--; [array[c], array[r]] = [array[r], array[c]]; } return array; }
 
         const unsubscribe = onSnapshot(doc(db, "games", gameCode), (snapshot) => {
             if (snapshot.exists()) {
@@ -629,37 +581,26 @@
                 if(!data.isInitialized && myColor === 'white') {
                     let initialBoard = Array(8).fill(null).map(() => Array(8).fill(null));
                     for(let r=0; r<8; r++) for(let c=0; c<8; c++) { if(r<2) initialBoard[r][c]='black'; if(r>5) initialBoard[r][c]='white'; }
-                    let shuffledDeck = shuffle([...masterDeck]).map((card, index) => ({...card, id: `card_${index}`}));
-                    updateDoc(doc(db, "games", gameCode), { boardState: JSON.stringify(initialBoard), deck: shuffledDeck, discardPile: [], playerWhiteReserve: [], playerBlackReserve: [], isInitialized: true });
+                    let shuffledDeck = shuffle([...masterDeck]).map((card, i) => ({...card, id: `card_${i}`}));
+                    updateDoc(doc(db, "games", gameCode), { boardState: JSON.stringify(initialBoard), deck: shuffledDeck, discardPile: [], playerWhiteReserve: [], playerBlackReserve: [], capturedWhite: 0, capturedBlack: 0, isInitialized: true });
                     return;
                 }
 
                 if(data.isInitialized) {
-                    data.playerWhiteReserve = data.playerWhiteReserve || [];
-                    data.playerBlackReserve = data.playerBlackReserve || [];
-                    
-                    localData = data;
-                    isMyTurn = (data.currentTurn === myColor);
+                    data.playerWhiteReserve = data.playerWhiteReserve || []; data.playerBlackReserve = data.playerBlackReserve || [];
+                    data.capturedWhite = data.capturedWhite || 0; data.capturedBlack = data.capturedBlack || 0;
+                    localData = data; isMyTurn = (data.currentTurn === myColor);
 
                     if(isMyTurn) {
-                        document.getElementById('turn-header').innerText = "YOUR TURN";
-                        document.getElementById('turn-header').style.color = "#4CAF50";
-                        if(!activeCardExecution) {
-                            document.getElementById('instructions-panel').style.display = "block";
-                            document.getElementById('active-card-panel').style.display = "none";
-                            updateInstructionHighlight();
-                        }
+                        document.getElementById('turn-header').innerText = "YOUR TURN"; document.getElementById('turn-header').style.color = "#4CAF50";
+                        if(!activeCardExecution) { document.getElementById('instructions-panel').style.display = "block"; document.getElementById('active-card-panel').style.display = "none"; updateInstructionHighlight(); }
                     } else {
                         const oppColor = myColor === 'white' ? 'black' : 'white';
-                        document.getElementById('turn-header').innerText = `Waiting for ${oppColor}...`;
-                        document.getElementById('turn-header').style.color = "#e8d0a8";
-                        document.getElementById('instructions-panel').style.display = "none";
-                        document.getElementById('active-card-panel').style.display = "none";
-                        turnPhase = 1; 
+                        document.getElementById('turn-header').innerText = `Waiting for ${oppColor}...`; document.getElementById('turn-header').style.color = "#e8d0a8";
+                        document.getElementById('instructions-panel').style.display = "none"; document.getElementById('active-card-panel').style.display = "none"; turnPhase = 1; 
                     }
 
-                    renderCardSlots(data);
-                    renderBoard(JSON.parse(data.boardState));
+                    renderCardSlots(data); renderStagingAreas(); renderBoard(JSON.parse(data.boardState));
                 }
             }
         });
@@ -675,29 +616,38 @@
             document.getElementById('opp-reserve-2').innerHTML = oppReserve[1] ? '<div class="card-face face-down"></div>' : "RESERVE<br>CARD 2";
 
             const discard = data.discardPile;
-            document.getElementById('discard-pile').innerHTML = discard && discard.length > 0 ? generateCardHTML(discard[discard.length-1]) : "DISCARD";
+            document.getElementById('discard-pile').innerHTML = discard && discard.length > 0 ? generateCardHTML(discard[discard.length-1], true) : '<div class="card-slot vertical-card" style="border-radius:8px;"></div>';
+        }
+
+        function renderStagingAreas() {
+            const topCont = document.getElementById('top-captured-container');
+            const botCont = document.getElementById('bottom-captured-container');
+            topCont.innerHTML = ''; botCont.innerHTML = '';
+            
+            // Top is Opponent's side. If I am white, Top gets captured White pawns.
+            const topCount = myColor === 'white' ? localData.capturedWhite : localData.capturedBlack;
+            const botCount = myColor === 'white' ? localData.capturedBlack : localData.capturedWhite;
+            const topClass = myColor === 'white' ? 'mini-white' : 'mini-black';
+            const botClass = myColor === 'white' ? 'mini-black' : 'mini-white';
+
+            for(let i=0; i<topCount; i++) topCont.innerHTML += `<div class="mini-pawn ${topClass}"></div>`;
+            for(let i=0; i<botCount; i++) botCont.innerHTML += `<div class="mini-pawn ${botClass}"></div>`;
         }
 
         function renderBoard(boardArray) {
-            const grid = document.getElementById('interactive-grid');
-            grid.innerHTML = ''; 
+            const grid = document.getElementById('interactive-grid'); grid.innerHTML = ''; 
             for(let row = 0; row < 8; row++) {
                 for(let col = 0; col < 8; col++) {
-                    const cell = document.createElement('div');
-                    cell.className = 'grid-cell';
-                    cell.onclick = () => handleSquareClick(row, col);
+                    const cell = document.createElement('div'); cell.className = 'grid-cell'; cell.onclick = () => handleSquareClick(row, col);
                     const moveMatch = validMoves.find(m => m.r === row && m.c === col);
                     if(moveMatch) cell.classList.add(moveMatch.attack ? 'highlight-attack' : 'highlight-move');
                     
                     if(boardArray[row][col]) {
-                        const pawn = document.createElement('div');
-                        pawn.className = `pawn pawn-${boardArray[row][col]}`;
+                        const pawn = document.createElement('div'); pawn.className = `pawn pawn-${boardArray[row][col]}`;
                         if(selectedPawn && selectedPawn.r === row && selectedPawn.c === col) pawn.classList.add('selected');
                         if(activeCardExecution && activeCardExecution.action === 'remove' && activeCardExecution.colorTarget === boardArray[row][col]) {
-                            const isSafeZone = (row <= 1 || row >= 6);
-                            if((activeCardExecution.zone === 'safe' && isSafeZone) || (activeCardExecution.zone === 'field' && !isSafeZone)) {
-                                cell.classList.add('highlight-attack');
-                            }
+                            const isSafeZone = !isInFieldOfPlay(row);
+                            if((activeCardExecution.zone === 'safe' && isSafeZone) || (activeCardExecution.zone === 'field' && !isSafeZone)) cell.classList.add('highlight-attack');
                         }
                         cell.appendChild(pawn);
                     }
