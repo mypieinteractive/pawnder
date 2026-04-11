@@ -3,183 +3,153 @@
 <head>
     <meta charset="UTF-8">
     <title>Pawnder - Lobby</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&display=swap" rel="stylesheet">
     <style>
         body { 
-            font-family: Georgia, serif; 
-            background-color: #f0f0f0; 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
-            height: 100vh; 
-            margin: 0;
+            margin: 0; padding: 0; background-color: #0b0b0b; 
+            display: flex; justify-content: center; align-items: center; 
+            height: 100vh; width: 100vw; overflow: hidden;
+            font-family: 'Cinzel', serif; color: #e8d0a8;
         }
+        
+        .scale-wrapper {
+            display: flex; justify-content: center; align-items: center;
+            width: 1000px; height: 700px; transform-origin: center;
+        }
+
+        @media (orientation: portrait) {
+            .scale-wrapper { transform: rotate(90deg); }
+        }
+
         .lobby-container {
-            background-color: white;
-            padding: 40px;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            text-align: center;
-            max-width: 400px;
-            border: 2px solid #000;
+            background: linear-gradient(135deg, #1f1a15, #110e0a);
+            padding: 50px; border-radius: 8px; border: 2px solid #8c7650;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.9); text-align: center;
+            max-width: 500px; display: flex; flex-direction: column; align-items: center;
         }
-        h1 { letter-spacing: 4px; font-size: 36px; margin-bottom: 30px;}
+        
+        img.logo { width: 100%; max-width: 400px; margin-bottom: 40px; }
+        
+        h3 { font-size: 18px; letter-spacing: 2px; margin-bottom: 15px; font-weight: normal;}
+        
         input {
-            width: 80%;
-            padding: 10px;
-            margin: 10px 0;
-            font-size: 16px;
-            text-align: center;
+            width: 80%; padding: 12px; margin: 10px 0; font-size: 18px;
+            text-align: center; background: #000; color: #e8d0a8;
+            border: 1px solid #8c7650; border-radius: 4px; font-family: 'Cinzel', serif;
         }
+        
         button {
-            background-color: #000;
-            color: #fff;
-            border: none;
-            padding: 12px 24px;
-            font-size: 16px;
-            cursor: pointer;
-            margin-top: 10px;
-            font-family: Georgia, serif;
-            letter-spacing: 1px;
-            transition: background 0.2s;
+            background-color: #0b0b0b; color: #e8d0a8; border: 1px solid #e8d0a8;
+            padding: 12px 30px; font-size: 16px; cursor: pointer; margin-top: 10px;
+            font-family: 'Cinzel', serif; font-weight: bold; letter-spacing: 2px;
+            transition: all 0.2s; border-radius: 4px;
         }
-        button:hover { background-color: #333; }
-        .divider { margin: 20px 0; font-style: italic; color: #666; }
-        #status-message { margin-top: 20px; font-weight: bold; color: #d9534f; }
+        button:hover { background-color: #e8d0a8; color: #0b0b0b; }
+        
+        .divider { margin: 30px 0; font-style: italic; color: #8c7650; letter-spacing: 4px;}
+        #status-message { margin-top: 20px; font-weight: bold; color: #d9534f; height: 20px;}
     </style>
 </head>
 <body>
 
-    <div class="lobby-container">
-        <h1>PAWNDER</h1>
-        
-        <div>
-            <h3>Create a New Game</h3>
-            <button id="create-btn">Create Game</button>
+    <div class="scale-wrapper" id="scaler">
+        <div class="lobby-container">
+            <img src="Pawnder Logo-transparent bg.png" alt="Pawnder" class="logo">
+            
+            <div style="width: 100%;">
+                <h3>Start a New Game</h3>
+                <button id="create-btn">Create Game</button>
+            </div>
+
+            <div class="divider">- OR -</div>
+
+            <div style="width: 100%;">
+                <h3>Join a Game</h3>
+                <input type="text" id="game-code-input" placeholder="Enter 4-Digit Code" maxlength="4">
+                <br>
+                <button id="join-btn">Join Game</button>
+            </div>
+
+            <div id="status-message"></div>
         </div>
-
-        <div class="divider">--- OR ---</div>
-
-        <div>
-            <h3>Join Existing Game</h3>
-            <input type="text" id="game-code-input" placeholder="Enter 4-Digit Code" maxlength="4">
-            <button id="join-btn">Join Game</button>
-        </div>
-
-        <div id="status-message"></div>
     </div>
 
     <script type="module">
-        // Import Firebase SDKs via CDN for vanilla HTML
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js";
         import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-        // Your web app's Firebase configuration
         const firebaseConfig = {
             apiKey: "AIzaSyDtHHDrRlcnsug93x3hWF3jEx8rFA8QPcw",
             authDomain: "pawnder-59af7.firebaseapp.com",
             projectId: "pawnder-59af7",
             storageBucket: "pawnder-59af7.firebasestorage.app",
             messagingSenderId: "372213409476",
-            appId: "1:372213409476:web:bc9945205d1c3fd99c8b91",
-            measurementId: "G-2V5B08YB26"
+            appId: "1:372213409476:web:bc9945205d1c3fd99c8b91"
         };
 
-        // Initialize Firebase
         const app = initializeApp(firebaseConfig);
-        const analytics = getAnalytics(app);
         const db = getFirestore(app);
 
-        // UI Elements
+        // Dynamic Resizing Logic
+        function resizeApp() {
+            const scaler = document.getElementById('scaler');
+            const isPortrait = window.innerHeight > window.innerWidth;
+            let scale = isPortrait 
+                ? Math.min(window.innerWidth / 700, window.innerHeight / 1000) 
+                : Math.min(window.innerWidth / 1000, window.innerHeight / 700);
+            scaler.style.transform = isPortrait ? `scale(${scale}) rotate(90deg)` : `scale(${scale})`;
+        }
+        window.addEventListener('resize', resizeApp);
+        resizeApp();
+
         const createBtn = document.getElementById('create-btn');
         const joinBtn = document.getElementById('join-btn');
         const codeInput = document.getElementById('game-code-input');
         const statusMsg = document.getElementById('status-message');
 
-        // Generate a random 4-character alphanumeric code
-        function generateGameCode() {
-            return Math.random().toString(36).substring(2, 6).toUpperCase();
-        }
+        function generateGameCode() { return Math.random().toString(36).substring(2, 6).toUpperCase(); }
 
-        // CREATE GAME Logic
         createBtn.addEventListener('click', async () => {
             const gameCode = generateGameCode();
-            statusMsg.style.color = '#333';
+            statusMsg.style.color = '#e8d0a8';
             statusMsg.innerText = `Creating game ${gameCode}...`;
 
             try {
-                // Build the initial document in Firestore
                 await setDoc(doc(db, "games", gameCode), {
-                    status: "waiting", // 'waiting', 'playing', or 'finished'
-                    playerWhite: "connected",
-                    playerBlack: null,
-                    currentTurn: "white",
-                    // We will populate the boardState and deck here in Phase 2
-                    createdAt: new Date()
+                    status: "waiting", playerWhite: "connected", playerBlack: null,
+                    currentTurn: "white", isInitialized: false, createdAt: new Date()
                 });
-
-                // Save to local storage so this browser knows it is playing as White
                 localStorage.setItem("pawnderGameCode", gameCode);
                 localStorage.setItem("pawnderPlayerColor", "white");
-                
-                statusMsg.style.color = 'green';
-                statusMsg.innerText = `Game created! Waiting for opponent to join code: ${gameCode}`;
-                
-window.location.href = "board.html";
-                
+                window.location.href = "board.html";
             } catch (error) {
-                console.error("Error creating game:", error);
-                statusMsg.style.color = '#d9534f';
-                statusMsg.innerText = "Error creating game. Check console.";
+                console.error(error); statusMsg.style.color = '#d9534f'; statusMsg.innerText = "Error creating game.";
             }
         });
 
-        // JOIN GAME Logic
         joinBtn.addEventListener('click', async () => {
             const code = codeInput.value.trim().toUpperCase();
-            if(code.length !== 4) {
-                statusMsg.style.color = '#d9534f';
-                statusMsg.innerText = "Please enter a valid 4-digit code.";
-                return;
-            }
-
-            statusMsg.style.color = '#333';
-            statusMsg.innerText = `Joining game ${code}...`;
+            if(code.length !== 4) { statusMsg.style.color = '#d9534f'; statusMsg.innerText = "Invalid 4-digit code."; return; }
+            statusMsg.style.color = '#e8d0a8'; statusMsg.innerText = `Joining ${code}...`;
 
             try {
                 const gameRef = doc(db, "games", code);
                 const gameSnap = await getDoc(gameRef);
-
                 if (gameSnap.exists()) {
                     const gameData = gameSnap.data();
-                    
-                    if(gameData.status === "waiting" && gameData.playerBlack === null) {
-                        // Update the database to show Black has joined
-                        await setDoc(gameRef, { 
-                            playerBlack: "connected",
-                            status: "playing"
-                        }, { merge: true });
-
-                        // Save to local storage so this browser knows it is playing as Black
+                    if(gameData.status === "waiting" && !gameData.playerBlack) {
+                        await setDoc(gameRef, { playerBlack: "connected", status: "playing" }, { merge: true });
                         localStorage.setItem("pawnderGameCode", code);
                         localStorage.setItem("pawnderPlayerColor", "black");
-
-                        statusMsg.style.color = 'green';
-                        statusMsg.innerText = `Successfully joined Game ${code}!`;
-                        
-window.location.href = "board.html";
+                        window.location.href = "board.html";
                     } else {
-                        statusMsg.style.color = '#d9534f';
-                        statusMsg.innerText = "Game is already full or has started.";
+                        statusMsg.style.color = '#d9534f'; statusMsg.innerText = "Game is full or started.";
                     }
                 } else {
-                    statusMsg.style.color = '#d9534f';
-                    statusMsg.innerText = "Game code not found.";
+                    statusMsg.style.color = '#d9534f'; statusMsg.innerText = "Code not found.";
                 }
             } catch (error) {
-                console.error("Error joining game:", error);
-                statusMsg.style.color = '#d9534f';
-                statusMsg.innerText = "Error joining game. Check console.";
+                console.error(error); statusMsg.style.color = '#d9534f'; statusMsg.innerText = "Error joining game.";
             }
         });
     </script>
