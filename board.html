@@ -7,11 +7,10 @@
     <style>
         body { margin: 0; padding: 0; display: flex; justify-content: center; align-items: center; height: 100vh; width: 100vw; background-color: #0b0b0b; font-family: 'Cinzel', serif; color: #e8d0a8; overflow: hidden; }
         
-        .scale-wrapper { display: flex; justify-content: center; align-items: center; width: 1350px; height: 850px; transform-origin: center; position: relative; }
+        .scale-wrapper { display: flex; justify-content: center; align-items: center; width: 1350px; height: 1000px; transform-origin: center; position: relative; }
         @media (orientation: portrait) { .scale-wrapper { transform: rotate(90deg); } }
 
         .app-container { display: flex; flex-direction: row; justify-content: center; align-items: center; gap: 20px; width: 100%; position: relative; }
-        .playing-black { flex-direction: row-reverse; } /* Flips layout for Player 2 */
 
         /* LEFT COLUMN */
         .left-column { width: 260px; flex-shrink: 0; display: flex; flex-direction: column; gap: 15px; position: relative; z-index: 10;}
@@ -84,7 +83,7 @@
         #decision-card-anchor { width: 160px; height: 110px; position: relative; display: none; }
 
         /* 3D FLYING ANIMATION LAYER */
-        #anim-container { position: absolute; z-index: 9999; pointer-events: none; display: none; perspective: 1000px; }
+        #anim-container { position: absolute; z-index: 9999; pointer-events: none; display: none; perspective: 1000px; width: 160px; height: 110px; transform-origin: center center; }
         .flipper { position: relative; width: 100%; height: 100%; transition: transform 0.6s ease-in-out; transform-style: preserve-3d; }
         .flipper.flipped { transform: rotateY(180deg); }
         .flipper .front, .flipper .back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 8px;}
@@ -170,14 +169,17 @@
                             <line x1="500" y1="580" x2="580" y2="660"/> <line x1="580" y1="580" x2="500" y2="660"/>
                             <line x1="580" y1="420" x2="660" y2="500"/> <line x1="660" y1="420" x2="580" y2="500"/>
                         </g>
-                        <g transform="translate(100, 500) rotate(90)"><image href="Pawnder Logo-transparent bg.png" x="-400" y="-87.5" width="800" height="175" preserveAspectRatio="xMidYMid meet" /></g>
+                        
+                        <g id="board-decorations">
+                            <g transform="translate(100, 500) rotate(90)"><image href="Pawnder Logo-transparent bg.png" x="-400" y="-87.5" width="800" height="175" preserveAspectRatio="xMidYMid meet" /></g>
 
-                        <path d="M 830,180 L 840,180 L 840,340 L 830,340" fill="none" stroke="#e8d0a8" stroke-width="2"/>
-                        <g transform="translate(860, 260) rotate(-90)"><text x="0" y="0" text-anchor="middle" dominant-baseline="central" font-size="14" fill="#e8d0a8" letter-spacing="2">SAFE ZONE</text></g>
-                        <path d="M 830,340 L 840,340 L 840,660 L 830,660" fill="none" stroke="#e8d0a8" stroke-width="2"/>
-                        <g transform="translate(860, 500) rotate(-90)"><text x="0" y="0" text-anchor="middle" dominant-baseline="central" font-size="14" fill="#e8d0a8" letter-spacing="2">FIELD OF PLAY</text></g>
-                        <path d="M 830,660 L 840,660 L 840,820 L 830,820" fill="none" stroke="#e8d0a8" stroke-width="2"/>
-                        <g transform="translate(860, 740) rotate(-90)"><text x="0" y="0" text-anchor="middle" dominant-baseline="central" font-size="14" fill="#e8d0a8" letter-spacing="2">SAFE ZONE</text></g>
+                            <path d="M 830,180 L 840,180 L 840,340 L 830,340" fill="none" stroke="#e8d0a8" stroke-width="2"/>
+                            <g transform="translate(860, 260) rotate(-90)"><text x="0" y="0" text-anchor="middle" dominant-baseline="central" font-size="14" fill="#e8d0a8" letter-spacing="2">SAFE ZONE</text></g>
+                            <path d="M 830,340 L 840,340 L 840,660 L 830,660" fill="none" stroke="#e8d0a8" stroke-width="2"/>
+                            <g transform="translate(860, 500) rotate(-90)"><text x="0" y="0" text-anchor="middle" dominant-baseline="central" font-size="14" fill="#e8d0a8" letter-spacing="2">FIELD OF PLAY</text></g>
+                            <path d="M 830,660 L 840,660 L 840,820 L 830,820" fill="none" stroke="#e8d0a8" stroke-width="2"/>
+                            <g transform="translate(860, 740) rotate(-90)"><text x="0" y="0" text-anchor="middle" dominant-baseline="central" font-size="14" fill="#e8d0a8" letter-spacing="2">SAFE ZONE</text></g>
+                        </g>
 
                         <rect x="180" y="60" width="640" height="80" fill="none" stroke="#e8d0a8" stroke-width="2"/>
                         <path d="M244 60 v80 M308 60 v80 M372 60 v80 M436 60 v80 M500 60 v80 M564 60 v80 M628 60 v80 M692 60 v80 M756 60 v80" stroke="#e8d0a8" stroke-width="2"/>
@@ -234,10 +236,10 @@
                     <div id="top-captured-container" style="display:flex; flex-wrap:wrap; gap:5px; width:100%;"></div>
                 </div>
 
-                <div style="display: flex; gap: 30px;">
+                <div style="display: flex; gap: 30px;" id="draw-discard-container">
                     <div style="display: flex; flex-direction: column; align-items: center; gap: 10px;">
                         <div style="font-size: 16px; letter-spacing: 2px;">DRAW</div>
-                        <div class="vertical-card-boundary" onclick="handleDrawClick()" style="cursor: pointer;">
+                        <div class="vertical-card-boundary" onclick="handleDrawClick()" style="cursor: pointer;" id="draw-pile-boundary">
                             <div class="card-face face-down rotater-90" id="draw-pile"></div>
                         </div>
                         <div id="draw-count" style="font-size: 10px; color:#aaa; letter-spacing:1px; margin-top:5px;"></div>
@@ -275,11 +277,11 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // Responsive Scaling
+        // Responsive Scaling using expanded height
         function resizeApp() {
             const scaler = document.getElementById('scaler');
             const isPortrait = window.innerHeight > window.innerWidth;
-            let scale = isPortrait ? Math.min(window.innerWidth / 850, window.innerHeight / 1350) : Math.min(window.innerWidth / 1350, window.innerHeight / 850);
+            let scale = isPortrait ? Math.min(window.innerWidth / 1000, window.innerHeight / 1350) : Math.min(window.innerWidth / 1350, window.innerHeight / 1000);
             scaler.style.transform = isPortrait ? `scale(${scale}) rotate(90deg)` : `scale(${scale})`;
         }
         window.addEventListener('resize', resizeApp); resizeApp();
@@ -290,10 +292,10 @@
         if(!gameCode || !myColor) { window.location.href = "index.html"; }
         document.getElementById('display-game-code').innerText = gameCode;
 
-        // Apply Black Layout Flip
+        // Apply Black Layout Flip (Counter-rotating decorations inside the SVG)
         if(myColor === 'black') {
-            document.getElementById('main-app').classList.add('playing-black');
             document.getElementById('game-area').classList.add('rotate-180');
+            document.getElementById('board-decorations').setAttribute('transform', 'rotate(180 500 500)');
         }
 
         window.leaveGame = function() { localStorage.removeItem("pawnderGameCode"); localStorage.removeItem("pawnderPlayerColor"); window.location.href = "index.html"; };
@@ -305,7 +307,6 @@
             document.getElementById('step-2').className = turnPhase === 2 ? "active-step" : "inactive-step";
         }
 
-        // Unified 160x110 Card Generator
         function generateCardHTML(card, extraClass="") {
             if(!card) return '';
             let icon = '&#10021;';
@@ -321,44 +322,50 @@
             </div>`;
         }
 
-        // --- 3D FLIGHT ANIMATOR ---
-        function getScale() {
-            const transform = window.getComputedStyle(document.getElementById('scaler')).transform;
-            if (transform !== 'none') { const match = transform.match(/^matrix\((.+)\)$/); if (match) return parseFloat(match[1].split(', ')[0]); }
-            return 1;
+        // --- PRECISE 3D FLIGHT ANIMATOR ---
+        // Walks the DOM up to the scale-wrapper to get exact x/y regardless of CSS transforms or zooming
+        function getOffset(el) {
+            let x = 0, y = 0; let current = el;
+            while (current && !current.classList.contains('scale-wrapper')) {
+                x += current.offsetLeft; y += current.offsetTop; current = current.offsetParent;
+            }
+            return { x, y, w: el.offsetWidth, h: el.offsetHeight };
         }
 
         function animateFlight(startEl, endEl, cardData, animType, onComplete) {
             const animCont = document.getElementById('anim-container');
             const flipper = document.getElementById('anim-flipper');
             const backFace = document.getElementById('anim-back');
-            const scale = getScale();
-            const startRect = startEl.getBoundingClientRect(), endRect = endEl.getBoundingClientRect();
-            const appRect = document.getElementById('main-app').getBoundingClientRect();
             
-            const startX = (startRect.left - appRect.left) / scale, startY = (startRect.top - appRect.top) / scale;
-            const endX = (endRect.left - appRect.left) / scale, endY = (endRect.top - appRect.top) / scale;
+            const startBox = getOffset(startEl);
+            const endBox = getOffset(endEl);
             
-            animCont.style.transition = 'none'; flipper.style.transition = 'none';
-            animCont.style.left = startX + 'px'; animCont.style.top = startY + 'px';
-            animCont.style.width = (startRect.width / scale) + 'px'; animCont.style.height = (startRect.height / scale) + 'px';
+            // Calculate absolute center points of start and end boxes
+            const startCX = startBox.x + startBox.w / 2;
+            const startCY = startBox.y + startBox.h / 2;
+            const endCX = endBox.x + endBox.w / 2;
+            const endCY = endBox.y + endBox.h / 2;
+            
+            animCont.style.transition = 'none'; 
+            flipper.style.transition = 'none';
+            // Anchor 160x110 animating block precisely at the center
+            animCont.style.left = (startCX - 80) + 'px'; 
+            animCont.style.top = (startCY - 55) + 'px';
             
             backFace.innerHTML = cardData ? generateCardHTML(cardData) : '';
             
-            // Set starting rotation
             if(animType === 'draw') { animCont.style.transform = 'rotateZ(90deg)'; flipper.className = 'flipper'; } 
             else if (animType === 'discard') { animCont.style.transform = 'rotateZ(0deg)'; flipper.className = 'flipper flipped'; }
             else { animCont.style.transform = 'rotateZ(0deg)'; flipper.className = 'flipper flipped'; }
             
             animCont.style.display = 'block';
-            void animCont.offsetWidth; // force reflow
-
-            // Execute Glide & Spin
+            void animCont.offsetWidth; // Force reflow
+            
             animCont.style.transition = 'all 0.6s cubic-bezier(0.25, 1, 0.5, 1)';
             flipper.style.transition = 'transform 0.6s cubic-bezier(0.25, 1, 0.5, 1)';
             
-            animCont.style.left = endX + 'px'; animCont.style.top = endY + 'px';
-            animCont.style.width = (endRect.width / scale) + 'px'; animCont.style.height = (endRect.height / scale) + 'px';
+            animCont.style.left = (endCX - 80) + 'px'; 
+            animCont.style.top = (endCY - 55) + 'px';
             
             if(animType === 'draw') { animCont.style.transform = 'rotateZ(0deg)'; flipper.classList.add('flipped'); }
             else if(animType === 'discard') { animCont.style.transform = 'rotateZ(90deg)'; }
@@ -373,7 +380,11 @@
             document.getElementById('decision-card-anchor').style.display = showAnchor ? "block" : "none";
             document.getElementById('decision-panel').style.display = "flex";
         }
-        window.closeDecisionPanel = function() { document.getElementById('decision-panel').style.display = "none"; }
+        window.closeDecisionPanel = function() { 
+            document.getElementById('decision-panel').style.display = "none"; 
+            document.getElementById('my-reserve-1').classList.remove('reserve-elevated');
+            document.getElementById('my-reserve-2').classList.remove('reserve-elevated');
+        }
 
         window.handleDrawClick = async function() {
             if(!isMyTurn || activeCardExecution) return;
@@ -399,10 +410,13 @@
             
             document.getElementById('decision-card-anchor').innerHTML = generateCardHTML(drawnCard);
             
-            animateFlight(document.getElementById('draw-pile'), document.getElementById('decision-card-anchor'), drawnCard, 'draw', () => {
+            animateFlight(document.getElementById('draw-pile-boundary'), document.getElementById('decision-card-anchor'), drawnCard, 'draw', () => {
                 let btns = `<button class="btn" onclick="executeCard(0, 'draw')">Play</button>`;
                 if (myReserve.length < 2) btns += `<button class="btn" onclick="reserveCard()">Reserve</button>`;
-                else btns += `<br><span style="font-size:10px; color:#aaa; width:100%;">Reserves Full:</span><br><button class="btn" onclick="swapReserveAndPlay(0)">Play Res 1</button><button class="btn" onclick="swapReserveAndPlay(1)">Play Res 2</button>`;
+                else {
+                    btns += `<br><span style="font-size:10px; color:#aaa; width:100%;">Reserves Full:</span><br><button class="btn" onclick="swapReserveAndPlay(0)">Play Res 1</button><button class="btn" onclick="swapReserveAndPlay(1)">Play Res 2</button>`;
+                    document.getElementById('my-reserve-1').classList.add('reserve-elevated'); document.getElementById('my-reserve-2').classList.add('reserve-elevated');
+                }
                 showDecisionPanel("", btns, true);
             });
         }
@@ -439,7 +453,6 @@
             const drawnCard = localData.deck.shift();
             const cardToPlay = localData[reserveKey].splice(reserveIndex, 1, drawnCard)[0]; 
             closeDecisionPanel();
-            // Visually the drawn card drops into the reserve, and we play the reserve card
             animateFlight(document.getElementById('decision-card-anchor'), document.getElementById(`my-reserve-${reserveIndex+1}`), drawnCard, 'reserve', () => {
                 startCardExecution(cardToPlay);
             });
@@ -463,7 +476,7 @@
             else renderBoard(JSON.parse(localData.boardState)); 
         }
 
-        // Pathfinding
+        // --- PATHFINDING & MOVEMENT ---
         const isInFieldOfPlay = (r) => r >= 2 && r <= 5;
         function calculateStandardMoves(row, col, color, state) {
             let moves = []; const dir = color === 'white' ? -1 : 1; const startRow = color === 'white' ? 6 : 1;
@@ -506,6 +519,7 @@
         window.handleSquareClick = async function(row, col) {
             if(!isMyTurn) return;
             const state = JSON.parse(localData.boardState); const clickedColor = state[row][col];
+
             if(activeCardExecution) {
                 if(activeCardExecution.action === 'remove') {
                     if(clickedColor && clickedColor === activeCardExecution.colorTarget) {
@@ -612,13 +626,11 @@
             document.getElementById('opp-reserve-1').innerHTML = oppReserve[0] ? '<div class="card-face face-down"></div>' : "RESERVE<br>CARD 1";
             document.getElementById('opp-reserve-2').innerHTML = oppReserve[1] ? '<div class="card-face face-down"></div>' : "RESERVE<br>CARD 2";
 
-            // Draw Pile Shadow Stack & Counter
             const drawCount = data.deck.length;
             document.getElementById('draw-count').innerText = `CARDS LEFT: ${drawCount}`;
             let shadow = []; for(let i=1; i<=Math.min(drawCount, 6); i++) shadow.push(`${i*1.5}px ${i*1.5}px 0px rgba(140, 118, 80, 0.9)`);
             document.getElementById('draw-pile').style.boxShadow = shadow.join(', ');
 
-            // Discard Pile Rendering (Rotated)
             const discard = data.discardPile;
             document.getElementById('discard-pile-boundary').innerHTML = discard && discard.length > 0 ? generateCardHTML(discard[discard.length-1], 'rotater-90') : '<div style="font-size: 12px; color: rgba(232, 208, 168, 0.4);">EMPTY</div>';
         }
