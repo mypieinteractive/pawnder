@@ -16,10 +16,9 @@
             background-color: #0b0b0b; 
             font-family: 'Cinzel', serif;
             color: #e8d0a8; 
-            overflow: hidden; /* Locks the page from scrolling */
+            overflow: hidden; 
         }
 
-        /* Dynamically scales the entire app to fit any screen size perfectly */
         .scale-wrapper {
             transform: scale(min(calc(100vw / 1250), calc(100vh / 850)));
             transform-origin: center;
@@ -30,7 +29,6 @@
             height: 850px;
         }
         
-        /* Master Tabletop Layout */
         .app-container {
             display: flex;
             flex-direction: row;
@@ -40,7 +38,7 @@
             width: 100%;
         }
 
-        /* --- LEFT COLUMN: STATUS & INSTRUCTIONS --- */
+        /* --- LEFT COLUMN --- */
         .left-column { 
             width: 260px; 
             flex-shrink: 0; 
@@ -53,7 +51,7 @@
             width: 100%;
             background: rgba(17, 17, 17, 0.85); 
             padding: 20px;
-            border: none; /* Removed border */
+            border: none; 
             border-radius: 4px; 
             box-sizing: border-box; 
             display: flex;
@@ -72,7 +70,21 @@
             letter-spacing: 1px;
         }
 
-        /* Dark Theme Instruction Card */
+        #skip-move-btn {
+            display: none;
+            margin-top: 15px;
+            background-color: #8c7650;
+            color: #111;
+            border: 1px solid #e8d0a8;
+            padding: 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: 'Cinzel', serif;
+            font-weight: bold;
+            transition: background-color 0.2s;
+        }
+        #skip-move-btn:hover { background-color: #e8d0a8; }
+
         #instructions-panel {
             background: linear-gradient(135deg, #1f1a15, #110e0a);
             color: #e8d0a8;
@@ -81,26 +93,13 @@
             border-radius: 4px;
             font-size: 13px;
             box-shadow: 0 6px 16px rgba(0,0,0,0.6);
-            display: none; /* Hidden by default until turn logic fires */
+            display: none; 
         }
-        #instructions-panel h3 {
-            margin: 0 0 15px 0;
-            font-size: 14px;
-            text-align: center;
-            font-weight: normal;
-        }
-        #instructions-panel ol {
-            padding-left: 20px;
-            margin: 0;
-            line-height: 1.6;
-        }
-        #instructions-panel ul {
-            padding-left: 10px;
-            list-style-type: none;
-            margin-top: 5px;
-        }
+        #instructions-panel h3 { margin: 0 0 15px 0; font-size: 14px; text-align: center; font-weight: normal; }
+        #instructions-panel ol { padding-left: 20px; margin: 0; line-height: 1.6; }
+        #instructions-panel ul { padding-left: 10px; list-style-type: none; margin-top: 5px; }
 
-        /* --- CENTER COLUMN: BOARD & RESERVES --- */
+        /* --- CENTER COLUMN --- */
         .center-column { 
             display: flex; 
             flex-direction: column; 
@@ -108,13 +107,8 @@
             gap: 10px; 
         }
 
-        .cards-row {
-            display: flex;
-            flex-direction: row;
-            gap: 40px;
-        }
+        .cards-row { display: flex; flex-direction: row; gap: 40px; }
 
-        /* The Game Board Envelope */
         #game-area {
             position: relative;
             width: 700px;
@@ -133,15 +127,27 @@
             grid-template-rows: repeat(8, 1fr); 
             z-index: 10;
         }
+        
         .grid-cell {
             box-sizing: border-box;
             display: flex; justify-content: center; align-items: center; cursor: pointer;
+            border-radius: 4px;
+        }
+
+        /* Interactive Highlights */
+        .highlight-move {
+            background-color: rgba(0, 255, 0, 0.25) !important;
+            border: 2px solid rgba(0, 255, 0, 0.8);
+        }
+        .highlight-attack {
+            background-color: rgba(255, 0, 0, 0.35) !important;
+            border: 2px solid rgba(255, 0, 0, 0.8);
         }
         
         .pawn {
             width: 40px; height: 40px; border-radius: 50%;
             box-shadow: 0 4px 6px rgba(0,0,0,0.6), inset 0 -4px 4px rgba(0,0,0,0.3);
-            transition: transform 0.2s; position: relative;
+            transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s; position: relative;
         }
         .pawn::before {
             content: ''; position: absolute; top: 4px; left: 4px; right: 4px; bottom: 4px;
@@ -149,64 +155,28 @@
         }
         .pawn-white { background: radial-gradient(circle at 30% 30%, #ffffff, #d4d4d4 60%, #888888); border: 2px solid #555; }
         .pawn-black { background: radial-gradient(circle at 30% 30%, #555555, #222222 60%, #000000); border: 2px solid #111; }
+        
+        .pawn.selected {
+            border-color: #ffd700;
+            box-shadow: 0 0 12px #ffd700, inset 0 -4px 4px rgba(0,0,0,0.3);
+            transform: scale(1.15);
+            z-index: 5;
+        }
 
-        /* --- CARD SLOTS & PARLOR STYLING --- */
+        /* --- RIGHT COLUMN & CARDS --- */
         .card-slot {
             border: 2px dashed rgba(232, 208, 168, 0.6);
             display: flex; justify-content: center; align-items: center;
             color: rgba(232, 208, 168, 0.5); font-size: 14px; text-align: center;
             box-sizing: border-box; background: rgba(0,0,0,0.3);
-            letter-spacing: 1px;
-            border-radius: 4px;
+            letter-spacing: 1px; border-radius: 4px;
         }
-        
         .horizontal-card { width: 160px; height: 110px; }
         .vertical-card { width: 120px; height: 170px; }
-        
-        .card-face {
-            background: linear-gradient(135deg, #1f1a15, #110e0a);
-            color: #e8d0a8;
-            width: 100%; height: 100%;
-            border: 1px solid #8c7650;
-            display: flex;
-            flex-direction: row;
-            font-family: 'Cinzel', serif;
-            box-shadow: 2px 4px 8px rgba(0,0,0,0.8);
-            box-sizing: border-box;
-            border-radius: 4px;
-        }
-
-        .card-left {
-            flex: 1;
-            padding: 8px;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            align-items: center;
-            text-align: center;
-            font-size: 11px;
-            font-weight: bold;
-            border-right: 1px solid rgba(232, 208, 168, 0.3);
-        }
-
-        .card-right {
-            flex: 2;
-            padding: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            font-size: 11px;
-            line-height: 1.4;
-            font-family: Arial, sans-serif;
-        }
-        
         .face-down {
             background-color: #0b0b0b;
             background-image: url('Pawnder Logo-transparent bg.png');
-            background-size: contain; 
-            background-repeat: no-repeat; 
-            background-position: center;
+            background-size: contain; background-repeat: no-repeat; background-position: center;
             border: 1px solid #8c7650; 
         }
     </style>
@@ -220,6 +190,7 @@
                 <div id="status-panel">
                     <h2>GAME CODE: <span id="display-game-code" style="color: #fff;">----</span></h2>
                     <div id="turn-indicator">Connecting...</div>
+                    <button id="skip-move-btn" onclick="skipPawnMove()">Skip Pawn Move</button>
                 </div>
 
                 <div id="instructions-panel">
@@ -273,8 +244,12 @@
                         <rect x="180" y="180" width="640" height="160" fill="url(#safeHatch)" stroke="none" pointer-events="none"/>
                         <rect x="180" y="660" width="640" height="160" fill="url(#safeHatch)" stroke="none" pointer-events="none"/>
 
-                        <g stroke="#000" stroke-width="4" stroke-linecap="square">
-                            <line x1="420" y1="340" x2="500" y2="420"/> <line x1="500" y1="340" x2="420" y2="420"/> <line x1="340" y1="420" x2="420" y2="500"/> <line x1="420" y1="420" x2="340" y2="500"/> <line x1="500" y1="420" x2="580" y2="500"/> <line x1="580" y1="420" x2="500" y2="500"/> <line x1="260" y1="500" x2="340" y2="580"/> <line x1="340" y1="500" x2="260" y2="580"/> <line x1="420" y1="500" x2="500" y2="580"/> <line x1="500" y1="500" x2="420" y2="580"/> <line x1="340" y1="580" x2="420" y2="660"/> <line x1="420" y1="580" x2="340" y2="660"/> </g>
+                        <g stroke="#e8d0a8" stroke-width="5" stroke-linecap="square" opacity="0.9">
+                            <line x1="340" y1="500" x2="420" y2="580"/> <line x1="420" y1="500" x2="340" y2="580"/>
+                            <line x1="420" y1="340" x2="500" y2="420"/> <line x1="500" y1="340" x2="420" y2="420"/>
+                            <line x1="500" y1="580" x2="580" y2="660"/> <line x1="580" y1="580" x2="500" y2="660"/>
+                            <line x1="580" y1="420" x2="660" y2="500"/> <line x1="660" y1="420" x2="580" y2="500"/>
+                        </g>
 
                         <g transform="translate(100, 500) rotate(90)">
                             <image href="Pawnder Logo-transparent bg.png" x="-400" y="-87.5" width="800" height="175" preserveAspectRatio="xMidYMid meet" />
@@ -289,9 +264,7 @@
 
                         <rect x="180" y="60" width="640" height="80" fill="none" stroke="#e8d0a8" stroke-width="2"/>
                         <path d="M244 60 v80 M308 60 v80 M372 60 v80 M436 60 v80 M500 60 v80 M564 60 v80 M628 60 v80 M692 60 v80 M756 60 v80" stroke="#e8d0a8" stroke-width="2"/>
-                        
                         <g transform="translate(500, 160) rotate(180)"><text x="0" y="0" text-anchor="middle" dominant-baseline="central" font-size="20" fill="#e8d0a8" letter-spacing="2">Victories</text></g>
-                        
                         <g fill="#e8d0a8" font-size="34">
                             <g transform="translate(212, 100) rotate(180)"><text x="0" y="0" text-anchor="middle" dominant-baseline="central">10</text></g>
                             <g transform="translate(276, 100) rotate(180)"><text x="0" y="0" text-anchor="middle" dominant-baseline="central">9</text></g>
@@ -321,6 +294,7 @@
                             <text x="788" y="900" text-anchor="middle" dominant-baseline="central">10</text>
                         </g>
                     </svg>
+                    
                     <div id="interactive-grid"></div>
                 </div>
 
@@ -375,40 +349,88 @@
             document.getElementById('game-area').classList.add('rotate-180');
         }
 
-        const masterDeck = [
-            ...Array(2).fill({ title: 'Return', text: 'Move one White pawn in field of play to any starting position', colorTarget: 'white', action: 'return' }),
-            ...Array(2).fill({ title: 'Return', text: 'Move one Black pawn in field of play to any starting position', colorTarget: 'black', action: 'return' }),
-            ...Array(4).fill({ title: 'Block', text: 'Reserve this card. Use at any time to block an opponent from attacking or moving one of your pawns.', action: 'block' }),
-            ...Array(2).fill({ title: 'Move Sideways', text: 'Move one White pawn sideways one square. If square is occupied, remove pawn.', colorTarget: 'white', action: 'sideways' }),
-            ...Array(2).fill({ title: 'Move Sideways', text: 'Move one Black pawn sideways one square. If square is occupied, remove pawn.', colorTarget: 'black', action: 'sideways' }),
-            ...Array(2).fill({ title: 'Hop', text: "If stuck in front of an opponent's pawn, hop over. Do not remove opponent's pawn.", action: 'hop' }),
-            ...Array(2).fill({ title: 'Forward Attack', text: "If stuck in front of an opponent's pawn, move forward and remove their pawn.", action: 'forward_attack' }),
-            ...Array(2).fill({ title: 'Transport Out', text: 'Move any pawn from a Safe Zone to an X. If square is occupied, remove pawn.', action: 'transport_out' }),
-            ...Array(2).fill({ title: 'Transport In', text: 'Move any pawn from an X to a Safe Zone.', action: 'transport_in' }),
-            ...Array(2).fill({ title: 'Move Backwards', text: 'Move one White pawn one square backwards', colorTarget: 'white', action: 'backwards' }),
-            ...Array(1).fill({ title: 'Skip', text: 'White skips their next turn', colorTarget: 'white', action: 'skip' }),
-            ...Array(1).fill({ title: 'Skip', text: 'Black skips their next turn', colorTarget: 'black', action: 'skip' }),
-            ...Array(2).fill({ title: 'Remove', text: 'Remove one White pawn from either Safe Zone', colorTarget: 'white', zone: 'safe', action: 'remove' }),
-            ...Array(2).fill({ title: 'Remove', text: 'Remove one Black pawn from either Safe Zone', colorTarget: 'black', zone: 'safe', action: 'remove' }),
-            ...Array(2).fill({ title: 'Remove', text: 'Remove one White pawn from the Field of Play', colorTarget: 'white', zone: 'field', action: 'remove' }),
-            ...Array(2).fill({ title: 'Remove', text: 'Remove one Black pawn from the Field of Play', colorTarget: 'black', zone: 'field', action: 'remove' }),
-            ...Array(4).fill({ title: 'Enhanced Move', text: "Move one pawn as if it's a Queen (Any direction)", piece: 'queen', action: 'enhanced' }),
-            ...Array(4).fill({ title: 'Enhanced Move', text: "Move one pawn as if it's a Knight (L-shape)", piece: 'knight', action: 'enhanced' }),
-            ...Array(4).fill({ title: 'Enhanced Move', text: "Move one pawn as if it's a King (One space, Any direction)", piece: 'king', action: 'enhanced' }),
-            ...Array(4).fill({ title: 'Enhanced Move', text: "Move one pawn as if it's a Bishop (Diagonally, in any direction)", piece: 'bishop', action: 'enhanced' }),
-            ...Array(4).fill({ title: 'Enhanced Move', text: "Move one pawn as if it's a Rook (Straight, in any direction)", piece: 'rook', action: 'enhanced' })
-        ];
+        // State Variables
+        let localBoardState = [];
+        let isMyTurn = false;
+        let selectedPawn = null;
+        let validMoves = [];
 
-        function shuffle(array) {
-            let currentIndex = array.length, randomIndex;
-            while (currentIndex > 0) {
-                randomIndex = Math.floor(Math.random() * currentIndex);
-                currentIndex--;
-                [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+        // Expose skip function globally for the HTML button
+        window.skipPawnMove = async function() {
+            if(!isMyTurn) return;
+            const nextTurn = myColor === 'white' ? 'black' : 'white';
+            await updateDoc(doc(db, "games", gameCode), { currentTurn: nextTurn });
+            selectedPawn = null;
+            validMoves = [];
+            renderBoard(localBoardState);
+        };
+
+        // Standard Movement Pathfinding
+        function getStandardMoves(row, col, color) {
+            const moves = [];
+            const dir = color === 'white' ? -1 : 1; // White moves up (decrease index), Black moves down
+
+            // Forward Move
+            const forwardRow = row + dir;
+            if (forwardRow >= 0 && forwardRow < 8 && !localBoardState[forwardRow][col]) {
+                moves.push({ r: forwardRow, c: col, attack: false });
             }
-            return array;
+
+            // Diagonal Attack (ONLY valid in Field of Play: Rows 2 through 5)
+            if (forwardRow >= 2 && forwardRow <= 5) {
+                // Attack Left Diagonal
+                if (col - 1 >= 0 && localBoardState[forwardRow][col - 1] && localBoardState[forwardRow][col - 1] !== color) {
+                    moves.push({ r: forwardRow, c: col - 1, attack: true });
+                }
+                // Attack Right Diagonal
+                if (col + 1 < 8 && localBoardState[forwardRow][col + 1] && localBoardState[forwardRow][col + 1] !== color) {
+                    moves.push({ r: forwardRow, c: col + 1, attack: true });
+                }
+            }
+            return moves;
         }
 
+        // Handle Player Clicks
+        window.handleSquareClick = async function(row, col) {
+            if(!isMyTurn) return;
+
+            const clickedPieceColor = localBoardState[row][col];
+            const moveMatch = validMoves.find(m => m.r === row && m.c === col);
+
+            // Execute Move
+            if (selectedPawn && moveMatch) {
+                localBoardState[row][col] = myColor;
+                localBoardState[selectedPawn.r][selectedPawn.c] = null;
+                
+                selectedPawn = null;
+                validMoves = [];
+                
+                // End Phase 1 (Move pawn), instantly passing turn for this prototype phase
+                const nextTurn = myColor === 'white' ? 'black' : 'white';
+                
+                await updateDoc(doc(db, "games", gameCode), {
+                    boardState: JSON.stringify(localBoardState),
+                    currentTurn: nextTurn
+                });
+                return;
+            }
+
+            // Select Own Piece
+            if (clickedPieceColor === myColor) {
+                if (selectedPawn && selectedPawn.r === row && selectedPawn.c === col) {
+                    // Deselect
+                    selectedPawn = null;
+                    validMoves = [];
+                } else {
+                    // Select and calculate moves
+                    selectedPawn = { r: row, c: col };
+                    validMoves = getStandardMoves(row, col, myColor);
+                }
+                renderBoard(localBoardState);
+            }
+        };
+
+        // Firebase Initialization & Sync
         async function setupInitialGameState() {
             let initialBoard = Array(8).fill(null).map(() => Array(8).fill(null));
             for(let r = 0; r < 8; r++) {
@@ -418,11 +440,8 @@
                 }
             }
 
-            let shuffledDeck = shuffle([...masterDeck]).map((card, index) => ({...card, id: `card_${index}`}));
-
             await updateDoc(doc(db, "games", gameCode), {
                 boardState: JSON.stringify(initialBoard),
-                deck: shuffledDeck,
                 discardPile: [],
                 playerWhiteHand: [],
                 playerBlackHand: [],
@@ -440,19 +459,24 @@
                 }
 
                 if(data.isInitialized) {
-                    // Update Turn Indicator & Instructions Visibility
-                    if(data.currentTurn === myColor) {
+                    localBoardState = JSON.parse(data.boardState);
+                    isMyTurn = (data.currentTurn === myColor);
+
+                    // Update UI Turn Indicator
+                    if(isMyTurn) {
                         document.getElementById('turn-indicator').innerText = "YOUR TURN";
                         document.getElementById('turn-indicator').style.color = "#4CAF50";
+                        document.getElementById('skip-move-btn').style.display = "block";
                         document.getElementById('instructions-panel').style.display = "block";
                     } else {
                         const oppColor = myColor === 'white' ? 'black' : 'white';
-                        document.getElementById('turn-indicator').innerText = `Waiting for ${oppColor} to finish their turn...`;
+                        document.getElementById('turn-indicator').innerText = `Waiting for ${oppColor}...`;
                         document.getElementById('turn-indicator').style.color = "#e8d0a8";
+                        document.getElementById('skip-move-btn').style.display = "none";
                         document.getElementById('instructions-panel').style.display = "none";
                     }
                     
-                    renderBoard(JSON.parse(data.boardState));
+                    renderBoard(localBoardState);
                 }
             }
         });
@@ -465,12 +489,24 @@
                 for(let col = 0; col < 8; col++) {
                     const cell = document.createElement('div');
                     cell.className = 'grid-cell';
-                    cell.dataset.row = row;
-                    cell.dataset.col = col;
+                    cell.onclick = () => handleSquareClick(row, col);
                     
+                    // Render Highlighted Moves
+                    const moveMatch = validMoves.find(m => m.r === row && m.c === col);
+                    if(moveMatch) {
+                        cell.classList.add(moveMatch.attack ? 'highlight-attack' : 'highlight-move');
+                    }
+                    
+                    // Render Pawn
                     if(boardArray[row][col]) {
                         const pawn = document.createElement('div');
                         pawn.className = `pawn pawn-${boardArray[row][col]}`;
+                        
+                        // Render Selected State
+                        if(selectedPawn && selectedPawn.r === row && selectedPawn.c === col) {
+                            pawn.classList.add('selected');
+                        }
+                        
                         cell.appendChild(pawn);
                     }
                     grid.appendChild(cell);
