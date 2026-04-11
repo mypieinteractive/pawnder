@@ -7,15 +7,27 @@
     <style>
         body { 
             margin: 0; 
-            padding: 20px; 
+            padding: 0; 
             display: flex; 
             justify-content: center; 
             align-items: center;
-            min-height: 100vh;
+            height: 100vh;
+            width: 100vw;
             background-color: #0b0b0b; 
             font-family: 'Cinzel', serif;
             color: #e8d0a8; 
-            overflow-x: hidden;
+            overflow: hidden; /* Locks the page from scrolling */
+        }
+
+        /* Dynamically scales the entire app to fit any screen size perfectly */
+        .scale-wrapper {
+            transform: scale(min(calc(100vw / 1250), calc(100vh / 850)));
+            transform-origin: center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 1250px;
+            height: 850px;
         }
         
         /* Master Tabletop Layout */
@@ -24,9 +36,8 @@
             flex-direction: row;
             justify-content: center;
             align-items: center;
-            gap: 20px; /* Reduced from 40px to pull elements closer */
+            gap: 20px; 
             width: 100%;
-            max-width: 1600px;
         }
 
         /* --- LEFT COLUMN: STATUS & INSTRUCTIONS --- */
@@ -42,7 +53,7 @@
             width: 100%;
             background: rgba(17, 17, 17, 0.85); 
             padding: 20px;
-            border: 1px solid #e8d0a8; 
+            border: none; /* Removed border */
             border-radius: 4px; 
             box-sizing: border-box; 
             display: flex;
@@ -50,8 +61,16 @@
             text-align: center;
             box-shadow: 0 4px 12px rgba(0,0,0,0.5);
         }
-        #status-panel h2 { margin: 0 0 15px 0; font-size: 18px; letter-spacing: 2px; }
-        .info-text { font-size: 14px; margin-bottom: 8px; font-family: Arial, sans-serif;}
+        #status-panel h2 { margin: 0; font-size: 18px; letter-spacing: 2px; }
+        
+        #turn-indicator {
+            margin-top: 15px;
+            font-size: 15px;
+            font-weight: bold;
+            color: #fff;
+            font-family: Arial, sans-serif;
+            letter-spacing: 1px;
+        }
 
         /* Dark Theme Instruction Card */
         #instructions-panel {
@@ -62,6 +81,7 @@
             border-radius: 4px;
             font-size: 13px;
             box-shadow: 0 6px 16px rgba(0,0,0,0.6);
+            display: none; /* Hidden by default until turn logic fires */
         }
         #instructions-panel h3 {
             margin: 0 0 15px 0;
@@ -85,7 +105,7 @@
             display: flex; 
             flex-direction: column; 
             align-items: center; 
-            gap: 10px; /* Reduced to bring reserves closer to board */
+            gap: 10px; 
         }
 
         .cards-row {
@@ -143,7 +163,6 @@
         .horizontal-card { width: 160px; height: 110px; }
         .vertical-card { width: 120px; height: 170px; }
         
-        /* Dark Theme Parlor Card Layout */
         .card-face {
             background: linear-gradient(135deg, #1f1a15, #110e0a);
             color: #e8d0a8;
@@ -194,140 +213,136 @@
 </head>
 <body>
     
-    <div class="app-container">
-        
-        <div class="left-column">
-            <div id="status-panel">
-                <h2>GAME: <br><span id="display-game-code" style="color: #fff;">----</span></h2>
-                <div style="margin-top: 10px;">
-                    <div class="info-text">Playing as: <strong id="display-color" style="color: #fff;">...</strong></div>
-                    <div class="info-text">Turn: <strong id="display-turn" style="color: #fff;">...</strong></div>
-                </div>
-                <div class="info-text" id="sync-status" style="margin-top: 15px; color: #aaa;">Connecting...</div>
-            </div>
-
-            <div id="instructions-panel">
-                <h3>On your turn, perform in order:</h3>
-                <ol>
-                    <li>Make one standard pawn<br><em style="font-family: 'Cinzel', serif;">Chess move (optional)</em></li>
-                    <li style="margin-top: 15px;">Either:
-                        <ul>
-                            <li>- Draw a card and play it</li>
-                            <li>- Draw a card and place it in a reserve spot</li>
-                            <li>- Play a reserve card</li>
-                        </ul>
-                    </li>
-                </ol>
-            </div>
-        </div>
-
-        <div class="center-column">
+    <div class="scale-wrapper">
+        <div class="app-container">
             
-            <div class="cards-row" style="transform: rotate(180deg);">
-                <div class="card-slot horizontal-card">RESERVE<br>CARD 2</div>
-                <div class="card-slot horizontal-card">RESERVE<br>CARD 1</div>
+            <div class="left-column">
+                <div id="status-panel">
+                    <h2>GAME CODE: <span id="display-game-code" style="color: #fff;">----</span></h2>
+                    <div id="turn-indicator">Connecting...</div>
+                </div>
+
+                <div id="instructions-panel">
+                    <h3>Perform in order:</h3>
+                    <ol>
+                        <li>Make one standard pawn<br><em style="font-family: 'Cinzel', serif;">Chess move (optional)</em></li>
+                        <li style="margin-top: 15px;">Either:
+                            <ul>
+                                <li>- Draw a card and play it</li>
+                                <li>- Draw a card and place it in a reserve spot</li>
+                                <li>- Play a reserve card</li>
+                            </ul>
+                        </li>
+                    </ol>
+                </div>
             </div>
 
-            <div id="game-area">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" width="700" height="700" style="display: block; position: absolute; top: 0; left: 0;">
-                    <defs>
-                        <pattern id="safeHatch" width="12" height="12" patternTransform="rotate(45 0 0)" patternUnits="userSpaceOnUse">
-                            <line x1="0" y1="0" x2="0" y2="12" stroke="#e8d0a8" stroke-width="1.5" stroke-opacity="0.3"/>
-                        </pattern>
-                    </defs>
-                    <rect width="1000" height="1000" fill="#000000"/>
-                    <rect x="10" y="10" width="980" height="980" fill="none" stroke="#e8d0a8" stroke-width="2"/>
-                    <rect x="20" y="20" width="960" height="960" fill="none" stroke="#e8d0a8" stroke-width="1"/>
-                    <rect x="180" y="180" width="640" height="640" fill="#000" stroke="#e8d0a8" stroke-width="3"/>
-                    
-                    <g fill="#e8d0a8" opacity="0.85">
-                        <rect x="180" y="180" width="80" height="80"/><rect x="340" y="180" width="80" height="80"/><rect x="500" y="180" width="80" height="80"/><rect x="660" y="180" width="80" height="80"/>
-                        <rect x="260" y="260" width="80" height="80"/><rect x="420" y="260" width="80" height="80"/><rect x="580" y="260" width="80" height="80"/><rect x="740" y="260" width="80" height="80"/>
-                        <rect x="180" y="340" width="80" height="80"/><rect x="340" y="340" width="80" height="80"/><rect x="500" y="340" width="80" height="80"/><rect x="660" y="340" width="80" height="80"/>
-                        <rect x="260" y="420" width="80" height="80"/><rect x="420" y="420" width="80" height="80"/><rect x="580" y="420" width="80" height="80"/><rect x="740" y="420" width="80" height="80"/>
-                        <rect x="180" y="500" width="80" height="80"/><rect x="340" y="500" width="80" height="80"/><rect x="500" y="500" width="80" height="80"/><rect x="660" y="500" width="80" height="80"/>
-                        <rect x="260" y="580" width="80" height="80"/><rect x="420" y="580" width="80" height="80"/><rect x="580" y="580" width="80" height="80"/><rect x="740" y="580" width="80" height="80"/>
-                        <rect x="180" y="660" width="80" height="80"/><rect x="340" y="660" width="80" height="80"/><rect x="500" y="660" width="80" height="80"/><rect x="660" y="660" width="80" height="80"/>
-                        <rect x="260" y="740" width="80" height="80"/><rect x="420" y="740" width="80" height="80"/><rect x="580" y="740" width="80" height="80"/><rect x="740" y="740" width="80" height="80"/>
-                    </g>
+            <div class="center-column">
+                
+                <div class="cards-row" style="transform: rotate(180deg);">
+                    <div class="card-slot horizontal-card">RESERVE<br>CARD 2</div>
+                    <div class="card-slot horizontal-card">RESERVE<br>CARD 1</div>
+                </div>
 
-                    <path d="M260 180 v640 M340 180 v640 M420 180 v640 M500 180 v640 M580 180 v640 M660 180 v640 M740 180 v640" stroke="#000" stroke-width="2"/>
-                    <path d="M180 260 h640 M180 340 h640 M180 420 h640 M180 500 h640 M180 580 h640 M180 660 h640 M180 740 h640" stroke="#000" stroke-width="2"/>
-                    
-                    <rect x="180" y="180" width="640" height="160" fill="url(#safeHatch)" stroke="none" pointer-events="none"/>
-                    <rect x="180" y="660" width="640" height="160" fill="url(#safeHatch)" stroke="none" pointer-events="none"/>
+                <div id="game-area">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" width="700" height="700" style="display: block; position: absolute; top: 0; left: 0;">
+                        <defs>
+                            <pattern id="safeHatch" width="12" height="12" patternTransform="rotate(45 0 0)" patternUnits="userSpaceOnUse">
+                                <line x1="0" y1="0" x2="0" y2="12" stroke="#e8d0a8" stroke-width="1.5" stroke-opacity="0.3"/>
+                            </pattern>
+                        </defs>
+                        <rect width="1000" height="1000" fill="#000000"/>
+                        <rect x="10" y="10" width="980" height="980" fill="none" stroke="#e8d0a8" stroke-width="2"/>
+                        <rect x="20" y="20" width="960" height="960" fill="none" stroke="#e8d0a8" stroke-width="1"/>
+                        <rect x="180" y="180" width="640" height="640" fill="#000" stroke="#e8d0a8" stroke-width="3"/>
+                        
+                        <g fill="#e8d0a8" opacity="0.85">
+                            <rect x="180" y="180" width="80" height="80"/><rect x="340" y="180" width="80" height="80"/><rect x="500" y="180" width="80" height="80"/><rect x="660" y="180" width="80" height="80"/>
+                            <rect x="260" y="260" width="80" height="80"/><rect x="420" y="260" width="80" height="80"/><rect x="580" y="260" width="80" height="80"/><rect x="740" y="260" width="80" height="80"/>
+                            <rect x="180" y="340" width="80" height="80"/><rect x="340" y="340" width="80" height="80"/><rect x="500" y="340" width="80" height="80"/><rect x="660" y="340" width="80" height="80"/>
+                            <rect x="260" y="420" width="80" height="80"/><rect x="420" y="420" width="80" height="80"/><rect x="580" y="420" width="80" height="80"/><rect x="740" y="420" width="80" height="80"/>
+                            <rect x="180" y="500" width="80" height="80"/><rect x="340" y="500" width="80" height="80"/><rect x="500" y="500" width="80" height="80"/><rect x="660" y="500" width="80" height="80"/>
+                            <rect x="260" y="580" width="80" height="80"/><rect x="420" y="580" width="80" height="80"/><rect x="580" y="580" width="80" height="80"/><rect x="740" y="580" width="80" height="80"/>
+                            <rect x="180" y="660" width="80" height="80"/><rect x="340" y="660" width="80" height="80"/><rect x="500" y="660" width="80" height="80"/><rect x="660" y="660" width="80" height="80"/>
+                            <rect x="260" y="740" width="80" height="80"/><rect x="420" y="740" width="80" height="80"/><rect x="580" y="740" width="80" height="80"/><rect x="740" y="740" width="80" height="80"/>
+                        </g>
 
-                    <g stroke="#000" stroke-width="4" stroke-linecap="square">
-                        <line x1="420" y1="340" x2="500" y2="420"/> <line x1="500" y1="340" x2="420" y2="420"/>
-                        <line x1="580" y1="420" x2="660" y2="500"/> <line x1="660" y1="420" x2="580" y2="500"/>
-                        <line x1="340" y1="500" x2="420" y2="580"/> <line x1="420" y1="500" x2="340" y2="580"/>
-                        <line x1="500" y1="580" x2="580" y2="660"/> <line x1="580" y1="580" x2="500" y2="660"/>
-                    </g>
+                        <path d="M260 180 v640 M340 180 v640 M420 180 v640 M500 180 v640 M580 180 v640 M660 180 v640 M740 180 v640" stroke="#000" stroke-width="2"/>
+                        <path d="M180 260 h640 M180 340 h640 M180 420 h640 M180 500 h640 M180 580 h640 M180 660 h640 M180 740 h640" stroke="#000" stroke-width="2"/>
+                        
+                        <rect x="180" y="180" width="640" height="160" fill="url(#safeHatch)" stroke="none" pointer-events="none"/>
+                        <rect x="180" y="660" width="640" height="160" fill="url(#safeHatch)" stroke="none" pointer-events="none"/>
 
-                    <g transform="translate(100, 500) rotate(90)">
-                        <image href="Pawnder Logo-transparent bg.png" x="-400" y="-87.5" width="800" height="175" preserveAspectRatio="xMidYMid meet" />
-                    </g>
+                        <g stroke="#000" stroke-width="4" stroke-linecap="square">
+                            <line x1="420" y1="340" x2="500" y2="420"/> <line x1="500" y1="340" x2="420" y2="420"/> <line x1="340" y1="420" x2="420" y2="500"/> <line x1="420" y1="420" x2="340" y2="500"/> <line x1="500" y1="420" x2="580" y2="500"/> <line x1="580" y1="420" x2="500" y2="500"/> <line x1="260" y1="500" x2="340" y2="580"/> <line x1="340" y1="500" x2="260" y2="580"/> <line x1="420" y1="500" x2="500" y2="580"/> <line x1="500" y1="500" x2="420" y2="580"/> <line x1="340" y1="580" x2="420" y2="660"/> <line x1="420" y1="580" x2="340" y2="660"/> </g>
 
-                    <path d="M 830,180 L 840,180 L 840,340 L 830,340" fill="none" stroke="#e8d0a8" stroke-width="2"/>
-                    <g transform="translate(860, 260) rotate(-90)"><text x="0" y="0" text-anchor="middle" dominant-baseline="central" font-size="14" fill="#e8d0a8" letter-spacing="2">SAFE ZONE</text></g>
-                    <path d="M 830,340 L 840,340 L 840,660 L 830,660" fill="none" stroke="#e8d0a8" stroke-width="2"/>
-                    <g transform="translate(860, 500) rotate(-90)"><text x="0" y="0" text-anchor="middle" dominant-baseline="central" font-size="14" fill="#e8d0a8" letter-spacing="2">FIELD OF PLAY</text></g>
-                    <path d="M 830,660 L 840,660 L 840,820 L 830,820" fill="none" stroke="#e8d0a8" stroke-width="2"/>
-                    <g transform="translate(860, 740) rotate(-90)"><text x="0" y="0" text-anchor="middle" dominant-baseline="central" font-size="14" fill="#e8d0a8" letter-spacing="2">SAFE ZONE</text></g>
+                        <g transform="translate(100, 500) rotate(90)">
+                            <image href="Pawnder Logo-transparent bg.png" x="-400" y="-87.5" width="800" height="175" preserveAspectRatio="xMidYMid meet" />
+                        </g>
 
-                    <rect x="180" y="60" width="640" height="80" fill="none" stroke="#e8d0a8" stroke-width="2"/>
-                    <path d="M244 60 v80 M308 60 v80 M372 60 v80 M436 60 v80 M500 60 v80 M564 60 v80 M628 60 v80 M692 60 v80 M756 60 v80" stroke="#e8d0a8" stroke-width="2"/>
-                    <g transform="translate(500, 40) rotate(180)"><text x="0" y="0" text-anchor="middle" dominant-baseline="central" font-size="20" fill="#e8d0a8" letter-spacing="2">Victories</text></g>
-                    <g fill="#e8d0a8" font-size="34">
-                        <g transform="translate(212, 100) rotate(180)"><text x="0" y="0" text-anchor="middle" dominant-baseline="central">10</text></g>
-                        <g transform="translate(276, 100) rotate(180)"><text x="0" y="0" text-anchor="middle" dominant-baseline="central">9</text></g>
-                        <g transform="translate(340, 100) rotate(180)"><text x="0" y="0" text-anchor="middle" dominant-baseline="central">8</text></g>
-                        <g transform="translate(404, 100) rotate(180)"><text x="0" y="0" text-anchor="middle" dominant-baseline="central">7</text></g>
-                        <g transform="translate(468, 100) rotate(180)"><text x="0" y="0" text-anchor="middle" dominant-baseline="central">6</text></g>
-                        <g transform="translate(532, 100) rotate(180)"><text x="0" y="0" text-anchor="middle" dominant-baseline="central">5</text></g>
-                        <g transform="translate(596, 100) rotate(180)"><text x="0" y="0" text-anchor="middle" dominant-baseline="central">4</text></g>
-                        <g transform="translate(660, 100) rotate(180)"><text x="0" y="0" text-anchor="middle" dominant-baseline="central">3</text></g>
-                        <g transform="translate(724, 100) rotate(180)"><text x="0" y="0" text-anchor="middle" dominant-baseline="central">2</text></g>
-                        <g transform="translate(788, 100) rotate(180)"><text x="0" y="0" text-anchor="middle" dominant-baseline="central">1</text></g>
-                    </g>
+                        <path d="M 830,180 L 840,180 L 840,340 L 830,340" fill="none" stroke="#e8d0a8" stroke-width="2"/>
+                        <g transform="translate(860, 260) rotate(-90)"><text x="0" y="0" text-anchor="middle" dominant-baseline="central" font-size="14" fill="#e8d0a8" letter-spacing="2">SAFE ZONE</text></g>
+                        <path d="M 830,340 L 840,340 L 840,660 L 830,660" fill="none" stroke="#e8d0a8" stroke-width="2"/>
+                        <g transform="translate(860, 500) rotate(-90)"><text x="0" y="0" text-anchor="middle" dominant-baseline="central" font-size="14" fill="#e8d0a8" letter-spacing="2">FIELD OF PLAY</text></g>
+                        <path d="M 830,660 L 840,660 L 840,820 L 830,820" fill="none" stroke="#e8d0a8" stroke-width="2"/>
+                        <g transform="translate(860, 740) rotate(-90)"><text x="0" y="0" text-anchor="middle" dominant-baseline="central" font-size="14" fill="#e8d0a8" letter-spacing="2">SAFE ZONE</text></g>
 
-                    <text x="500" y="840" text-anchor="middle" dominant-baseline="central" font-size="20" fill="#e8d0a8" letter-spacing="2">Victories</text>
-                    <rect x="180" y="860" width="640" height="80" fill="none" stroke="#e8d0a8" stroke-width="2"/>
-                    <path d="M244 860 v80 M308 860 v80 M372 860 v80 M436 860 v80 M500 860 v80 M564 860 v80 M628 860 v80 M692 860 v80 M756 860 v80" stroke="#e8d0a8" stroke-width="2"/>
-                    <g fill="#e8d0a8" font-size="34">
-                        <text x="212" y="900" text-anchor="middle" dominant-baseline="central">1</text>
-                        <text x="276" y="900" text-anchor="middle" dominant-baseline="central">2</text>
-                        <text x="340" y="900" text-anchor="middle" dominant-baseline="central">3</text>
-                        <text x="404" y="900" text-anchor="middle" dominant-baseline="central">4</text>
-                        <text x="468" y="900" text-anchor="middle" dominant-baseline="central">5</text>
-                        <text x="532" y="900" text-anchor="middle" dominant-baseline="central">6</text>
-                        <text x="596" y="900" text-anchor="middle" dominant-baseline="central">7</text>
-                        <text x="660" y="900" text-anchor="middle" dominant-baseline="central">8</text>
-                        <text x="724" y="900" text-anchor="middle" dominant-baseline="central">9</text>
-                        <text x="788" y="900" text-anchor="middle" dominant-baseline="central">10</text>
-                    </g>
-                </svg>
-                <div id="interactive-grid"></div>
+                        <rect x="180" y="60" width="640" height="80" fill="none" stroke="#e8d0a8" stroke-width="2"/>
+                        <path d="M244 60 v80 M308 60 v80 M372 60 v80 M436 60 v80 M500 60 v80 M564 60 v80 M628 60 v80 M692 60 v80 M756 60 v80" stroke="#e8d0a8" stroke-width="2"/>
+                        
+                        <g transform="translate(500, 160) rotate(180)"><text x="0" y="0" text-anchor="middle" dominant-baseline="central" font-size="20" fill="#e8d0a8" letter-spacing="2">Victories</text></g>
+                        
+                        <g fill="#e8d0a8" font-size="34">
+                            <g transform="translate(212, 100) rotate(180)"><text x="0" y="0" text-anchor="middle" dominant-baseline="central">10</text></g>
+                            <g transform="translate(276, 100) rotate(180)"><text x="0" y="0" text-anchor="middle" dominant-baseline="central">9</text></g>
+                            <g transform="translate(340, 100) rotate(180)"><text x="0" y="0" text-anchor="middle" dominant-baseline="central">8</text></g>
+                            <g transform="translate(404, 100) rotate(180)"><text x="0" y="0" text-anchor="middle" dominant-baseline="central">7</text></g>
+                            <g transform="translate(468, 100) rotate(180)"><text x="0" y="0" text-anchor="middle" dominant-baseline="central">6</text></g>
+                            <g transform="translate(532, 100) rotate(180)"><text x="0" y="0" text-anchor="middle" dominant-baseline="central">5</text></g>
+                            <g transform="translate(596, 100) rotate(180)"><text x="0" y="0" text-anchor="middle" dominant-baseline="central">4</text></g>
+                            <g transform="translate(660, 100) rotate(180)"><text x="0" y="0" text-anchor="middle" dominant-baseline="central">3</text></g>
+                            <g transform="translate(724, 100) rotate(180)"><text x="0" y="0" text-anchor="middle" dominant-baseline="central">2</text></g>
+                            <g transform="translate(788, 100) rotate(180)"><text x="0" y="0" text-anchor="middle" dominant-baseline="central">1</text></g>
+                        </g>
+
+                        <text x="500" y="840" text-anchor="middle" dominant-baseline="central" font-size="20" fill="#e8d0a8" letter-spacing="2">Victories</text>
+                        <rect x="180" y="860" width="640" height="80" fill="none" stroke="#e8d0a8" stroke-width="2"/>
+                        <path d="M244 860 v80 M308 860 v80 M372 860 v80 M436 860 v80 M500 860 v80 M564 860 v80 M628 860 v80 M692 860 v80 M756 860 v80" stroke="#e8d0a8" stroke-width="2"/>
+                        <g fill="#e8d0a8" font-size="34">
+                            <text x="212" y="900" text-anchor="middle" dominant-baseline="central">1</text>
+                            <text x="276" y="900" text-anchor="middle" dominant-baseline="central">2</text>
+                            <text x="340" y="900" text-anchor="middle" dominant-baseline="central">3</text>
+                            <text x="404" y="900" text-anchor="middle" dominant-baseline="central">4</text>
+                            <text x="468" y="900" text-anchor="middle" dominant-baseline="central">5</text>
+                            <text x="532" y="900" text-anchor="middle" dominant-baseline="central">6</text>
+                            <text x="596" y="900" text-anchor="middle" dominant-baseline="central">7</text>
+                            <text x="660" y="900" text-anchor="middle" dominant-baseline="central">8</text>
+                            <text x="724" y="900" text-anchor="middle" dominant-baseline="central">9</text>
+                            <text x="788" y="900" text-anchor="middle" dominant-baseline="central">10</text>
+                        </g>
+                    </svg>
+                    <div id="interactive-grid"></div>
+                </div>
+
+                <div class="cards-row">
+                    <div class="card-slot horizontal-card">RESERVE<br>CARD 1</div>
+                    <div class="card-slot horizontal-card">RESERVE<br>CARD 2</div>
+                </div>
+
             </div>
 
-            <div class="cards-row">
-                <div class="card-slot horizontal-card">RESERVE<br>CARD 1</div>
-                <div class="card-slot horizontal-card">RESERVE<br>CARD 2</div>
+            <div class="right-column" style="display: flex; gap: 20px;">
+                <div style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
+                    <div style="font-size: 16px; letter-spacing: 2px;">DRAW</div>
+                    <div class="card-slot vertical-card face-down"></div>
+                </div>
+                <div style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
+                    <div style="font-size: 16px; letter-spacing: 2px;">DISCARD</div>
+                    <div class="card-slot vertical-card"></div>
+                </div>
             </div>
 
         </div>
-
-        <div class="right-column" style="display: flex; gap: 20px;">
-            <div style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
-                <div style="font-size: 16px; letter-spacing: 2px;">DRAW</div>
-                <div class="card-slot vertical-card face-down"></div>
-            </div>
-            <div style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
-                <div style="font-size: 16px; letter-spacing: 2px;">DISCARD</div>
-                <div class="card-slot vertical-card"></div>
-            </div>
-        </div>
-
     </div>
 
     <script type="module">
@@ -355,46 +370,32 @@
         }
 
         document.getElementById('display-game-code').innerText = gameCode;
-        document.getElementById('display-color').innerText = myColor.toUpperCase();
 
         if(myColor === 'black') {
             document.getElementById('game-area').classList.add('rotate-180');
         }
 
         const masterDeck = [
-            // Page 1
             ...Array(2).fill({ title: 'Return', text: 'Move one White pawn in field of play to any starting position', colorTarget: 'white', action: 'return' }),
             ...Array(2).fill({ title: 'Return', text: 'Move one Black pawn in field of play to any starting position', colorTarget: 'black', action: 'return' }),
             ...Array(4).fill({ title: 'Block', text: 'Reserve this card. Use at any time to block an opponent from attacking or moving one of your pawns.', action: 'block' }),
-            
-            // Page 2
             ...Array(2).fill({ title: 'Move Sideways', text: 'Move one White pawn sideways one square. If square is occupied, remove pawn.', colorTarget: 'white', action: 'sideways' }),
             ...Array(2).fill({ title: 'Move Sideways', text: 'Move one Black pawn sideways one square. If square is occupied, remove pawn.', colorTarget: 'black', action: 'sideways' }),
             ...Array(2).fill({ title: 'Hop', text: "If stuck in front of an opponent's pawn, hop over. Do not remove opponent's pawn.", action: 'hop' }),
             ...Array(2).fill({ title: 'Forward Attack', text: "If stuck in front of an opponent's pawn, move forward and remove their pawn.", action: 'forward_attack' }),
-            
-            // Page 3
             ...Array(2).fill({ title: 'Transport Out', text: 'Move any pawn from a Safe Zone to an X. If square is occupied, remove pawn.', action: 'transport_out' }),
             ...Array(2).fill({ title: 'Transport In', text: 'Move any pawn from an X to a Safe Zone.', action: 'transport_in' }),
             ...Array(2).fill({ title: 'Move Backwards', text: 'Move one White pawn one square backwards', colorTarget: 'white', action: 'backwards' }),
             ...Array(1).fill({ title: 'Skip', text: 'White skips their next turn', colorTarget: 'white', action: 'skip' }),
             ...Array(1).fill({ title: 'Skip', text: 'Black skips their next turn', colorTarget: 'black', action: 'skip' }),
-            
-            // Page 4
             ...Array(2).fill({ title: 'Remove', text: 'Remove one White pawn from either Safe Zone', colorTarget: 'white', zone: 'safe', action: 'remove' }),
             ...Array(2).fill({ title: 'Remove', text: 'Remove one Black pawn from either Safe Zone', colorTarget: 'black', zone: 'safe', action: 'remove' }),
             ...Array(2).fill({ title: 'Remove', text: 'Remove one White pawn from the Field of Play', colorTarget: 'white', zone: 'field', action: 'remove' }),
             ...Array(2).fill({ title: 'Remove', text: 'Remove one Black pawn from the Field of Play', colorTarget: 'black', zone: 'field', action: 'remove' }),
-            
-            // Page 5
             ...Array(4).fill({ title: 'Enhanced Move', text: "Move one pawn as if it's a Queen (Any direction)", piece: 'queen', action: 'enhanced' }),
             ...Array(4).fill({ title: 'Enhanced Move', text: "Move one pawn as if it's a Knight (L-shape)", piece: 'knight', action: 'enhanced' }),
-            
-            // Page 6
             ...Array(4).fill({ title: 'Enhanced Move', text: "Move one pawn as if it's a King (One space, Any direction)", piece: 'king', action: 'enhanced' }),
             ...Array(4).fill({ title: 'Enhanced Move', text: "Move one pawn as if it's a Bishop (Diagonally, in any direction)", piece: 'bishop', action: 'enhanced' }),
-            
-            // Page 7
             ...Array(4).fill({ title: 'Enhanced Move', text: "Move one pawn as if it's a Rook (Straight, in any direction)", piece: 'rook', action: 'enhanced' })
         ];
 
@@ -439,9 +440,17 @@
                 }
 
                 if(data.isInitialized) {
-                    document.getElementById('sync-status').innerText = "Live Synced \u25CF";
-                    document.getElementById('sync-status').style.color = "#4CAF50";
-                    document.getElementById('display-turn').innerText = data.currentTurn.toUpperCase();
+                    // Update Turn Indicator & Instructions Visibility
+                    if(data.currentTurn === myColor) {
+                        document.getElementById('turn-indicator').innerText = "YOUR TURN";
+                        document.getElementById('turn-indicator').style.color = "#4CAF50";
+                        document.getElementById('instructions-panel').style.display = "block";
+                    } else {
+                        const oppColor = myColor === 'white' ? 'black' : 'white';
+                        document.getElementById('turn-indicator').innerText = `Waiting for ${oppColor} to finish their turn...`;
+                        document.getElementById('turn-indicator').style.color = "#e8d0a8";
+                        document.getElementById('instructions-panel').style.display = "none";
+                    }
                     
                     renderBoard(JSON.parse(data.boardState));
                 }
