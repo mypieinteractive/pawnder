@@ -11,15 +11,50 @@
 
         /* LEFT COLUMN */
         .left-column { width: 260px; flex-shrink: 0; display: flex; flex-direction: column; gap: 15px; }
-        #status-panel { width: 100%; background: rgba(17, 17, 17, 0.85); padding: 20px; border-radius: 4px; box-sizing: border-box; display: flex; flex-direction: column; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.5); }
-        #status-panel h2 { margin: 0; font-size: 18px; letter-spacing: 2px; }
-        #turn-indicator { margin-top: 15px; font-size: 15px; font-weight: bold; color: #fff; font-family: Arial, sans-serif; letter-spacing: 1px; }
-        #phase-indicator { margin-top: 5px; font-size: 12px; color: #aaa; font-family: Arial, sans-serif; }
+        
+        #status-panel { width: 100%; background: rgba(17, 17, 17, 0.85); padding: 20px; border-radius: 4px; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.5); }
+        #status-panel h2 { margin: 0 0 10px 0; font-size: 16px; letter-spacing: 2px; }
+        
+        #leave-game-btn {
+            margin-top: 5px;
+            background-color: transparent;
+            color: #d9534f;
+            border: 1px solid #d9534f;
+            padding: 6px 12px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-family: 'Cinzel', serif;
+            font-size: 12px;
+            font-weight: bold;
+            transition: 0.2s;
+            letter-spacing: 1px;
+        }
+        #leave-game-btn:hover { background-color: #d9534f; color: #fff; }
+
+        #turn-header {
+            margin-top: 10px;
+            font-size: 18px;
+            font-weight: bold;
+            text-align: center;
+            letter-spacing: 2px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+        }
 
         #instructions-panel { background: linear-gradient(135deg, #1f1a15, #110e0a); color: #e8d0a8; padding: 20px; border: 1px solid #8c7650; border-radius: 4px; font-size: 13px; box-shadow: 0 6px 16px rgba(0,0,0,0.6); display: none; }
         #instructions-panel h3 { margin: 0 0 15px 0; font-size: 14px; text-align: center; font-weight: normal; }
         #instructions-panel ol { padding-left: 20px; margin: 0; line-height: 1.6; }
         #instructions-panel ul { padding-left: 10px; list-style-type: none; margin-top: 5px; }
+
+        /* Dynamic Highlighting for Instructions */
+        .active-step {
+            color: #ffd700;
+            text-shadow: 0 0 8px rgba(255, 215, 0, 0.4);
+            transition: all 0.3s ease;
+        }
+        .inactive-step {
+            color: #666;
+            transition: all 0.3s ease;
+        }
 
         /* CENTER COLUMN */
         .center-column { display: flex; flex-direction: column; align-items: center; gap: 10px; }
@@ -59,8 +94,6 @@
         .modal-buttons { display: flex; gap: 15px; justify-content: center; flex-wrap: wrap; }
         .btn { background: #0b0b0b; color: #e8d0a8; border: 1px solid #e8d0a8; padding: 10px 20px; font-family: 'Cinzel', serif; font-size: 14px; cursor: pointer; border-radius: 3px; transition: 0.2s; letter-spacing: 1px; }
         .btn:hover { background: #e8d0a8; color: #0b0b0b; }
-        
-        /* Card display inside modal */
         #modal-card-display { width: 240px; height: 160px; margin-bottom: 10px; }
 
     </style>
@@ -80,16 +113,17 @@
             
             <div class="left-column">
                 <div id="status-panel">
-                    <h2>GAME CODE: <span id="display-game-code" style="color: #fff;">----</span></h2>
-                    <div id="turn-indicator">Connecting...</div>
-                    <div id="phase-indicator"></div>
+                    <h2>GAME CODE:<br><span id="display-game-code" style="color: #fff; font-size: 24px;">----</span></h2>
+                    <button id="leave-game-btn" onclick="leaveGame()">Leave Game</button>
                 </div>
+
+                <div id="turn-header">Connecting...</div>
 
                 <div id="instructions-panel">
                     <h3>Perform in order:</h3>
                     <ol>
-                        <li>Make one standard pawn<br><em style="font-family: 'Cinzel', serif;">Chess move (optional)</em></li>
-                        <li style="margin-top: 15px;">Either:
+                        <li id="step-1">Make one standard pawn<br><em style="font-family: 'Cinzel', serif;">Chess move (optional)</em></li>
+                        <li id="step-2" style="margin-top: 15px;">Either:
                             <ul>
                                 <li>- Draw a card and play it</li>
                                 <li>- Draw a card and place it in a reserve spot</li>
@@ -137,6 +171,7 @@
                             <line x1="500" y1="580" x2="580" y2="660"/> <line x1="580" y1="580" x2="500" y2="660"/>
                             <line x1="580" y1="420" x2="660" y2="500"/> <line x1="660" y1="420" x2="580" y2="500"/>
                         </g>
+
                         <g transform="translate(100, 500) rotate(90)"><image href="Pawnder Logo-transparent bg.png" x="-400" y="-87.5" width="800" height="175" preserveAspectRatio="xMidYMid meet" /></g>
 
                         <path d="M 830,180 L 840,180 L 840,340 L 830,340" fill="none" stroke="#e8d0a8" stroke-width="2"/>
@@ -204,7 +239,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, doc, onSnapshot, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, doc, onSnapshot, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDtHHDrRlcnsug93x3hWF3jEx8rFA8QPcw",
@@ -232,13 +267,30 @@
             document.getElementById('game-area').classList.add('rotate-180');
         }
 
-        // --- STATE VARIABLES ---
+        // Leave Game Logic
+        window.leaveGame = function() {
+            localStorage.removeItem("pawnderGameCode");
+            localStorage.removeItem("pawnderPlayerColor");
+            window.location.href = "index.html";
+        };
+
+        // State Variables
         let localData = null;
         let isMyTurn = false;
-        let turnPhase = 1; // 1 = Optional Pawn Move, 2 = Mandatory Card Play
+        let turnPhase = 1; 
         let selectedPawn = null;
         let validMoves = [];
-        let activeCardExecution = null; // Holds the card data currently being played
+        let activeCardExecution = null; 
+
+        function updateInstructionHighlight() {
+            if (turnPhase === 1) {
+                document.getElementById('step-1').className = "active-step";
+                document.getElementById('step-2').className = "inactive-step";
+            } else {
+                document.getElementById('step-1').className = "inactive-step";
+                document.getElementById('step-2').className = "active-step";
+            }
+        }
 
         // --- CUSTOM MODAL LOGIC ---
         function showModal(text, buttonsHtml, cardHTML = "") {
@@ -284,13 +336,13 @@
 
         window.confirmSkipToDraw = function() {
             turnPhase = 2;
-            document.getElementById('phase-indicator').innerText = "Phase 2: Play or Reserve a Card";
+            updateInstructionHighlight();
             processDraw();
         };
 
         function processDraw() {
             if(localData.deck.length === 0) return alert("Deck is empty!");
-            const drawnCard = localData.deck[0]; // Look at top card
+            const drawnCard = localData.deck[0]; 
             const myReserve = myColor === 'white' ? localData.playerWhiteReserve : localData.playerBlackReserve;
             
             let buttons = `<button class="btn" onclick="executeCard(0, 'draw')">Play</button>`;
@@ -308,7 +360,7 @@
             if(!isMyTurn) return;
             const myReserve = myColor === 'white' ? localData.playerWhiteReserve : localData.playerBlackReserve;
             const cardIndex = slotNum - 1;
-            if(cardIndex >= myReserve.length) return; // Slot is empty
+            if(cardIndex >= myReserve.length) return; 
 
             if(turnPhase === 1) {
                 showModal("Skip your pawn move and play card?", 
@@ -321,7 +373,7 @@
 
         window.confirmSkipToReserve = function(cardIndex) {
             turnPhase = 2;
-            document.getElementById('phase-indicator').innerText = "Phase 2: Play or Reserve a Card";
+            updateInstructionHighlight();
             showReservePlayModal(cardIndex);
         };
 
@@ -336,7 +388,7 @@
 
         // --- CARD EXECUTION ROUTING ---
         window.reserveCard = async function(deckIndex) {
-            const card = localData.deck.shift(); // Remove from deck
+            const card = localData.deck.shift(); 
             const reserveKey = myColor === 'white' ? 'playerWhiteReserve' : 'playerBlackReserve';
             localData[reserveKey].push(card);
             closeModal();
@@ -346,7 +398,7 @@
         window.swapReserveAndPlay = async function(deckIndex, reserveIndex) {
             const reserveKey = myColor === 'white' ? 'playerWhiteReserve' : 'playerBlackReserve';
             const drawnCard = localData.deck.shift();
-            const cardToPlay = localData[reserveKey].splice(reserveIndex, 1, drawnCard)[0]; // Swap
+            const cardToPlay = localData[reserveKey].splice(reserveIndex, 1, drawnCard)[0]; 
             closeModal();
             startCardExecution(cardToPlay);
         };
@@ -365,15 +417,13 @@
 
         function startCardExecution(card) {
             activeCardExecution = card;
-            document.getElementById('phase-indicator').innerText = `EXECUTING: ${card.title}`;
             selectedPawn = null;
             validMoves = [];
             
-            // For card actions that don't require clicking a pawn on board (like skip)
             if(card.action === 'skip' || card.action === 'block') {
                 finalizeCardTurn();
             } else {
-                renderBoard(JSON.parse(localData.boardState)); // Refresh to show we are waiting for input
+                renderBoard(JSON.parse(localData.boardState)); 
             }
         }
 
@@ -383,13 +433,10 @@
             const state = JSON.parse(localData.boardState);
             
             if(card.action === 'remove') {
-                // Remove logic: Can click any valid enemy pawn to remove it
-                // Handled in handleSquareClick by allowing selection of enemy pieces based on zone
                 return moves; 
             }
 
             if(card.action === 'enhanced') {
-                // Standard Chess Logic Proof-of-Concept
                 if(card.piece === 'knight') {
                     const kMoves = [[-2,-1],[-2,1],[-1,-2],[-1,2],[1,-2],[1,2],[2,-1],[2,1]];
                     kMoves.forEach(m => {
@@ -399,7 +446,6 @@
                         }
                     });
                 }
-                // (Other chess piece math goes here for Queen, King, Rook, Bishop)
             }
             return moves;
         }
@@ -454,10 +500,9 @@
                     
                     selectedPawn = null;
                     validMoves = [];
-                    turnPhase = 2; // Move to Phase 2 (DO NOT end turn yet)
+                    turnPhase = 2; 
+                    updateInstructionHighlight();
                     
-                    document.getElementById('phase-indicator').innerText = "Phase 2: Play or Reserve a Card";
-                    // Push to Firebase so opponent sees move, but keep it our turn
                     await updateDoc(doc(db, "games", gameCode), { boardState: localData.boardState });
                     renderBoard(state);
                     return;
@@ -511,7 +556,6 @@
             ...Array(2).fill({ title: 'Remove', text: 'Remove one Black pawn from the Field of Play', colorTarget: 'black', zone: 'field', action: 'remove' }),
             ...Array(4).fill({ title: 'Enhanced Move', text: "Move one pawn as if it's a Queen", piece: 'queen', action: 'enhanced' }),
             ...Array(4).fill({ title: 'Enhanced Move', text: "Move one pawn as if it's a Knight", piece: 'knight', action: 'enhanced' })
-            // (Remaining deck omitted for brevity in prototype phase)
         ];
 
         function shuffle(array) {
@@ -523,6 +567,7 @@
         const unsubscribe = onSnapshot(doc(db, "games", gameCode), (snapshot) => {
             if (snapshot.exists()) {
                 const data = snapshot.data();
+                
                 if(!data.isInitialized && myColor === 'white') {
                     let initialBoard = Array(8).fill(null).map(() => Array(8).fill(null));
                     for(let r=0; r<8; r++) for(let c=0; c<8; c++) { if(r<2) initialBoard[r][c]='black'; if(r>5) initialBoard[r][c]='white'; }
@@ -532,24 +577,26 @@
                 }
 
                 if(data.isInitialized) {
+                    // Failsafe for older databases missing reserve slots
+                    data.playerWhiteReserve = data.playerWhiteReserve || [];
+                    data.playerBlackReserve = data.playerBlackReserve || [];
+                    
                     localData = data;
                     isMyTurn = (data.currentTurn === myColor);
 
                     if(isMyTurn) {
-                        document.getElementById('turn-indicator').innerText = "YOUR TURN";
-                        document.getElementById('turn-indicator').style.color = "#4CAF50";
+                        document.getElementById('turn-header').innerText = "YOUR TURN";
+                        document.getElementById('turn-header').style.color = "#4CAF50";
                         document.getElementById('instructions-panel').style.display = "block";
-                        if(!activeCardExecution) document.getElementById('phase-indicator').innerText = turnPhase === 1 ? "Phase 1: Optional Pawn Move" : "Phase 2: Play or Reserve a Card";
+                        updateInstructionHighlight();
                     } else {
                         const oppColor = myColor === 'white' ? 'black' : 'white';
-                        document.getElementById('turn-indicator').innerText = `Waiting for ${oppColor}...`;
-                        document.getElementById('turn-indicator').style.color = "#e8d0a8";
+                        document.getElementById('turn-header').innerText = `Waiting for ${oppColor}...`;
+                        document.getElementById('turn-header').style.color = "#e8d0a8";
                         document.getElementById('instructions-panel').style.display = "none";
-                        document.getElementById('phase-indicator').innerText = "";
-                        turnPhase = 1; // Reset for when it comes back
+                        turnPhase = 1; 
                     }
 
-                    // Render UI Reserves & Discards
                     renderCardSlots(data);
                     renderBoard(JSON.parse(data.boardState));
                 }
@@ -567,7 +614,7 @@
             document.getElementById('opp-reserve-2').innerHTML = oppReserve[1] ? '<div class="card-face face-down"></div>' : "RESERVE<br>CARD 2";
 
             const discard = data.discardPile;
-            document.getElementById('discard-pile').innerHTML = discard.length > 0 ? generateCardHTML(discard[discard.length-1]) : "DISCARD";
+            document.getElementById('discard-pile').innerHTML = discard && discard.length > 0 ? generateCardHTML(discard[discard.length-1]) : "DISCARD";
         }
 
         function renderBoard(boardArray) {
@@ -585,7 +632,6 @@
                         const pawn = document.createElement('div');
                         pawn.className = `pawn pawn-${boardArray[row][col]}`;
                         if(selectedPawn && selectedPawn.r === row && selectedPawn.c === col) pawn.classList.add('selected');
-                        // Add glow if targetable by active 'remove' card
                         if(activeCardExecution && activeCardExecution.action === 'remove' && activeCardExecution.colorTarget === boardArray[row][col]) {
                             const isSafeZone = (row <= 1 || row >= 6);
                             if((activeCardExecution.zone === 'safe' && isSafeZone) || (activeCardExecution.zone === 'field' && !isSafeZone)) {
