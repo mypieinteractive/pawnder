@@ -125,7 +125,7 @@
                 statusMsg.style.color = 'green';
                 statusMsg.innerText = `Game created! Waiting for opponent to join code: ${gameCode}`;
                 
-                // (In the future, we will redirect to board.html here)
+window.location.href = "board.html";
                 
             } catch (error) {
                 console.error("Error creating game:", error);
@@ -167,7 +167,7 @@
                         statusMsg.style.color = 'green';
                         statusMsg.innerText = `Successfully joined Game ${code}!`;
                         
-                        // (In the future, we will redirect to board.html here)
+window.location.href = "board.html";
                     } else {
                         statusMsg.style.color = '#d9534f';
                         statusMsg.innerText = "Game is already full or has started.";
