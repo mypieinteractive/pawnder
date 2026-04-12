@@ -36,7 +36,6 @@
 
         .center-column { display: flex; flex-direction: column; align-items: center; gap: 10px; width: 700px; }
         
-        /* Dynamic Centering Row */
         .cards-row { display: flex; flex-direction: row; justify-content: center; align-items: center; gap: 20px; width: 100%; position: relative; }
         
         #game-area { position: relative; width: 700px; height: 700px; transition: transform 0.6s; box-shadow: 0 10px 30px rgba(0,0,0,0.8); z-index: 5;}
@@ -64,7 +63,6 @@
         .card-icon { font-size: 32px; margin-top: 5px; color: #555;}
         .face-down { background-color: #0b0b0b; background-image: url('logo.png'); background-size: 80%; background-repeat: no-repeat; background-position: center; }
 
-        /* Block Stash is now hidden by default and expands naturally */
         .block-stash { position: relative; height: 110px; display: none; transition: width 0.3s; }
         
         #decision-panel { position: absolute; top: 150px; left: -20px; width: 320px; background: linear-gradient(135deg, #1f1a15, #110e0a); border: 2px solid #8c7650; padding: 20px; border-radius: 6px; box-shadow: 0 10px 40px rgba(0,0,0,0.9); text-align: center; display: none; flex-direction: column; align-items: center; gap: 15px; z-index: 100; }
@@ -81,11 +79,25 @@
         .flipper .back { transform: rotateY(180deg); }
 
         /* MOBILE CSS OVERRIDES */
-        .mobile-mode .info-panel { padding: 10px; font-size: 11px; }
-        .mobile-mode .info-panel h3 { font-size: 12px; margin-bottom: 5px;}
-        .mobile-mode #active-card-container { transform: scale(0.8); margin-top: 0;}
-        .mobile-mode #status-panel h2 { font-size: 14px; }
-        .mobile-mode #display-game-code { font-size: 18px !important; }
+        .mobile-mode .info-panel { padding: 10px; font-size: 12px; border-radius: 8px;}
+        .mobile-mode .info-panel h3 { font-size: 14px; margin-bottom: 5px;}
+        .mobile-mode #status-panel h2 { font-size: 18px; margin-bottom: 12px; }
+        .mobile-mode #display-game-code { font-size: 32px !important; letter-spacing: 4px; }
+        .mobile-mode #leave-game-btn { font-size: 16px; padding: 10px 18px; }
+        .mobile-mode #turn-header { font-size: 22px; margin-top: 15px; }
+
+        /* Scale up cards globally in mobile mode */
+        .mobile-mode .horizontal-card, 
+        .mobile-mode .card-face, 
+        .mobile-mode #anim-container, 
+        .mobile-mode #decision-card-anchor {
+            width: 224px !important; height: 154px !important; /* 40% larger */
+        }
+        .mobile-mode .block-stash { height: 154px; }
+        .mobile-mode .card-left { font-size: 14px; padding: 8px; }
+        .mobile-mode .card-right { font-size: 13px; padding: 10px; }
+        .mobile-mode .card-icon { font-size: 44px; }
+        .mobile-mode #active-card-container { margin-top: 5px; }
     </style>
 </head>
 <body>
@@ -192,10 +204,10 @@
                 </div>
             </div>
             
-            <div id="mobile-bottom-bar" style="display: none; width: 700px; flex-direction: row; justify-content: space-between; gap: 10px; margin-top: 20px;">
-                <div id="mobile-left" style="width: 220px; display: flex; flex-direction: column; gap: 10px; justify-content: center;"></div>
-                <div id="mobile-center" style="display: flex; flex-direction: column; align-items: center; gap: 10px; position: relative;"></div>
-                <div id="mobile-right" style="width: 220px; display: flex; flex-direction: column; gap: 10px; justify-content: center;"></div>
+            <div id="mobile-bottom-bar" style="display: none; width: 700px; flex-direction: row; justify-content: center; gap: 20px; margin-top: 30px;">
+                <div id="mobile-left" style="display: flex; flex-direction: column; gap: 10px; align-items: center; justify-content: flex-start; flex: 1;"></div>
+                <div id="mobile-center" style="display: flex; flex-direction: column; align-items: center; gap: 10px; position: relative; flex: 1;"></div>
+                <div id="mobile-right" style="display: flex; flex-direction: column; gap: 10px; align-items: center; justify-content: flex-start; flex: 1;"></div>
             </div>
             
         </div>
@@ -227,7 +239,6 @@
         function resizeApp() {
             const scaler = document.getElementById('scaler');
             if (isMobileMode) {
-                // Forces the 700px board to perfectly hit the screen edges on mobile width
                 let scale = Math.min(window.innerWidth / 700, window.innerHeight / 1100);
                 scaler.style.transform = `scale(${scale})`;
             } else {
@@ -247,11 +258,12 @@
             const center = document.getElementById('mobile-center');
             
             left.appendChild(document.getElementById('status-panel'));
-            right.appendChild(document.getElementById('turn-header'));
-            right.appendChild(document.getElementById('instructions-panel'));
-            right.appendChild(document.getElementById('active-card-panel'));
             
             center.appendChild(document.getElementById('draw-pile-wrapper'));
+            center.appendChild(document.getElementById('turn-header')); // Moved directly under Draw Pile
+            
+            right.appendChild(document.getElementById('instructions-panel'));
+            right.appendChild(document.getElementById('active-card-panel'));
             
             const decPanel = document.getElementById('decision-panel');
             center.appendChild(decPanel);
@@ -270,7 +282,6 @@
         const gameCode = localStorage.getItem("pawnderGameCode");
         const myColor = localStorage.getItem("pawnderPlayerColor"); 
         
-        // --- PUSH NOTIFICATION SETUP ---
         if (gameCode && myColor) {
             Notification.requestPermission().then((permission) => {
                 if (permission === 'granted') {
@@ -283,12 +294,8 @@
                     }).catch((err) => console.log('Push notification setup deferred/failed.', err));
                 }
             });
-
-            onMessage(messaging, (payload) => {
-                console.log("In-Game Notification Received: ", payload);
-            });
+            onMessage(messaging, (payload) => { console.log("In-Game Notification Received: ", payload); });
         }
-        // -------------------------------
 
         if(!gameCode || !myColor) window.location.href = "index.html";
         document.getElementById('display-game-code').innerText = gameCode;
@@ -302,6 +309,11 @@
         let localData = null, isMyTurn = false, gamePhase = "playing", turnPhase = 1, selectedPawn = null, validMoves = [], activeCardExecution = null, pendingInterruptInterval = null;
 
         const isInFieldOfPlay = (r) => r >= 2 && r <= 5;
+
+        // --- MATH CONSTANTS FOR FLIGHT OFFSET ---
+        const CARD_W = isMobileMode ? 224 : 160;
+        const CARD_H = isMobileMode ? 154 : 110;
+        const BLOCK_OFFSET = isMobileMode ? 56 : 40;
 
         function generateCardHTML(card, extraClass="") {
             if(!card) return '';
@@ -338,7 +350,7 @@
             const endCX = endBox.x + endBox.w / 2, endCY = endBox.y + endBox.h / 2;
             
             animCont.style.transition = 'none'; flipper.style.transition = 'none';
-            animCont.style.left = (startCX - 80) + 'px'; animCont.style.top = (startCY - 55) + 'px';
+            animCont.style.left = (startCX - (CARD_W / 2)) + 'px'; animCont.style.top = (startCY - (CARD_H / 2)) + 'px';
             backFace.innerHTML = cardData ? generateCardHTML(cardData) : '';
             
             animCont.style.transform = 'rotateZ(0deg)'; 
@@ -348,7 +360,7 @@
             animCont.style.display = 'block'; void animCont.offsetWidth;
             
             animCont.style.transition = 'all 0.6s cubic-bezier(0.25, 1, 0.5, 1)'; flipper.style.transition = 'transform 0.6s cubic-bezier(0.25, 1, 0.5, 1)';
-            animCont.style.left = (endCX - 80) + 'px'; animCont.style.top = (endCY - 55) + 'px';
+            animCont.style.left = (endCX - (CARD_W / 2)) + 'px'; animCont.style.top = (endCY - (CARD_H / 2)) + 'px';
             
             if(animType === 'draw') flipper.classList.add('flipped');
             
@@ -569,7 +581,7 @@
 
         function createOffscreenDest() {
             const dest = document.createElement('div');
-            dest.style.position = 'absolute'; dest.style.top = '1500px'; dest.style.left = '350px'; dest.style.width = '160px'; dest.style.height = '110px';
+            dest.style.position = 'absolute'; dest.style.top = '1500px'; dest.style.left = '350px'; dest.style.width = CARD_W + 'px'; dest.style.height = CARD_H + 'px';
             document.getElementById('scaler').appendChild(dest);
             return dest;
         }
@@ -713,11 +725,11 @@
                 stashEl.style.display = 'none'; stashEl.innerHTML = ''; return;
             }
             stashEl.style.display = 'block';
-            stashEl.style.width = (160 + (blockArray.length - 1) * 40) + 'px'; 
+            stashEl.style.width = (CARD_W + (blockArray.length - 1) * BLOCK_OFFSET) + 'px'; 
 
             let html = '';
             blockArray.forEach((card, i) => {
-                let leftOffset = i * 40;
+                let leftOffset = i * BLOCK_OFFSET;
                 if(isOpponent) html += `<div class="card-face face-down" style="position:absolute; left:${leftOffset}px; z-index:${i}; box-shadow: -2px 0 5px rgba(0,0,0,0.5);"></div>`;
                 else html += generateCardHTML(card, `block-card`); 
             });
@@ -725,7 +737,7 @@
             
             if(!isOpponent) {
                 const myCards = stashEl.querySelectorAll('.card-face');
-                myCards.forEach((el, i) => { el.style.position = 'absolute'; el.style.left = `${i*40}px`; el.style.zIndex = i; el.style.boxShadow = '-2px 0 5px rgba(0,0,0,0.5)'; });
+                myCards.forEach((el, i) => { el.style.position = 'absolute'; el.style.left = `${i*BLOCK_OFFSET}px`; el.style.zIndex = i; el.style.boxShadow = '-2px 0 5px rgba(0,0,0,0.5)'; });
             }
         }
 
