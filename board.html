@@ -7,7 +7,8 @@
     <style>
         body { margin: 0; padding: 0; display: flex; justify-content: center; align-items: center; height: 100vh; width: 100vw; background-color: #0b0b0b; font-family: 'Cinzel', serif; color: #e8d0a8; overflow: hidden; }
         .scale-wrapper { display: flex; justify-content: center; align-items: center; width: 1350px; height: 1000px; transform-origin: center; position: relative; }
-        @media (orientation: portrait) { .scale-wrapper { transform: rotate(90deg); } }
+        @media (orientation: portrait) { body:not(.mobile-mode) .scale-wrapper { transform: rotate(90deg); } }
+        
         .app-container { display: flex; flex-direction: row; justify-content: center; align-items: center; gap: 20px; width: 100%; position: relative; }
         
         .left-column { width: 260px; flex-shrink: 0; display: flex; flex-direction: column; gap: 15px; position: relative; z-index: 10;}
@@ -63,6 +64,19 @@
         .flipper.flipped { transform: rotateY(180deg); }
         .flipper .front, .flipper .back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 8px;}
         .flipper .back { transform: rotateY(180deg); }
+
+        .staging-area { width: 100%; height: auto; min-height: 80px; border: 1px solid rgba(232, 208, 168, 0.3); background: rgba(0,0,0,0.5); display: flex; flex-wrap: wrap; gap: 6px; padding: 12px; box-sizing: border-box; align-content: flex-start; border-radius: 4px; margin: 10px 0;}
+        .staging-title { font-size: 10px; width: 100%; text-align: center; color: #888; margin-bottom: 5px; letter-spacing: 1px;}
+        .mini-pawn { width: 24px; height: 24px; border-radius: 50%; border: 1px solid #555; box-shadow: 0 2px 4px rgba(0,0,0,0.5); }
+        .mini-white { background: radial-gradient(circle at 30% 30%, #ffffff, #d4d4d4 60%, #888888); }
+        .mini-black { background: radial-gradient(circle at 30% 30%, #555555, #222222 60%, #000000); border: 1px solid #111;}
+
+        /* MOBILE CSS OVERRIDES */
+        .mobile-mode .info-panel { padding: 10px; font-size: 11px; }
+        .mobile-mode .info-panel h3 { font-size: 12px; margin-bottom: 5px;}
+        .mobile-mode #active-card-container { transform: scale(0.8); margin-top: 0;}
+        .mobile-mode #status-panel h2 { font-size: 14px; }
+        .mobile-mode #display-game-code { font-size: 18px !important; }
     </style>
 </head>
 <body>
@@ -152,22 +166,39 @@
                     <div class="decision-buttons" id="decision-buttons"></div>
                 </div>
 
+                <div id="top-staging" class="staging-area">
+                    <div class="staging-title">CAPTURED PAWNS</div>
+                    <div id="top-captured-container" style="display:flex; flex-wrap:wrap; gap:5px; width:100%;"></div>
+                </div>
+
                 <div style="display: flex; gap: 30px; margin: auto 0;" id="draw-discard-container">
-                    <div style="display: flex; flex-direction: column; align-items: center; gap: 10px;">
+                    <div style="display: flex; flex-direction: column; align-items: center; gap: 10px;" id="draw-pile-wrapper">
                         <div style="font-size: 16px; letter-spacing: 2px;">DRAW</div>
                         <div class="vertical-card-boundary" onclick="handleDrawClick()" style="cursor: pointer;" id="draw-pile-boundary">
                             <div class="card-face face-down rotater-90" id="draw-pile"></div>
                         </div>
                         <div id="draw-count" style="font-size: 10px; color:#aaa; letter-spacing:1px; margin-top:5px;"></div>
                     </div>
-                    <div style="display: flex; flex-direction: column; align-items: center; gap: 10px;">
+                    <div style="display: flex; flex-direction: column; align-items: center; gap: 10px;" id="discard-pile-wrapper">
                         <div style="font-size: 16px; letter-spacing: 2px;">DISCARD</div>
                         <div class="vertical-card-boundary" id="discard-pile-boundary">
                             <div style="font-size: 12px; color: rgba(232, 208, 168, 0.4);">EMPTY</div>
                         </div>
                     </div>
                 </div>
+
+                <div id="bottom-staging" class="staging-area">
+                    <div class="staging-title">CAPTURED PAWNS</div>
+                    <div id="bottom-captured-container" style="display:flex; flex-wrap:wrap; gap:5px; width:100%;"></div>
+                </div>
             </div>
+            
+            <div id="mobile-bottom-bar" style="display: none; width: 700px; flex-direction: row; justify-content: space-between; gap: 10px; margin-top: 20px;">
+                <div id="mobile-left" style="width: 220px; display: flex; flex-direction: column; gap: 10px; justify-content: center;"></div>
+                <div id="mobile-center" style="display: flex; flex-direction: column; align-items: center; gap: 10px; position: relative;"></div>
+                <div id="mobile-right" style="width: 220px; display: flex; flex-direction: column; gap: 10px; justify-content: center;"></div>
+            </div>
+            
         </div>
     </div>
 
@@ -186,13 +217,52 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
+        const isMobileMode = new URLSearchParams(window.location.search).has('mobile');
+
         function resizeApp() {
             const scaler = document.getElementById('scaler');
-            const isPortrait = window.innerHeight > window.innerWidth;
-            let scale = isPortrait ? Math.min(window.innerWidth / 1000, window.innerHeight / 1350) : Math.min(window.innerWidth / 1350, window.innerHeight / 1000);
-            scaler.style.transform = isPortrait ? `scale(${scale}) rotate(90deg)` : `scale(${scale})`;
+            if (isMobileMode) {
+                let scale = Math.min(window.innerWidth / 740, window.innerHeight / 1250);
+                scaler.style.transform = `scale(${scale})`;
+            } else {
+                const isPortrait = window.innerHeight > window.innerWidth;
+                let scale = isPortrait ? Math.min(window.innerWidth / 1000, window.innerHeight / 1350) : Math.min(window.innerWidth / 1350, window.innerHeight / 1000);
+                scaler.style.transform = isPortrait ? `scale(${scale}) rotate(90deg)` : `scale(${scale})`;
+            }
         }
         window.addEventListener('resize', resizeApp); resizeApp();
+
+        // Initialize Mobile Layout if active
+        if (isMobileMode) {
+            document.body.classList.add('mobile-mode');
+            document.getElementById('mobile-bottom-bar').style.display = 'flex';
+            
+            const left = document.getElementById('mobile-left');
+            const right = document.getElementById('mobile-right');
+            const center = document.getElementById('mobile-center');
+            
+            left.appendChild(document.getElementById('status-panel'));
+            right.appendChild(document.getElementById('turn-header'));
+            right.appendChild(document.getElementById('instructions-panel'));
+            right.appendChild(document.getElementById('active-card-panel'));
+            
+            center.appendChild(document.getElementById('top-staging'));
+            center.appendChild(document.getElementById('draw-pile-wrapper'));
+            center.appendChild(document.getElementById('bottom-staging'));
+            
+            const decPanel = document.getElementById('decision-panel');
+            center.appendChild(decPanel);
+            decPanel.style.position = 'absolute';
+            decPanel.style.top = '-220px';
+            decPanel.style.left = '50%';
+            decPanel.style.transform = 'translateX(-50%)';
+            decPanel.style.zIndex = '200';
+            
+            document.getElementById('discard-pile-wrapper').style.display = 'none';
+            document.querySelector('.left-column').style.display = 'none';
+            document.querySelector('.right-column').style.display = 'none';
+            document.getElementById('main-app').style.flexDirection = 'column';
+        }
 
         const gameCode = localStorage.getItem("pawnderGameCode");
         const myColor = localStorage.getItem("pawnderPlayerColor"); 
@@ -208,18 +278,16 @@
         // STATE
         let localData = null;
         let isMyTurn = false;
-        let gamePhase = "playing"; // "playing", "placement", "rescue"
+        let gamePhase = "playing"; 
         let turnPhase = 1; 
         let selectedPawn = null;
         let validMoves = [];
         let activeCardExecution = null; 
-        
         let pendingInterruptInterval = null;
 
         const SVG_NUM_X = [212, 276, 340, 404, 468, 532, 596, 660, 724, 788];
         const isInFieldOfPlay = (r) => r >= 2 && r <= 5;
 
-        // UI Helpers
         function generateCardHTML(card, extraClass="") {
             if(!card) return '';
             let icon = '&#10021;';
@@ -372,7 +440,6 @@
             else renderBoard(JSON.parse(localData.boardState)); 
         }
 
-        // --- PATHFINDING & MOVEMENT ---
         function calculateStandardMoves(row, col, color, state) {
             let moves = []; const dir = color === 'white' ? -1 : 1; const startRow = color === 'white' ? 6 : 1;
             const fRow = row + dir;
@@ -415,7 +482,6 @@
             if(!isMyTurn) return;
             const state = JSON.parse(localData.boardState); const clickedColor = state[row][col];
 
-            // Placement Phase Logic
             if(gamePhase === 'placement') {
                 const mySafe = myColor === 'white' ? (row === 6 || row === 7) : (row === 0 || row === 1);
                 if(mySafe && !clickedColor) {
@@ -426,7 +492,6 @@
                 } return;
             }
 
-            // Rescue Phase Logic
             if(gamePhase === 'rescue') {
                 const mySafe = myColor === 'white' ? (row === 6 || row === 7) : (row === 0 || row === 1);
                 if(mySafe && !clickedColor) {
@@ -437,7 +502,6 @@
                 } return;
             }
 
-            // Switch Card Logic
             if(activeCardExecution && activeCardExecution.action === 'switch') {
                 if(clickedColor && isInFieldOfPlay(row)) {
                     if(turnPhase === 'switch_1') { selectedPawn = {r:row, c:col, color:clickedColor}; turnPhase = 'switch_2'; renderBoard(state); }
@@ -448,7 +512,6 @@
                 } return;
             }
 
-            // Remove Card Logic
             if(activeCardExecution && activeCardExecution.action === 'remove') {
                 if(clickedColor && clickedColor === activeCardExecution.colorTarget) {
                     const isSafe = !isInFieldOfPlay(row);
@@ -459,24 +522,21 @@
                 } return;
             }
 
-            // Standard or Enhanced Move Execution
             const moveMatch = validMoves.find(m => m.r === row && m.c === col);
             if (selectedPawn && moveMatch) {
                 const isCapture = moveMatch.attack;
                 if(isCapture) {
                     const oppBlocks = myColor === 'white' ? localData.playerBlackBlocks.length : localData.playerWhiteBlocks.length;
                     if(oppBlocks > 0) {
-                        // Push interrupt state to Firebase
                         localData.activeInterrupt = { from: selectedPawn, to: {r:row, c:col}, attacker: myColor, active: true };
                         await updateDoc(doc(db, "games", gameCode), { activeInterrupt: localData.activeInterrupt });
-                        return; // Wait for opponent to resolve
+                        return; 
                     }
                 }
                 executeBoardMove(state, row, col, isCapture);
                 return;
             }
 
-            // Selection
             if (clickedColor === myColor && (!activeCardExecution || activeCardExecution.action === 'enhanced')) { 
                 selectedPawn = { r: row, c: col }; 
                 validMoves = activeCardExecution ? calculateCardMoves(row, col, myColor, activeCardExecution, state) : calculateStandardMoves(row, col, myColor, state); 
@@ -488,7 +548,6 @@
             if(isCapture) { if(myColor === 'white') localData.capturedBlack++; else localData.capturedWhite++; }
             state[row][col] = myColor; state[selectedPawn.r][selectedPawn.c] = null; localData.boardState = JSON.stringify(state);
             
-            // Check Rescue condition
             const oppSafe = myColor === 'white' ? (row === 0 || row === 1) : (row === 6 || row === 7);
             const myCaptures = myColor === 'white' ? localData.capturedWhite : localData.capturedBlack;
             let triggersRescue = oppSafe && myCaptures > 0;
@@ -504,48 +563,56 @@
             }
         }
 
+        function createOffscreenDest() {
+            const dest = document.createElement('div');
+            dest.style.position = 'absolute'; dest.style.top = '1500px'; dest.style.left = '350px'; dest.style.width = '110px'; dest.style.height = '160px';
+            document.getElementById('scaler').appendChild(dest);
+            return dest;
+        }
+
         async function finalizeCardTurn() {
             const cardToDiscard = activeCardExecution; activeCardExecution = null;
             document.getElementById('active-card-container').innerHTML = '';
-            animateFlight(document.getElementById('active-card-panel'), document.getElementById('discard-pile-boundary'), cardToDiscard, 'discard', async () => {
-                localData.discardPile.push(cardToDiscard);
-                document.getElementById('active-card-panel').style.display = "none"; document.getElementById('instructions-panel').style.display = "block";
-                checkDeckResetOrEndTurn();
-            });
+            
+            if (isMobileMode) {
+                const fakeDest = createOffscreenDest();
+                animateFlight(document.getElementById('active-card-panel'), fakeDest, cardToDiscard, 'discard', async () => {
+                    fakeDest.remove(); localData.discardPile.push(cardToDiscard);
+                    document.getElementById('active-card-panel').style.display = "none"; document.getElementById('instructions-panel').style.display = "block";
+                    checkDeckResetOrEndTurn();
+                });
+            } else {
+                animateFlight(document.getElementById('active-card-panel'), document.getElementById('discard-pile-boundary'), cardToDiscard, 'discard', async () => {
+                    localData.discardPile.push(cardToDiscard);
+                    document.getElementById('active-card-panel').style.display = "none"; document.getElementById('instructions-panel').style.display = "block";
+                    checkDeckResetOrEndTurn();
+                });
+            }
         }
 
         async function checkDeckResetOrEndTurn() {
             if(localData.deck.length === 0) {
-                // Deck Exhausted Reset Protocol
                 const allCards = [...localData.discardPile, ...localData.playerWhiteReserve, ...localData.playerBlackReserve, ...localData.playerWhiteBlocks, ...localData.playerBlackBlocks];
                 localData.deck = shuffle(allCards);
                 localData.discardPile = []; localData.playerWhiteReserve = []; localData.playerBlackReserve = []; localData.playerWhiteBlocks = []; localData.playerBlackBlocks = [];
-                
                 let emptyBoard = Array(8).fill(null).map(() => Array(8).fill(null));
                 localData.boardState = JSON.stringify(emptyBoard);
-                localData.placementWhite = 16 - localData.capturedWhite;
-                localData.placementBlack = 16 - localData.capturedBlack;
+                localData.placementWhite = 16 - localData.capturedWhite; localData.placementBlack = 16 - localData.capturedBlack;
                 localData.gamePhase = 'placement';
             }
-            
             if(localData.gamePhase !== 'rescue') {
                 const nextTurn = myColor === 'white' ? 'black' : 'white';
                 await updateDoc(doc(db, "games", gameCode), { boardState: localData.boardState, deck: localData.deck, discardPile: localData.discardPile, playerWhiteReserve: localData.playerWhiteReserve, playerBlackReserve: localData.playerBlackReserve, playerWhiteBlocks: localData.playerWhiteBlocks, playerBlackBlocks: localData.playerBlackBlocks, capturedWhite: localData.capturedWhite, capturedBlack: localData.capturedBlack, placementWhite: localData.placementWhite || 0, placementBlack: localData.placementBlack || 0, gamePhase: localData.gamePhase, currentTurn: nextTurn });
                 turnPhase = 1; selectedPawn = null; validMoves = []; closeDecisionPanel();
             } else {
-                // Just push update, wait for user to click rescue spawn
                 await updateDoc(doc(db, "games", gameCode), { boardState: localData.boardState, gamePhase: localData.gamePhase });
             }
         }
 
         window.submitInterruptDecision = async function(useBlock) {
             clearInterval(pendingInterruptInterval); closeModal();
-            let actInt = localData.activeInterrupt;
-            actInt.active = false; actInt.blocked = useBlock;
-            
-            if(useBlock) {
-                if(myColor === 'white') localData.playerWhiteBlocks.pop(); else localData.playerBlackBlocks.pop();
-            }
+            let actInt = localData.activeInterrupt; actInt.active = false; actInt.blocked = useBlock;
+            if(useBlock) { if(myColor === 'white') localData.playerWhiteBlocks.pop(); else localData.playerBlackBlocks.pop(); }
             await updateDoc(doc(db, "games", gameCode), { activeInterrupt: actInt, playerWhiteBlocks: localData.playerWhiteBlocks, playerBlackBlocks: localData.playerBlackBlocks });
         };
 
@@ -571,10 +638,8 @@
                     data.gamePhase = data.gamePhase || "playing";
                     localData = data; gamePhase = data.gamePhase; isMyTurn = (data.currentTurn === myColor);
 
-                    // Interrupt Handling
                     if(data.activeInterrupt && data.activeInterrupt.active) {
                         if(data.activeInterrupt.attacker !== myColor) {
-                            // I am the defender. Show Modal timer.
                             if(!document.getElementById('modal-overlay').style.display || document.getElementById('modal-overlay').style.display === 'none') {
                                 let timeLeft = 10;
                                 showModal("Opponent is attempting to capture your pawn. Block this attack?", `${timeLeft}s`, `<button class="btn" onclick="submitInterruptDecision(true)">Yes</button><button class="btn" onclick="submitInterruptDecision(false)">No</button>`);
@@ -586,23 +651,19 @@
                         } else {
                             document.getElementById('turn-header').innerText = "Waiting for Opponent Block..."; document.getElementById('turn-header').style.color = "#ffd700";
                         }
-                        return; // Freeze rendering
+                        return;
                     } else if (data.activeInterrupt && !data.activeInterrupt.active && isMyTurn) {
-                        // The interrupt resolved. Resolve local move.
                         let st = JSON.parse(localData.boardState);
                         if(data.activeInterrupt.blocked) {
-                            // Revert, end turn.
                             await updateDoc(doc(db, "games", gameCode), { activeInterrupt: null });
                             if(activeCardExecution) finalizeCardTurn(); else checkDeckResetOrEndTurn();
                         } else {
-                            // Execute the pending move
                             await updateDoc(doc(db, "games", gameCode), { activeInterrupt: null });
                             executeBoardMove(st, data.activeInterrupt.to.r, data.activeInterrupt.to.c, true);
                         }
                         return;
                     }
 
-                    // Standard UI Updates
                     if(isMyTurn) {
                         document.getElementById('turn-header').style.color = "#4CAF50";
                         if(gamePhase === 'placement') document.getElementById('turn-header').innerText = "PLACEMENT PHASE: CLICK SAFE ZONE";
@@ -635,8 +696,10 @@
             let shadow = []; for(let i=1; i<=Math.min(dC, 6); i++) shadow.push(`${i*1.5}px ${i*1.5}px 0px rgba(140, 118, 80, 0.9)`);
             document.getElementById('draw-pile').style.boxShadow = shadow.join(', ');
 
-            const discard = data.discardPile;
-            document.getElementById('discard-pile-boundary').innerHTML = discard && discard.length > 0 ? generateCardHTML(discard[discard.length-1], 'rotater-90') : '<div style="font-size: 12px; color: rgba(232, 208, 168, 0.4);">EMPTY</div>';
+            if (!isMobileMode) {
+                const discard = data.discardPile;
+                document.getElementById('discard-pile-boundary').innerHTML = discard && discard.length > 0 ? generateCardHTML(discard[discard.length-1], 'rotater-90') : '<div style="font-size: 12px; color: rgba(232, 208, 168, 0.4);">EMPTY</div>';
+            }
         }
 
         function renderBlockStash(elementId, blockArray, isOpponent) {
@@ -644,28 +707,25 @@
             blockArray.forEach((card, i) => {
                 let leftOffset = i * 25;
                 if(isOpponent) html += `<div class="card-face face-down" style="position:absolute; left:${leftOffset}%; z-index:${i}; box-shadow: -2px 0 5px rgba(0,0,0,0.5);"></div>`;
-                else html += generateCardHTML(card, `block-card`); // I'd normally add inline style, doing it manually:
+                else html += generateCardHTML(card, `block-card`); 
             });
             document.getElementById(elementId).innerHTML = html;
-            // Apply absolute pos to my blocks
             const myCards = document.getElementById(elementId).querySelectorAll('.card-face');
             myCards.forEach((el, i) => { el.style.position = 'absolute'; el.style.left = `${i*25}%`; el.style.zIndex = i; el.style.boxShadow = '-2px 0 5px rgba(0,0,0,0.5)'; });
         }
 
         function renderCaptures(data) {
             const capLayer = document.getElementById('captures-layer'); capLayer.innerHTML = '';
-            // SVG mapped coordinates for tracks
-            const topY = 70; const botY = 630; // scaled Y
-            const xCoords = [148.4, 193.2, 238, 282.8, 327.6, 372.4, 417.2, 462, 506.8, 551.6]; // scaled X for 1-10
+            const topY = 70; const botY = 630; 
+            const xCoords = [148.4, 193.2, 238, 282.8, 327.6, 372.4, 417.2, 462, 506.8, 551.6]; 
             
             let topPawns = myColor === 'white' ? data.capturedWhite : data.capturedBlack;
             let botPawns = myColor === 'white' ? data.capturedBlack : data.capturedWhite;
             let topClass = myColor === 'white' ? 'pawn-white' : 'pawn-black';
             let botClass = myColor === 'white' ? 'pawn-black' : 'pawn-white';
 
-            // SVG is rotated for black, but coords remain relative to the unrotated layer holding them
             for(let i=0; i<Math.min(topPawns, 10); i++) {
-                let idx = 9-i; // 10 is on the left
+                let idx = 9-i; 
                 capLayer.innerHTML += `<div class="pawn ${topClass}" style="position:absolute; left:${xCoords[idx]-20}px; top:${topY-20}px; pointer-events:none;"></div>`;
             }
             for(let i=0; i<Math.min(botPawns, 10); i++) {
