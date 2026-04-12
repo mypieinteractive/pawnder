@@ -18,7 +18,7 @@
         }
 
         @media (orientation: portrait) {
-            .scale-wrapper { transform: rotate(90deg); }
+            body:not(.mobile-mode) .scale-wrapper { transform: rotate(90deg); }
         }
 
         .lobby-container {
@@ -90,14 +90,28 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
+        // Auto-Detect Mobile
+        function isMobileDevice() {
+            return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768;
+        }
+        
+        if (isMobileDevice()) {
+            document.body.classList.add('mobile-mode');
+        }
+
         // Dynamic Resizing Logic
         function resizeApp() {
             const scaler = document.getElementById('scaler');
-            const isPortrait = window.innerHeight > window.innerWidth;
-            let scale = isPortrait 
-                ? Math.min(window.innerWidth / 700, window.innerHeight / 1000) 
-                : Math.min(window.innerWidth / 1000, window.innerHeight / 700);
-            scaler.style.transform = isPortrait ? `scale(${scale}) rotate(90deg)` : `scale(${scale})`;
+            if (document.body.classList.contains('mobile-mode')) {
+                let scale = Math.min(window.innerWidth / 600, window.innerHeight / 800);
+                scaler.style.transform = `scale(${scale})`;
+            } else {
+                const isPortrait = window.innerHeight > window.innerWidth;
+                let scale = isPortrait 
+                    ? Math.min(window.innerWidth / 700, window.innerHeight / 1000) 
+                    : Math.min(window.innerWidth / 1000, window.innerHeight / 700);
+                scaler.style.transform = isPortrait ? `scale(${scale}) rotate(90deg)` : `scale(${scale})`;
+            }
         }
         window.addEventListener('resize', resizeApp);
         resizeApp();
