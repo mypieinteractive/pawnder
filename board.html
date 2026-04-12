@@ -217,7 +217,12 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        const isMobileMode = new URLSearchParams(window.location.search).has('mobile');
+        // Auto-Detect Mobile
+        function isMobileDevice() {
+            return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768;
+        }
+        
+        const isMobileMode = isMobileDevice();
 
         function resizeApp() {
             const scaler = document.getElementById('scaler');
@@ -672,10 +677,11 @@
                         
                         if(!activeCardExecution && gamePhase === 'playing') { document.getElementById('instructions-panel').style.display = "block"; document.getElementById('active-card-panel').style.display = "none"; updateInstructionHighlight(); }
                     } else {
-                        document.getElementById('turn-header').innerText = `Waiting for opponent...`; document.getElementById('turn-header').style.color = "#e8d0a8";
+                        const oppColor = myColor === 'white' ? 'black' : 'white';
+                        document.getElementById('turn-header').innerText = `Waiting for ${oppColor}...`; document.getElementById('turn-header').style.color = "#e8d0a8";
                         document.getElementById('instructions-panel').style.display = "none"; document.getElementById('active-card-panel').style.display = "none"; turnPhase = 1; 
                     }
-                    renderCardSlots(data); renderBoard(JSON.parse(data.boardState)); renderCaptures(data);
+                    renderCardSlots(data); renderStagingAreas(); renderBoard(JSON.parse(data.boardState)); renderCaptures(data);
                 }
             }
         });
@@ -731,6 +737,18 @@
             for(let i=0; i<Math.min(botPawns, 10); i++) {
                 capLayer.innerHTML += `<div class="pawn ${botClass}" style="position:absolute; left:${xCoords[i]-20}px; top:${botY-20}px; pointer-events:none;"></div>`;
             }
+        }
+
+        function renderStagingAreas() {
+            const topCont = document.getElementById('top-captured-container'); const botCont = document.getElementById('bottom-captured-container');
+            topCont.innerHTML = ''; botCont.innerHTML = '';
+            const topCount = myColor === 'white' ? localData.capturedWhite : localData.capturedBlack;
+            const botCount = myColor === 'white' ? localData.capturedBlack : localData.capturedWhite;
+            const topClass = myColor === 'white' ? 'mini-white' : 'mini-black';
+            const botClass = myColor === 'white' ? 'mini-black' : 'mini-white';
+
+            for(let i=0; i<topCount; i++) topCont.innerHTML += `<div class="mini-pawn ${topClass}"></div>`;
+            for(let i=0; i<botCount; i++) botCont.innerHTML += `<div class="mini-pawn ${botClass}"></div>`;
         }
 
         function renderBoard(boardArray) {
