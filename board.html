@@ -3,7 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <title>Pawnder - Digital Tabletop</title>
+    
     <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="logo.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&display=swap" rel="stylesheet">
     <style>
         body { 
@@ -56,7 +62,7 @@
         .card-left { flex: 1; padding: 6px; display: flex; flex-direction: column; align-items: center; justify-content: space-between; font-size: 11px; font-weight: bold; border-right: 1px solid #ccc; background: #f9f9f9;}
         .card-right { flex: 1.8; padding: 8px; display: flex; align-items: center; justify-content: center; text-align: center; font-size: 10px; font-weight: bold; }
         .card-icon { font-size: 32px; margin-top: 5px; color: #555;}
-        .face-down { background-color: #0b0b0b; background-image: url('Pawnder Logo-transparent bg.png'); background-size: 80%; background-repeat: no-repeat; background-position: center; }
+        .face-down { background-color: #0b0b0b; background-image: url('logo.png'); background-size: 80%; background-repeat: no-repeat; background-position: center; }
 
         /* Block Stash is now hidden by default and expands naturally */
         .block-stash { position: relative; height: 110px; display: none; transition: width 0.3s; }
@@ -139,7 +145,7 @@
                         <rect x="180" y="180" width="640" height="160" fill="url(#safeHatch)" stroke="none" pointer-events="none"/><rect x="180" y="660" width="640" height="160" fill="url(#safeHatch)" stroke="none" pointer-events="none"/>
                         <g stroke="#e8d0a8" stroke-width="5" stroke-linecap="square" opacity="0.9"><line x1="340" y1="500" x2="420" y2="580"/> <line x1="420" y1="500" x2="340" y2="580"/><line x1="420" y1="340" x2="500" y2="420"/> <line x1="500" y1="340" x2="420" y2="420"/><line x1="500" y1="580" x2="580" y2="660"/> <line x1="580" y1="580" x2="500" y2="660"/><line x1="580" y1="420" x2="660" y2="500"/> <line x1="660" y1="420" x2="580" y2="500"/></g>
                         <g id="board-decorations">
-                            <g transform="translate(100, 500) rotate(90)"><image href="Pawnder Logo-transparent bg.png" x="-400" y="-87.5" width="800" height="175" preserveAspectRatio="xMidYMid meet" /></g>
+                            <g transform="translate(100, 500) rotate(90)"><image href="logo.png" x="-400" y="-87.5" width="800" height="175" preserveAspectRatio="xMidYMid meet" /></g>
                             <path d="M 830,180 L 840,180 L 840,340 L 830,340" fill="none" stroke="#e8d0a8" stroke-width="2"/><g transform="translate(860, 260) rotate(-90)"><text x="0" y="0" text-anchor="middle" dominant-baseline="central" font-size="14" fill="#e8d0a8" letter-spacing="2">SAFE ZONE</text></g><path d="M 830,340 L 840,340 L 840,660 L 830,660" fill="none" stroke="#e8d0a8" stroke-width="2"/><g transform="translate(860, 500) rotate(-90)"><text x="0" y="0" text-anchor="middle" dominant-baseline="central" font-size="14" fill="#e8d0a8" letter-spacing="2">FIELD OF PLAY</text></g><path d="M 830,660 L 840,660 L 840,820 L 830,820" fill="none" stroke="#e8d0a8" stroke-width="2"/><g transform="translate(860, 740) rotate(-90)"><text x="0" y="0" text-anchor="middle" dominant-baseline="central" font-size="14" fill="#e8d0a8" letter-spacing="2">SAFE ZONE</text></g>
                         </g>
                         <rect x="180" y="60" width="640" height="80" fill="none" stroke="#e8d0a8" stroke-width="2"/><path d="M244 60 v80 M308 60 v80 M372 60 v80 M436 60 v80 M500 60 v80 M564 60 v80 M628 60 v80 M692 60 v80 M756 60 v80" stroke="#e8d0a8" stroke-width="2"/><g transform="translate(500, 160) rotate(180)"><text x="0" y="0" text-anchor="middle" dominant-baseline="central" font-size="20" fill="#e8d0a8" letter-spacing="2">Captures</text></g>
@@ -198,6 +204,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getFirestore, doc, onSnapshot, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-messaging.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDtHHDrRlcnsug93x3hWF3jEx8rFA8QPcw",
@@ -209,6 +216,7 @@
         };
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
+        const messaging = getMessaging(app);
 
         function isMobileDevice() {
             return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768;
@@ -261,6 +269,27 @@
 
         const gameCode = localStorage.getItem("pawnderGameCode");
         const myColor = localStorage.getItem("pawnderPlayerColor"); 
+        
+        // --- PUSH NOTIFICATION SETUP ---
+        if (gameCode && myColor) {
+            Notification.requestPermission().then((permission) => {
+                if (permission === 'granted') {
+                    getToken(messaging, { vapidKey: 'OeQewZtT69BgTGBL9VpRVUJLDALaKcsnBZwT4HtPNio' })
+                    .then(async (currentToken) => {
+                        if (currentToken) {
+                            const tokenKey = myColor === 'white' ? 'playerWhiteToken' : 'playerBlackToken';
+                            await updateDoc(doc(db, "games", gameCode), { [tokenKey]: currentToken });
+                        }
+                    }).catch((err) => console.log('Push notification setup deferred/failed.', err));
+                }
+            });
+
+            onMessage(messaging, (payload) => {
+                console.log("In-Game Notification Received: ", payload);
+            });
+        }
+        // -------------------------------
+
         if(!gameCode || !myColor) window.location.href = "index.html";
         document.getElementById('display-game-code').innerText = gameCode;
 
@@ -312,7 +341,6 @@
             animCont.style.left = (startCX - 80) + 'px'; animCont.style.top = (startCY - 55) + 'px';
             backFace.innerHTML = cardData ? generateCardHTML(cardData) : '';
             
-            // Replaced all 90deg rotations to 0deg to maintain native horizontal landscape bounds
             animCont.style.transform = 'rotateZ(0deg)'; 
             if(animType === 'draw') flipper.className = 'flipper'; 
             else flipper.className = 'flipper flipped';
@@ -327,7 +355,6 @@
             setTimeout(() => { animCont.style.display = 'none'; if(onComplete) onComplete(); }, 600);
         }
 
-        // Draw & Reserve Logic
         window.handleDrawClick = async function() {
             if(!isMyTurn || activeCardExecution || gamePhase !== "playing") return;
             if(turnPhase === 1) { showDecisionPanel("Skip pawn move and draw?", `<button class="btn" onclick="closeDecisionPanel()">Cancel</button><button class="btn" onclick="confirmSkip('draw')">Yes</button>`); return; }
@@ -686,7 +713,7 @@
                 stashEl.style.display = 'none'; stashEl.innerHTML = ''; return;
             }
             stashEl.style.display = 'block';
-            stashEl.style.width = (160 + (blockArray.length - 1) * 40) + 'px'; // Base 160px width + 40px for each overlay stack
+            stashEl.style.width = (160 + (blockArray.length - 1) * 40) + 'px'; 
 
             let html = '';
             blockArray.forEach((card, i) => {
