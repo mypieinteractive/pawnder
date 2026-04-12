@@ -5,7 +5,12 @@
     <title>Pawnder - Digital Tabletop</title>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        body { margin: 0; padding: 0; display: flex; justify-content: center; align-items: center; height: 100vh; width: 100vw; background-color: #0b0b0b; font-family: 'Cinzel', serif; color: #e8d0a8; overflow: hidden; }
+        body { 
+            margin: 0; padding: 0; display: flex; justify-content: center; align-items: center; 
+            height: 100vh; width: 100vw; background-color: #0b0b0b; 
+            font-family: 'Cinzel', serif; color: #e8d0a8; 
+            overflow: hidden; touch-action: none; /* Hard lock swipe-scrolling */
+        }
         .scale-wrapper { display: flex; justify-content: center; align-items: center; width: 1350px; height: 1000px; transform-origin: center; position: relative; }
         @media (orientation: portrait) { body:not(.mobile-mode) .scale-wrapper { transform: rotate(90deg); } }
         
@@ -22,8 +27,11 @@
         .active-step { color: #ffd700; text-shadow: 0 0 8px rgba(255, 215, 0, 0.4); }
         .inactive-step { color: #666; }
 
-        .center-column { display: flex; flex-direction: column; align-items: center; gap: 10px; }
-        .cards-row { display: flex; flex-direction: row; gap: 40px; position: relative;}
+        .center-column { display: flex; flex-direction: column; align-items: center; gap: 10px; width: 700px; }
+        
+        /* Dynamic Centering Row */
+        .cards-row { display: flex; flex-direction: row; justify-content: center; align-items: center; gap: 20px; width: 100%; position: relative; }
+        
         #game-area { position: relative; width: 700px; height: 700px; transition: transform 0.6s; box-shadow: 0 10px 30px rgba(0,0,0,0.8); z-index: 5;}
         .rotate-180 { transform: rotate(180deg); }
         #interactive-grid { position: absolute; top: 126px; left: 126px; width: 448px; height: 448px; display: grid; grid-template-columns: repeat(8, 1fr); grid-template-rows: repeat(8, 1fr); z-index: 10; }
@@ -42,15 +50,15 @@
         
         .card-slot { border: 2px dashed rgba(232, 208, 168, 0.6); display: flex; justify-content: center; align-items: center; color: rgba(232, 208, 168, 0.5); font-size: 14px; text-align: center; box-sizing: border-box; background: rgba(0,0,0,0.3); border-radius: 8px; cursor: pointer; position: relative;}
         .horizontal-card { width: 160px; height: 110px; }
-        .vertical-card-boundary { width: 110px; height: 160px; display: flex; justify-content: center; align-items: center; border: 2px dashed rgba(232, 208, 168, 0.6); border-radius: 8px; position: relative;}
+        
         .card-face { background: #ffffff; color: #111111; width: 160px; height: 110px; border: 2px solid #8c7650; display: flex; font-family: 'Cinzel', serif; box-shadow: 2px 4px 8px rgba(0,0,0,0.8); box-sizing: border-box; border-radius: 8px; overflow: hidden; position: absolute; }
         .card-left { flex: 1; padding: 6px; display: flex; flex-direction: column; align-items: center; justify-content: space-between; font-size: 11px; font-weight: bold; border-right: 1px solid #ccc; background: #f9f9f9;}
         .card-right { flex: 1.8; padding: 8px; display: flex; align-items: center; justify-content: center; text-align: center; font-size: 10px; font-weight: bold; }
         .card-icon { font-size: 32px; margin-top: 5px; color: #555;}
         .face-down { background-color: #0b0b0b; background-image: url('Pawnder Logo-transparent bg.png'); background-size: 80%; background-repeat: no-repeat; background-position: center; }
-        .rotater-90 { transform: rotate(90deg); }
 
-        .block-stash { position: relative; width: 160px; height: 110px; }
+        /* Block Stash is now hidden by default and expands naturally */
+        .block-stash { position: relative; height: 110px; display: none; transition: width 0.3s; }
         
         #decision-panel { position: absolute; top: 150px; left: -20px; width: 320px; background: linear-gradient(135deg, #1f1a15, #110e0a); border: 2px solid #8c7650; padding: 20px; border-radius: 6px; box-shadow: 0 10px 40px rgba(0,0,0,0.9); text-align: center; display: none; flex-direction: column; align-items: center; gap: 15px; z-index: 100; }
         .decision-buttons { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; width: 100%;}
@@ -64,12 +72,6 @@
         .flipper.flipped { transform: rotateY(180deg); }
         .flipper .front, .flipper .back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 8px;}
         .flipper .back { transform: rotateY(180deg); }
-
-        .staging-area { width: 100%; height: auto; min-height: 80px; border: 1px solid rgba(232, 208, 168, 0.3); background: rgba(0,0,0,0.5); display: flex; flex-wrap: wrap; gap: 6px; padding: 12px; box-sizing: border-box; align-content: flex-start; border-radius: 4px; margin: 10px 0;}
-        .staging-title { font-size: 10px; width: 100%; text-align: center; color: #888; margin-bottom: 5px; letter-spacing: 1px;}
-        .mini-pawn { width: 24px; height: 24px; border-radius: 50%; border: 1px solid #555; box-shadow: 0 2px 4px rgba(0,0,0,0.5); }
-        .mini-white { background: radial-gradient(circle at 30% 30%, #ffffff, #d4d4d4 60%, #888888); }
-        .mini-black { background: radial-gradient(circle at 30% 30%, #555555, #222222 60%, #000000); border: 1px solid #111;}
 
         /* MOBILE CSS OVERRIDES */
         .mobile-mode .info-panel { padding: 10px; font-size: 11px; }
@@ -166,30 +168,20 @@
                     <div class="decision-buttons" id="decision-buttons"></div>
                 </div>
 
-                <div id="top-staging" class="staging-area">
-                    <div class="staging-title">CAPTURED PAWNS</div>
-                    <div id="top-captured-container" style="display:flex; flex-wrap:wrap; gap:5px; width:100%;"></div>
-                </div>
-
                 <div style="display: flex; gap: 30px; margin: auto 0;" id="draw-discard-container">
                     <div style="display: flex; flex-direction: column; align-items: center; gap: 10px;" id="draw-pile-wrapper">
                         <div style="font-size: 16px; letter-spacing: 2px;">DRAW</div>
-                        <div class="vertical-card-boundary" onclick="handleDrawClick()" style="cursor: pointer;" id="draw-pile-boundary">
-                            <div class="card-face face-down rotater-90" id="draw-pile"></div>
+                        <div class="card-slot horizontal-card" onclick="handleDrawClick()" style="cursor: pointer; border: none;" id="draw-pile-boundary">
+                            <div class="card-face face-down" id="draw-pile" style="position: relative; left: 0; top: 0;"></div>
                         </div>
                         <div id="draw-count" style="font-size: 10px; color:#aaa; letter-spacing:1px; margin-top:5px;"></div>
                     </div>
                     <div style="display: flex; flex-direction: column; align-items: center; gap: 10px;" id="discard-pile-wrapper">
                         <div style="font-size: 16px; letter-spacing: 2px;">DISCARD</div>
-                        <div class="vertical-card-boundary" id="discard-pile-boundary">
+                        <div class="card-slot horizontal-card" style="border: none;" id="discard-pile-boundary">
                             <div style="font-size: 12px; color: rgba(232, 208, 168, 0.4);">EMPTY</div>
                         </div>
                     </div>
-                </div>
-
-                <div id="bottom-staging" class="staging-area">
-                    <div class="staging-title">CAPTURED PAWNS</div>
-                    <div id="bottom-captured-container" style="display:flex; flex-wrap:wrap; gap:5px; width:100%;"></div>
                 </div>
             </div>
             
@@ -217,7 +209,6 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // Auto-Detect Mobile
         function isMobileDevice() {
             return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768;
         }
@@ -227,7 +218,8 @@
         function resizeApp() {
             const scaler = document.getElementById('scaler');
             if (isMobileMode) {
-                let scale = Math.min(window.innerWidth / 740, window.innerHeight / 1250);
+                // Forces the 700px board to perfectly hit the screen edges on mobile width
+                let scale = Math.min(window.innerWidth / 700, window.innerHeight / 1100);
                 scaler.style.transform = `scale(${scale})`;
             } else {
                 const isPortrait = window.innerHeight > window.innerWidth;
@@ -237,7 +229,6 @@
         }
         window.addEventListener('resize', resizeApp); resizeApp();
 
-        // Initialize Mobile Layout if active
         if (isMobileMode) {
             document.body.classList.add('mobile-mode');
             document.getElementById('mobile-bottom-bar').style.display = 'flex';
@@ -251,9 +242,7 @@
             right.appendChild(document.getElementById('instructions-panel'));
             right.appendChild(document.getElementById('active-card-panel'));
             
-            center.appendChild(document.getElementById('top-staging'));
             center.appendChild(document.getElementById('draw-pile-wrapper'));
-            center.appendChild(document.getElementById('bottom-staging'));
             
             const decPanel = document.getElementById('decision-panel');
             center.appendChild(decPanel);
@@ -280,17 +269,8 @@
         }
         window.leaveGame = function() { localStorage.removeItem("pawnderGameCode"); localStorage.removeItem("pawnderPlayerColor"); window.location.href = "index.html"; };
 
-        // STATE
-        let localData = null;
-        let isMyTurn = false;
-        let gamePhase = "playing"; 
-        let turnPhase = 1; 
-        let selectedPawn = null;
-        let validMoves = [];
-        let activeCardExecution = null; 
-        let pendingInterruptInterval = null;
+        let localData = null, isMyTurn = false, gamePhase = "playing", turnPhase = 1, selectedPawn = null, validMoves = [], activeCardExecution = null, pendingInterruptInterval = null;
 
-        const SVG_NUM_X = [212, 276, 340, 404, 468, 532, 596, 660, 724, 788];
         const isInFieldOfPlay = (r) => r >= 2 && r <= 5;
 
         function generateCardHTML(card, extraClass="") {
@@ -304,18 +284,14 @@
         }
 
         function showModal(text, subtext, buttonsHtml) {
-            document.getElementById('modal-text').innerHTML = text;
-            document.getElementById('modal-subtext').innerHTML = subtext;
-            document.getElementById('modal-buttons').innerHTML = buttonsHtml;
-            document.getElementById('modal-overlay').style.display = "flex";
+            document.getElementById('modal-text').innerHTML = text; document.getElementById('modal-subtext').innerHTML = subtext;
+            document.getElementById('modal-buttons').innerHTML = buttonsHtml; document.getElementById('modal-overlay').style.display = "flex";
         }
         window.closeModal = () => { document.getElementById('modal-overlay').style.display = "none"; clearInterval(pendingInterruptInterval); };
 
         function showDecisionPanel(text, buttonsHtml, showAnchor=false) {
-            document.getElementById('decision-text').innerHTML = text;
-            document.getElementById('decision-buttons').innerHTML = buttonsHtml;
-            document.getElementById('decision-card-anchor').style.display = showAnchor ? "block" : "none";
-            document.getElementById('decision-panel').style.display = "flex";
+            document.getElementById('decision-text').innerHTML = text; document.getElementById('decision-buttons').innerHTML = buttonsHtml;
+            document.getElementById('decision-card-anchor').style.display = showAnchor ? "block" : "none"; document.getElementById('decision-panel').style.display = "flex";
         }
         window.closeDecisionPanel = function() { document.getElementById('decision-panel').style.display = "none"; }
 
@@ -335,17 +311,17 @@
             animCont.style.left = (startCX - 80) + 'px'; animCont.style.top = (startCY - 55) + 'px';
             backFace.innerHTML = cardData ? generateCardHTML(cardData) : '';
             
-            if(animType === 'draw') { animCont.style.transform = 'rotateZ(90deg)'; flipper.className = 'flipper'; } 
-            else if (animType === 'discard') { animCont.style.transform = 'rotateZ(0deg)'; flipper.className = 'flipper flipped'; }
-            else { animCont.style.transform = 'rotateZ(0deg)'; flipper.className = 'flipper flipped'; }
+            // Replaced all 90deg rotations to 0deg to maintain native horizontal landscape bounds
+            animCont.style.transform = 'rotateZ(0deg)'; 
+            if(animType === 'draw') flipper.className = 'flipper'; 
+            else flipper.className = 'flipper flipped';
             
             animCont.style.display = 'block'; void animCont.offsetWidth;
             
             animCont.style.transition = 'all 0.6s cubic-bezier(0.25, 1, 0.5, 1)'; flipper.style.transition = 'transform 0.6s cubic-bezier(0.25, 1, 0.5, 1)';
             animCont.style.left = (endCX - 80) + 'px'; animCont.style.top = (endCY - 55) + 'px';
             
-            if(animType === 'draw') { animCont.style.transform = 'rotateZ(0deg)'; flipper.classList.add('flipped'); }
-            else if(animType === 'discard') animCont.style.transform = 'rotateZ(90deg)';
+            if(animType === 'draw') flipper.classList.add('flipped');
             
             setTimeout(() => { animCont.style.display = 'none'; if(onComplete) onComplete(); }, 600);
         }
@@ -375,10 +351,7 @@
             document.getElementById('decision-card-anchor').innerHTML = generateCardHTML(drawnCard);
             
             animateFlight(document.getElementById('draw-pile-boundary'), document.getElementById('decision-card-anchor'), drawnCard, 'draw', () => {
-                if (drawnCard.action === 'block') {
-                    showDecisionPanel("", `<button class="btn" onclick="takeBlockCard()">Take Block Card</button>`, true);
-                    return;
-                }
+                if (drawnCard.action === 'block') { showDecisionPanel("", `<button class="btn" onclick="takeBlockCard()">Take Block Card</button>`, true); return; }
                 let btns = `<button class="btn" onclick="executeCard(0, 'draw')">Play</button>`;
                 if (myRes.length < 2) btns += `<button class="btn" onclick="reserveCard()">Reserve</button>`;
                 else btns += `<br><span style="font-size:10px; color:#aaa; width:100%;">Reserves Full:</span><br><button class="btn" onclick="swapReserveAndPlay(0)">Play Res 1</button><button class="btn" onclick="swapReserveAndPlay(1)">Play Res 2</button>`;
@@ -390,8 +363,7 @@
             const card = localData.deck.shift(); closeDecisionPanel();
             const blockKey = myColor === 'white' ? 'playerWhiteBlocks' : 'playerBlackBlocks';
             animateFlight(document.getElementById('decision-card-anchor'), document.getElementById(`my-block-stash`), card, 'reserve', () => {
-                localData[blockKey].push(card); 
-                checkDeckResetOrEndTurn(); 
+                localData[blockKey].push(card); checkDeckResetOrEndTurn(); 
             });
         };
 
@@ -436,8 +408,7 @@
 
         function startCardExecution(card) {
             activeCardExecution = card; selectedPawn = null; validMoves = [];
-            document.getElementById('instructions-panel').style.display = "none";
-            document.getElementById('active-card-panel').style.display = "block";
+            document.getElementById('instructions-panel').style.display = "none"; document.getElementById('active-card-panel').style.display = "block";
             document.getElementById('active-card-container').innerHTML = generateCardHTML(card);
 
             if(card.action === 'skip' || card.action === 'block') finalizeCardTurn();
@@ -570,7 +541,7 @@
 
         function createOffscreenDest() {
             const dest = document.createElement('div');
-            dest.style.position = 'absolute'; dest.style.top = '1500px'; dest.style.left = '350px'; dest.style.width = '110px'; dest.style.height = '160px';
+            dest.style.position = 'absolute'; dest.style.top = '1500px'; dest.style.left = '350px'; dest.style.width = '160px'; dest.style.height = '110px';
             document.getElementById('scaler').appendChild(dest);
             return dest;
         }
@@ -681,7 +652,7 @@
                         document.getElementById('turn-header').innerText = `Waiting for ${oppColor}...`; document.getElementById('turn-header').style.color = "#e8d0a8";
                         document.getElementById('instructions-panel').style.display = "none"; document.getElementById('active-card-panel').style.display = "none"; turnPhase = 1; 
                     }
-                    renderCardSlots(data); renderStagingAreas(); renderBoard(JSON.parse(data.boardState)); renderCaptures(data);
+                    renderCardSlots(data); renderBoard(JSON.parse(data.boardState)); renderCaptures(data);
                 }
             }
         });
@@ -704,20 +675,30 @@
 
             if (!isMobileMode) {
                 const discard = data.discardPile;
-                document.getElementById('discard-pile-boundary').innerHTML = discard && discard.length > 0 ? generateCardHTML(discard[discard.length-1], 'rotater-90') : '<div style="font-size: 12px; color: rgba(232, 208, 168, 0.4);">EMPTY</div>';
+                document.getElementById('discard-pile-boundary').innerHTML = discard && discard.length > 0 ? generateCardHTML(discard[discard.length-1]) : '<div style="font-size: 12px; color: rgba(232, 208, 168, 0.4);">EMPTY</div>';
             }
         }
 
         function renderBlockStash(elementId, blockArray, isOpponent) {
+            const stashEl = document.getElementById(elementId);
+            if (!blockArray || blockArray.length === 0) {
+                stashEl.style.display = 'none'; stashEl.innerHTML = ''; return;
+            }
+            stashEl.style.display = 'block';
+            stashEl.style.width = (160 + (blockArray.length - 1) * 40) + 'px'; // Base 160px width + 40px for each overlay stack
+
             let html = '';
             blockArray.forEach((card, i) => {
-                let leftOffset = i * 25;
-                if(isOpponent) html += `<div class="card-face face-down" style="position:absolute; left:${leftOffset}%; z-index:${i}; box-shadow: -2px 0 5px rgba(0,0,0,0.5);"></div>`;
+                let leftOffset = i * 40;
+                if(isOpponent) html += `<div class="card-face face-down" style="position:absolute; left:${leftOffset}px; z-index:${i}; box-shadow: -2px 0 5px rgba(0,0,0,0.5);"></div>`;
                 else html += generateCardHTML(card, `block-card`); 
             });
-            document.getElementById(elementId).innerHTML = html;
-            const myCards = document.getElementById(elementId).querySelectorAll('.card-face');
-            myCards.forEach((el, i) => { el.style.position = 'absolute'; el.style.left = `${i*25}%`; el.style.zIndex = i; el.style.boxShadow = '-2px 0 5px rgba(0,0,0,0.5)'; });
+            stashEl.innerHTML = html;
+            
+            if(!isOpponent) {
+                const myCards = stashEl.querySelectorAll('.card-face');
+                myCards.forEach((el, i) => { el.style.position = 'absolute'; el.style.left = `${i*40}px`; el.style.zIndex = i; el.style.boxShadow = '-2px 0 5px rgba(0,0,0,0.5)'; });
+            }
         }
 
         function renderCaptures(data) {
@@ -737,18 +718,6 @@
             for(let i=0; i<Math.min(botPawns, 10); i++) {
                 capLayer.innerHTML += `<div class="pawn ${botClass}" style="position:absolute; left:${xCoords[i]-20}px; top:${botY-20}px; pointer-events:none;"></div>`;
             }
-        }
-
-        function renderStagingAreas() {
-            const topCont = document.getElementById('top-captured-container'); const botCont = document.getElementById('bottom-captured-container');
-            topCont.innerHTML = ''; botCont.innerHTML = '';
-            const topCount = myColor === 'white' ? localData.capturedWhite : localData.capturedBlack;
-            const botCount = myColor === 'white' ? localData.capturedBlack : localData.capturedWhite;
-            const topClass = myColor === 'white' ? 'mini-white' : 'mini-black';
-            const botClass = myColor === 'white' ? 'mini-black' : 'mini-white';
-
-            for(let i=0; i<topCount; i++) topCont.innerHTML += `<div class="mini-pawn ${topClass}"></div>`;
-            for(let i=0; i<botCount; i++) botCont.innerHTML += `<div class="mini-pawn ${botClass}"></div>`;
         }
 
         function renderBoard(boardArray) {
