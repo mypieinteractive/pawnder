@@ -92,7 +92,13 @@
         .under-card-btn-row { display: none; }
         .mobile-fixed-bar { display: none; }
 
-        /* MOBILE CSS OVERRIDES */
+        /* --- MOBILE CSS OVERRIDES --- */
+        body.mobile-mode {
+            padding-top: 70px !important;
+            padding-bottom: 130px !important;
+            box-sizing: border-box !important;
+        }
+        
         .mobile-mode .info-panel { display: none !important; }
         .mobile-mode #status-panel { display: none !important; }
         .mobile-mode .center-column { width: 740px !important; margin: 0 auto; }
@@ -254,7 +260,9 @@
                             </g>
                         </g>
 
-                        <text x="500" y="40" text-anchor="middle" dominant-baseline="central" font-size="20" fill="#e8d0a8" letter-spacing="2">Captures</text>
+                        <g transform="translate(500, 40) rotate(180)">
+                            <text x="0" y="0" text-anchor="middle" dominant-baseline="central" font-size="20" fill="#e8d0a8" letter-spacing="2">Captures</text>
+                        </g>
                         <rect x="100" y="60" width="800" height="80" fill="none" stroke="#e8d0a8" stroke-width="2"/>
                         <path d="M180 60 v80 M260 60 v80 M340 60 v80 M420 60 v80 M500 60 v80 M580 60 v80 M660 60 v80 M740 60 v80 M820 60 v80" stroke="#e8d0a8" stroke-width="2"/>
                         <g fill="#e8d0a8" font-size="34">
@@ -355,7 +363,8 @@
         function resizeApp() {
             const scaler = document.getElementById('scaler');
             if (isMobileMode) {
-                let scale = Math.min(window.innerWidth / 740, (window.innerHeight - 230) / 950);
+                // Safely calculates available vertical area exactly between the fixed headers, ensuring flawless centering and no overlaps!
+                let scale = Math.min(window.innerWidth / 740, (window.innerHeight - 220) / 1100);
                 scaler.style.transform = `scale(${scale})`;
             } else {
                 const isPortrait = window.innerHeight > window.innerWidth;
@@ -568,11 +577,14 @@
                 dragGhost.style.zIndex = '9999';
                 dragGhost.style.pointerEvents = 'none'; 
                 dragGhost.style.opacity = '0.9';
+                dragGhost.style.margin = '0';
                 
-                // Highlight without scaling
-                dragGhost.style.transform = 'none';
-                dragGhost.style.boxShadow = '0 0 15px 5px #ffd700';
-                dragGhost.style.border = '2px solid #ffd700';
+                // Applying border/shadow specifically to the inner face so bounding box never enlarges
+                const ghostFace = dragGhost.querySelector('.card-face');
+                if (ghostFace) {
+                    ghostFace.style.boxShadow = '0 0 15px 5px #ffd700';
+                    ghostFace.style.borderColor = '#ffd700';
+                }
                 
                 const rect = target.getBoundingClientRect();
                 dragGhost.style.width = rect.width + 'px';
@@ -700,14 +712,8 @@
             const myRes = myColor === 'white' ? localData.playerWhiteReserve : localData.playerBlackReserve;
             
             if (drawnCard.action === 'block') {
-                if (isMobileMode) {
-                    localData.deck.shift(); 
-                    takeBlockCard(drawnCard);
-                } else {
-                    animateFlight(document.getElementById('draw-pile-boundary'), document.getElementById('decision-card-anchor'), drawnCard, 'draw', () => {
-                        showDecisionPanel("", `<button class="btn" onclick="takeBlockCard()">Take Block Card</button>`, true);
-                    });
-                }
+                localData.deck.shift(); 
+                takeBlockCard(drawnCard);
                 return;
             }
 
@@ -725,7 +731,7 @@
         }
 
         window.takeBlockCard = async function(preDrawnCard = null) {
-            const card = preDrawnCard || localData.deck.shift(); 
+            const card = preDrawnCard; 
             closeDecisionPanel();
             const blockKey = myColor === 'white' ? 'playerWhiteBlocks' : 'playerBlackBlocks';
             
@@ -767,6 +773,20 @@
                 animateFlight(document.getElementById('decision-card-anchor'), document.getElementById(`my-reserve-${targetIdx+1}`), card, 'reserve', () => {
                     localData[reserveKey].push(card); checkDeckResetOrEndTurn();
                 });
+            }
+        };
+
+        window.swapReserveAndPlay = async function(reserveIndex) {
+            const reserveKey = myColor === 'white' ? 'playerWhiteReserve' : 'playerBlackReserve';
+            const drawnCard = localData.deck.shift();
+            const cardToPlay = localData[reserveKey].splice(reserveIndex, 1, drawnCard)[0]; 
+            closeDecisionPanel();
+            
+            if (isMobileMode) {
+                document.getElementById('draw-pile-flipper').classList.remove('flipped');
+                startCardExecution(cardToPlay);
+            } else {
+                animateFlight(document.getElementById('decision-card-anchor'), document.getElementById(`my-reserve-${reserveIndex+1}`), drawnCard, 'reserve', () => startCardExecution(cardToPlay));
             }
         };
 
@@ -921,6 +941,13 @@
             }
         }
 
+        function createOffscreenDest() {
+            const dest = document.createElement('div');
+            dest.style.position = 'absolute'; dest.style.top = '1500px'; dest.style.left = '350px'; dest.style.width = CARD_W + 'px'; dest.style.height = CARD_H + 'px';
+            document.getElementById('scaler').appendChild(dest);
+            return dest;
+        }
+
         async function finalizeCardTurn() {
             const cardToDiscard = activeCardExecution; activeCardExecution = null;
             document.getElementById('active-card-container').innerHTML = '';
@@ -965,7 +992,7 @@
             if (localData.gameMode === 'local') {
                 let st = JSON.parse(localData.boardState);
                 let originalColor = myColor;
-                myColor = actInt.attacker; // Temporarily execute the turn as the attacker
+                myColor = actInt.attacker; 
                 
                 if (useBlock) {
                     if (defenderColor === 'white') localData.playerWhiteBlocks.pop();
@@ -982,7 +1009,7 @@
                     await updateDoc(doc(db, "games", gameCode), { activeInterrupt: null });
                     executeBoardMove(st, actInt.to.r, actInt.to.c, true);
                 }
-                myColor = originalColor; // Restore (though the listener will cleanly overwrite this)
+                myColor = originalColor; 
             } else {
                 actInt.active = false; actInt.blocked = useBlock;
                 if(useBlock) { 
@@ -1012,7 +1039,6 @@
                     if (data.gameMode === 'local') { 
                         myColor = data.currentTurn; 
                         
-                        // Pass & Play Interrupt Override: Forces perspective flip to the Defender seamlessly
                         if (data.activeInterrupt && data.activeInterrupt.active) {
                             myColor = data.activeInterrupt.attacker === 'white' ? 'black' : 'white';
                         }
