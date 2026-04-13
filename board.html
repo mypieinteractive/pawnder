@@ -36,6 +36,7 @@
 
         .center-column { display: flex; flex-direction: column; align-items: center; gap: 10px; width: 700px; }
         
+        /* Dynamic Centering Row */
         .cards-row { display: flex; flex-direction: row; justify-content: center; align-items: center; gap: 20px; width: 100%; position: relative; }
         
         #game-area { position: relative; width: 700px; height: 700px; transition: transform 0.6s; box-shadow: 0 10px 30px rgba(0,0,0,0.8); z-index: 5;}
@@ -63,6 +64,7 @@
         .card-icon { font-size: 32px; margin-top: 5px; color: #555;}
         .face-down { background-color: #0b0b0b; background-image: url('logo.png'); background-size: 80%; background-repeat: no-repeat; background-position: center; }
 
+        /* Block Stash is now hidden by default and expands naturally */
         .block-stash { position: relative; height: 110px; display: none; transition: width 0.3s; }
         
         #decision-panel { position: absolute; top: 150px; left: -20px; width: 320px; background: linear-gradient(135deg, #1f1a15, #110e0a); border: 2px solid #8c7650; padding: 20px; border-radius: 6px; box-shadow: 0 10px 40px rgba(0,0,0,0.9); text-align: center; display: none; flex-direction: column; align-items: center; gap: 15px; z-index: 100; }
@@ -148,22 +150,47 @@
 
                 <div id="game-area">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" width="700" height="700" style="display: block; position: absolute; top: 0; left: 0;">
-                        <defs><pattern id="safeHatch" width="12" height="12" patternTransform="rotate(45 0 0)" patternUnits="userSpaceOnUse"><line x1="0" y1="0" x2="0" y2="12" stroke="#e8d0a8" stroke-width="1.5" stroke-opacity="0.3"/></pattern></defs>
-                        <rect width="1000" height="1000" fill="#000000"/><rect x="10" y="10" width="980" height="980" fill="none" stroke="#e8d0a8" stroke-width="2"/><rect x="20" y="20" width="960" height="960" fill="none" stroke="#e8d0a8" stroke-width="1"/><rect x="180" y="180" width="640" height="640" fill="#000" stroke="#e8d0a8" stroke-width="3"/>
+                        <defs>
+                            <pattern id="safeHatch" width="14" height="14" patternTransform="rotate(45 0 0)" patternUnits="userSpaceOnUse">
+                                <line x1="0" y1="0" x2="0" y2="14" stroke="#0b0b0b" stroke-width="4" stroke-opacity="0.8"/>
+                                <line x1="0" y1="0" x2="0" y2="14" stroke="#e8d0a8" stroke-width="2" stroke-opacity="0.9"/>
+                            </pattern>
+                        </defs>
+                        <rect width="1000" height="1000" fill="#000000"/>
+                        <rect x="10" y="10" width="980" height="980" fill="none" stroke="#e8d0a8" stroke-width="2"/>
+                        <rect x="20" y="20" width="960" height="960" fill="none" stroke="#e8d0a8" stroke-width="1"/>
+                        <rect x="180" y="180" width="640" height="640" fill="#000" stroke="#e8d0a8" stroke-width="3"/>
+                        
                         <g fill="#e8d0a8" opacity="0.85">
                             <rect x="180" y="180" width="80" height="80"/><rect x="340" y="180" width="80" height="80"/><rect x="500" y="180" width="80" height="80"/><rect x="660" y="180" width="80" height="80"/><rect x="260" y="260" width="80" height="80"/><rect x="420" y="260" width="80" height="80"/><rect x="580" y="260" width="80" height="80"/><rect x="740" y="260" width="80" height="80"/><rect x="180" y="340" width="80" height="80"/><rect x="340" y="340" width="80" height="80"/><rect x="500" y="340" width="80" height="80"/><rect x="660" y="340" width="80" height="80"/><rect x="260" y="420" width="80" height="80"/><rect x="420" y="420" width="80" height="80"/><rect x="580" y="420" width="80" height="80"/><rect x="740" y="420" width="80" height="80"/><rect x="180" y="500" width="80" height="80"/><rect x="340" y="500" width="80" height="80"/><rect x="500" y="500" width="80" height="80"/><rect x="660" y="500" width="80" height="80"/><rect x="260" y="580" width="80" height="80"/><rect x="420" y="580" width="80" height="80"/><rect x="580" y="580" width="80" height="80"/><rect x="740" y="580" width="80" height="80"/><rect x="180" y="660" width="80" height="80"/><rect x="340" y="660" width="80" height="80"/><rect x="500" y="660" width="80" height="80"/><rect x="660" y="660" width="80" height="80"/><rect x="260" y="740" width="80" height="80"/><rect x="420" y="740" width="80" height="80"/><rect x="580" y="740" width="80" height="80"/><rect x="740" y="740" width="80" height="80"/>
                         </g>
-                        <path d="M260 180 v640 M340 180 v640 M420 180 v640 M500 180 v640 M580 180 v640 M660 180 v640 M740 180 v640" stroke="#000" stroke-width="2"/><path d="M180 260 h640 M180 340 h640 M180 420 h640 M180 500 h640 M180 580 h640 M180 660 h640 M180 740 h640" stroke="#000" stroke-width="2"/>
-                        <rect x="180" y="180" width="640" height="160" fill="url(#safeHatch)" stroke="none" pointer-events="none"/><rect x="180" y="660" width="640" height="160" fill="url(#safeHatch)" stroke="none" pointer-events="none"/>
-                        <g stroke="#e8d0a8" stroke-width="5" stroke-linecap="square" opacity="0.9"><line x1="340" y1="500" x2="420" y2="580"/> <line x1="420" y1="500" x2="340" y2="580"/><line x1="420" y1="340" x2="500" y2="420"/> <line x1="500" y1="340" x2="420" y2="420"/><line x1="500" y1="580" x2="580" y2="660"/> <line x1="580" y1="580" x2="500" y2="660"/><line x1="580" y1="420" x2="660" y2="500"/> <line x1="660" y1="420" x2="580" y2="500"/></g>
+
+                        <rect x="180" y="180" width="640" height="160" fill="url(#safeHatch)" stroke="none" pointer-events="none"/>
+                        <rect x="180" y="660" width="640" height="160" fill="url(#safeHatch)" stroke="none" pointer-events="none"/>
+                        
+                        <g stroke="#111111" stroke-width="5" stroke-linecap="round" opacity="0.9">
+                            <line x1="345" y1="505" x2="415" y2="575"/> <line x1="415" y1="505" x2="345" y2="575"/>
+                            <line x1="585" y1="425" x2="655" y2="495"/> <line x1="655" y1="425" x2="585" y2="495"/>
+                        </g>
+                        
+                        <g stroke="#e8d0a8" stroke-width="5" stroke-linecap="round" opacity="0.9">
+                            <line x1="425" y1="345" x2="495" y2="415"/> <line x1="495" y1="345" x2="425" y2="415"/>
+                            <line x1="505" y1="585" x2="575" y2="655"/> <line x1="575" y1="585" x2="505" y2="655"/>
+                        </g>
+
+                        <path d="M260 180 v640 M340 180 v640 M420 180 v640 M500 180 v640 M580 180 v640 M660 180 v640 M740 180 v640" stroke="#000" stroke-width="2"/>
+                        <path d="M180 260 h640 M180 340 h640 M180 420 h640 M180 500 h640 M180 580 h640 M180 660 h640 M180 740 h640" stroke="#000" stroke-width="2"/>
+
                         <g id="board-decorations">
                             <g transform="translate(100, 500) rotate(90)"><image href="logo.png" x="-400" y="-87.5" width="800" height="175" preserveAspectRatio="xMidYMid meet" /></g>
                             <path d="M 830,180 L 840,180 L 840,340 L 830,340" fill="none" stroke="#e8d0a8" stroke-width="2"/><g transform="translate(860, 260) rotate(-90)"><text x="0" y="0" text-anchor="middle" dominant-baseline="central" font-size="14" fill="#e8d0a8" letter-spacing="2">SAFE ZONE</text></g><path d="M 830,340 L 840,340 L 840,660 L 830,660" fill="none" stroke="#e8d0a8" stroke-width="2"/><g transform="translate(860, 500) rotate(-90)"><text x="0" y="0" text-anchor="middle" dominant-baseline="central" font-size="14" fill="#e8d0a8" letter-spacing="2">FIELD OF PLAY</text></g><path d="M 830,660 L 840,660 L 840,820 L 830,820" fill="none" stroke="#e8d0a8" stroke-width="2"/><g transform="translate(860, 740) rotate(-90)"><text x="0" y="0" text-anchor="middle" dominant-baseline="central" font-size="14" fill="#e8d0a8" letter-spacing="2">SAFE ZONE</text></g>
                         </g>
+
                         <rect x="180" y="60" width="640" height="80" fill="none" stroke="#e8d0a8" stroke-width="2"/><path d="M244 60 v80 M308 60 v80 M372 60 v80 M436 60 v80 M500 60 v80 M564 60 v80 M628 60 v80 M692 60 v80 M756 60 v80" stroke="#e8d0a8" stroke-width="2"/><g transform="translate(500, 160) rotate(180)"><text x="0" y="0" text-anchor="middle" dominant-baseline="central" font-size="20" fill="#e8d0a8" letter-spacing="2">Captures</text></g>
                         <g fill="#e8d0a8" font-size="34">
                             <g transform="translate(212, 100) rotate(180)"><text x="0" y="0" text-anchor="middle" dominant-baseline="central">10</text></g><g transform="translate(276, 100) rotate(180)"><text x="0" y="0" text-anchor="middle" dominant-baseline="central">9</text></g><g transform="translate(340, 100) rotate(180)"><text x="0" y="0" text-anchor="middle" dominant-baseline="central">8</text></g><g transform="translate(404, 100) rotate(180)"><text x="0" y="0" text-anchor="middle" dominant-baseline="central">7</text></g><g transform="translate(468, 100) rotate(180)"><text x="0" y="0" text-anchor="middle" dominant-baseline="central">6</text></g><g transform="translate(532, 100) rotate(180)"><text x="0" y="0" text-anchor="middle" dominant-baseline="central">5</text></g><g transform="translate(596, 100) rotate(180)"><text x="0" y="0" text-anchor="middle" dominant-baseline="central">4</text></g><g transform="translate(660, 100) rotate(180)"><text x="0" y="0" text-anchor="middle" dominant-baseline="central">3</text></g><g transform="translate(724, 100) rotate(180)"><text x="0" y="0" text-anchor="middle" dominant-baseline="central">2</text></g><g transform="translate(788, 100) rotate(180)"><text x="0" y="0" text-anchor="middle" dominant-baseline="central">1</text></g>
                         </g>
+
                         <text x="500" y="840" text-anchor="middle" dominant-baseline="central" font-size="20" fill="#e8d0a8" letter-spacing="2">Captures</text><rect x="180" y="860" width="640" height="80" fill="none" stroke="#e8d0a8" stroke-width="2"/><path d="M244 860 v80 M308 860 v80 M372 860 v80 M436 860 v80 M500 860 v80 M564 860 v80 M628 860 v80 M692 860 v80 M756 860 v80" stroke="#e8d0a8" stroke-width="2"/>
                         <g fill="#e8d0a8" font-size="34">
                             <text x="212" y="900" text-anchor="middle" dominant-baseline="central">1</text><text x="276" y="900" text-anchor="middle" dominant-baseline="central">2</text><text x="340" y="900" text-anchor="middle" dominant-baseline="central">3</text><text x="404" y="900" text-anchor="middle" dominant-baseline="central">4</text><text x="468" y="900" text-anchor="middle" dominant-baseline="central">5</text><text x="532" y="900" text-anchor="middle" dominant-baseline="central">6</text><text x="596" y="900" text-anchor="middle" dominant-baseline="central">7</text><text x="660" y="900" text-anchor="middle" dominant-baseline="central">8</text><text x="724" y="900" text-anchor="middle" dominant-baseline="central">9</text><text x="788" y="900" text-anchor="middle" dominant-baseline="central">10</text>
