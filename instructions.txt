@@ -1,0 +1,23 @@
+PAWNDER: RULES OF PLAY
+
+OBJECTIVE:
+The first player to reach 10 Captures wins the game.
+
+ON YOUR TURN:
+Step 1. Make one standard pawn Chess move (optional).
+Step 2. Either:
+- Draw a card and play it
+- Draw a card and place it in a reserve spot
+- Play a reserve card
+
+MOVEMENT:
+- Pawns can only move 1 space forward.
+- Pawns can attack 1 space diagonally, but ONLY if the target is in the Field of Play (Rows 3-6).
+- You cannot attack pieces sitting in the Safe Zones.
+
+CARDS:
+- If your Reserves are full, you MUST play a drawn card. 
+- Block cards are stashed automatically and trigger a 10-second interrupt if your opponent tries to capture your pawn.
+
+RESCUE:
+If you move a pawn into the opponent's starting Safe Zone, you may select any open square in your own Safe Zone to bring a captured pawn back into play!
