@@ -348,7 +348,6 @@
             if(card.action === 'enhanced') icon = '&#9819;'; 
             if(card.action === 'remove' || card.action === 'forward_attack') icon = '&#9876;'; 
             if(card.action === 'block' || card.action === 'skip') icon = '&#128110;'; 
-            if(card.action === 'switch') icon = '&#8644;';
             return `<div class="card-face ${extraClass}"><div class="card-left"><span>${card.title}</span><div class="card-icon">${icon}</div></div><div class="card-right">${card.text}</div></div>`;
         }
 
@@ -479,7 +478,6 @@
             document.getElementById('active-card-container').innerHTML = generateCardHTML(card);
 
             if(card.action === 'skip' || card.action === 'block') finalizeCardTurn();
-            else if(card.action === 'switch') { turnPhase = 'switch_1'; renderBoard(JSON.parse(localData.boardState)); }
             else renderBoard(JSON.parse(localData.boardState)); 
         }
 
@@ -497,7 +495,8 @@
         }
 
         function calculateCardMoves(row, col, color, card, state) {
-            let moves = []; if(card.action === 'remove' || card.action === 'switch') return moves; 
+            let moves = []; if(card.action === 'remove') return moves; 
+            if(card.action === 'extra_move') return calculateStandardMoves(row, col, color, state);
             if(card.action === 'enhanced') {
                 const addRay = (dRow, dCol) => {
                     let r = row + dRow, c = col + dCol;
@@ -545,16 +544,6 @@
                 } return;
             }
 
-            if(activeCardExecution && activeCardExecution.action === 'switch') {
-                if(clickedColor && isInFieldOfPlay(row)) {
-                    if(turnPhase === 'switch_1') { selectedPawn = {r:row, c:col, color:clickedColor}; turnPhase = 'switch_2'; renderBoard(state); }
-                    else if (turnPhase === 'switch_2' && (selectedPawn.r !== row || selectedPawn.c !== col)) {
-                        state[selectedPawn.r][selectedPawn.c] = clickedColor; state[row][col] = selectedPawn.color;
-                        localData.boardState = JSON.stringify(state); finalizeCardTurn();
-                    }
-                } return;
-            }
-
             if(activeCardExecution && activeCardExecution.action === 'remove') {
                 if(clickedColor && clickedColor === activeCardExecution.colorTarget) {
                     const isSafe = !isInFieldOfPlay(row);
@@ -580,7 +569,7 @@
                 return;
             }
 
-            if (clickedColor === myColor && (!activeCardExecution || activeCardExecution.action === 'enhanced')) { 
+            if (clickedColor === myColor && (!activeCardExecution || activeCardExecution.action === 'enhanced' || activeCardExecution.action === 'extra_move')) { 
                 selectedPawn = { r: row, c: col }; 
                 validMoves = activeCardExecution ? calculateCardMoves(row, col, myColor, activeCardExecution, state) : calculateStandardMoves(row, col, myColor, state); 
                 renderBoard(state); 
@@ -659,7 +648,7 @@
             await updateDoc(doc(db, "games", gameCode), { activeInterrupt: actInt, playerWhiteBlocks: localData.playerWhiteBlocks, playerBlackBlocks: localData.playerBlackBlocks });
         };
 
-        const masterDeck = [...Array(4).fill({ title: 'Switch Places', text: 'Switch places of any two pawns in the field of play', action: 'switch' }), ...Array(4).fill({ title: 'Block', text: 'Stash this card. Use at any time to block an opponent.', action: 'block' }), ...Array(2).fill({ title: 'Move Sideways', text: 'Move one White pawn sideways.', colorTarget: 'white', action: 'sideways' }), ...Array(2).fill({ title: 'Move Sideways', text: 'Move one Black pawn sideways.', colorTarget: 'black', action: 'sideways' }), ...Array(2).fill({ title: 'Remove', text: 'Remove one White pawn from either Safe Zone', colorTarget: 'white', zone: 'safe', action: 'remove' }), ...Array(2).fill({ title: 'Remove', text: 'Remove one Black pawn from either Safe Zone', colorTarget: 'black', zone: 'safe', action: 'remove' }), ...Array(2).fill({ title: 'Remove', text: 'Remove one White pawn from Field of Play', colorTarget: 'white', zone: 'field', action: 'remove' }), ...Array(2).fill({ title: 'Remove', text: 'Remove one Black pawn from Field of Play', colorTarget: 'black', zone: 'field', action: 'remove' }), ...Array(4).fill({ title: 'Enhanced Move', text: "Move one pawn as if it's a Queen", piece: 'queen', action: 'enhanced' }), ...Array(4).fill({ title: 'Enhanced Move', text: "Move one pawn as if it's a Knight", piece: 'knight', action: 'enhanced' }), ...Array(4).fill({ title: 'Enhanced Move', text: "Move one pawn as if it's a Bishop", piece: 'bishop', action: 'enhanced' }), ...Array(4).fill({ title: 'Enhanced Move', text: "Move one pawn as if it's a Rook", piece: 'rook', action: 'enhanced' }), ...Array(4).fill({ title: 'Enhanced Move', text: "Move one pawn as if it's a King", piece: 'king', action: 'enhanced' })];
+        const masterDeck = [...Array(4).fill({ title: 'Extra Move', text: 'Make one additional standard pawn move', action: 'extra_move' }), ...Array(4).fill({ title: 'Block', text: 'Stash this card. Use at any time to block an opponent.', action: 'block' }), ...Array(2).fill({ title: 'Move Sideways', text: 'Move one White pawn sideways.', colorTarget: 'white', action: 'sideways' }), ...Array(2).fill({ title: 'Move Sideways', text: 'Move one Black pawn sideways.', colorTarget: 'black', action: 'sideways' }), ...Array(2).fill({ title: 'Remove', text: 'Remove one White pawn from either Safe Zone', colorTarget: 'white', zone: 'safe', action: 'remove' }), ...Array(2).fill({ title: 'Remove', text: 'Remove one Black pawn from either Safe Zone', colorTarget: 'black', zone: 'safe', action: 'remove' }), ...Array(2).fill({ title: 'Remove', text: 'Remove one White pawn from Field of Play', colorTarget: 'white', zone: 'field', action: 'remove' }), ...Array(2).fill({ title: 'Remove', text: 'Remove one Black pawn from Field of Play', colorTarget: 'black', zone: 'field', action: 'remove' }), ...Array(4).fill({ title: 'Enhanced Move', text: "Move one pawn as if it's a Queen", piece: 'queen', action: 'enhanced' }), ...Array(4).fill({ title: 'Enhanced Move', text: "Move one pawn as if it's a Knight", piece: 'knight', action: 'enhanced' }), ...Array(4).fill({ title: 'Enhanced Move', text: "Move one pawn as if it's a Bishop", piece: 'bishop', action: 'enhanced' }), ...Array(4).fill({ title: 'Enhanced Move', text: "Move one pawn as if it's a Rook", piece: 'rook', action: 'enhanced' }), ...Array(4).fill({ title: 'Enhanced Move', text: "Move one pawn as if it's a King", piece: 'king', action: 'enhanced' })];
         function shuffle(array) { let c = array.length, r; while (c > 0) { r = Math.floor(Math.random() * c); c--; [array[c], array[r]] = [array[r], array[c]]; } return array; }
 
         function updateInstructionHighlight() { document.getElementById('step-1').className = turnPhase === 1 ? "active-step" : "inactive-step"; document.getElementById('step-2').className = turnPhase === 2 ? "active-step" : "inactive-step"; }
