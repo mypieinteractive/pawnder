@@ -82,8 +82,7 @@
         #mobile-action-bar { display: none; }
 
         /* MOBILE CSS OVERRIDES */
-        .mobile-mode .info-panel { padding: 10px; font-size: 12px; border-radius: 8px; width: 90%; margin: 0 auto; box-sizing: border-box;}
-        .mobile-mode .info-panel h3 { font-size: 14px; margin-bottom: 5px;}
+        .mobile-mode .info-panel { display: none !important; } /* Permanent instructions hidden on mobile */
         .mobile-mode #status-panel { width: 90%; margin: 0 auto; box-sizing: border-box;}
         .mobile-mode #status-panel h2 { font-size: 18px; margin-bottom: 12px; }
         .mobile-mode #display-game-code { font-size: 32px !important; letter-spacing: 4px; }
@@ -103,7 +102,7 @@
         .mobile-mode .under-card-btn:active { background: #e8d0a8; color: #0b0b0b; }
 
         .mobile-mode #mobile-action-bar { display: flex; position: absolute; bottom: 0; left: 0; width: 100vw; height: 80px; background: linear-gradient(180deg, #1f1a15, #0b0b0b); border-top: 2px solid #8c7650; justify-content: space-between; align-items: center; padding: 0 25px; box-sizing: border-box; z-index: 500; box-shadow: 0 -4px 15px rgba(0,0,0,0.9); }
-        .mobile-mode .action-bar-btn { background: #d9534f; color: #fff; border: 1px solid #ff9999; padding: 12px 20px; border-radius: 4px; font-family: 'Cinzel', serif; font-weight: bold; font-size: 14px; box-shadow: 0 2px 6px rgba(0,0,0,0.5); cursor: pointer; }
+        .mobile-mode .action-bar-btn { background: #d9534f; color: #fff; border: 1px solid #ff9999; padding: 12px 15px; border-radius: 4px; font-family: 'Cinzel', serif; font-weight: bold; font-size: 14px; box-shadow: 0 2px 6px rgba(0,0,0,0.5); cursor: pointer; }
 
         .mobile-mode .card-left { font-size: 14px; padding: 8px; }
         .mobile-mode .card-right { font-size: 13px; padding: 10px; }
@@ -119,6 +118,14 @@
             <div id="modal-text" style="font-size: 18px; letter-spacing: 1px;">Message</div>
             <div id="modal-subtext" style="color: #ffd700; font-weight: bold; font-size: 24px;"></div>
             <div id="modal-buttons" class="decision-buttons"></div>
+        </div>
+    </div>
+
+    <div id="instructions-modal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.9); z-index:9999; justify-content:center; align-items:center; flex-direction:column;">
+        <div style="background: linear-gradient(135deg, #1f1a15, #110e0a); border: 2px solid #8c7650; padding: 30px 20px 20px 20px; width: 85%; max-width: 500px; max-height: 80vh; border-radius: 8px; position: relative; display: flex; flex-direction: column;">
+            <button onclick="closeInstructions()" style="position:absolute; top:10px; right:10px; background:transparent; color:#e8d0a8; border:1px solid #e8d0a8; border-radius:50%; width:30px; height:30px; font-weight:bold; cursor:pointer;">X</button>
+            <h2 style="margin-top:0; text-align:center; letter-spacing:2px; font-size:18px; color: #e8d0a8;">How to Play</h2>
+            <div id="instructions-content" style="overflow-y:auto; font-family:sans-serif; font-size:14px; line-height:1.6; white-space:pre-wrap; color:#ddd; padding-right:10px;">Loading...</div>
         </div>
     </div>
 
@@ -196,22 +203,21 @@
                         <path d="M180 260 h640 M180 340 h640 M180 420 h640 M180 500 h640 M180 580 h640 M180 660 h640 M180 740 h640" stroke="#000" stroke-width="2"/>
 
                         <g id="board-decorations" style="transition: transform 0.6s ease-in-out;">
-                            <g transform="translate(100, 500) rotate(90)"><image href="logo.png" x="-400" y="-87.5" width="800" height="175" preserveAspectRatio="xMidYMid meet" /></g>
                             <path d="M 830,180 L 840,180 L 840,340 L 830,340" fill="none" stroke="#e8d0a8" stroke-width="2"/>
                             
-                            <g transform="translate(885, 260) rotate(-90)">
+                            <g transform="translate(840, 260) rotate(-90)">
                                 <text x="0" y="-12" text-anchor="middle" font-size="22" fill="#e8d0a8" letter-spacing="2">SAFE</text>
                                 <text x="0" y="16" text-anchor="middle" font-size="22" fill="#e8d0a8" letter-spacing="2">ZONE</text>
                             </g>
                             
                             <path d="M 830,340 L 840,340 L 840,660 L 830,660" fill="none" stroke="#e8d0a8" stroke-width="2"/>
-                            <g transform="translate(885, 500) rotate(-90)">
+                            <g transform="translate(840, 500) rotate(-90)">
                                 <text x="0" y="-12" text-anchor="middle" font-size="22" fill="#e8d0a8" letter-spacing="2">FIELD OF</text>
                                 <text x="0" y="16" text-anchor="middle" font-size="22" fill="#e8d0a8" letter-spacing="2">PLAY</text>
                             </g>
                             
                             <path d="M 830,660 L 840,660 L 840,820 L 830,820" fill="none" stroke="#e8d0a8" stroke-width="2"/>
-                            <g transform="translate(885, 740) rotate(-90)">
+                            <g transform="translate(840, 740) rotate(-90)">
                                 <text x="0" y="-12" text-anchor="middle" font-size="22" fill="#e8d0a8" letter-spacing="2">SAFE</text>
                                 <text x="0" y="16" text-anchor="middle" font-size="22" fill="#e8d0a8" letter-spacing="2">ZONE</text>
                             </g>
@@ -293,6 +299,12 @@
                 </div>
             </div>
             
+            <div id="mobile-bottom-bar" style="display: none; width: 600px; flex-direction: row; justify-content: center; gap: 20px; margin: 30px auto 0 auto;">
+                <div id="mobile-left" style="display: flex; flex-direction: column; gap: 10px; align-items: center; justify-content: flex-start; flex: 1;"></div>
+                <div id="mobile-center" style="display: flex; flex-direction: column; align-items: center; gap: 10px; position: relative; flex: 1;"></div>
+                <div id="mobile-right" style="display: flex; flex-direction: column; gap: 10px; align-items: center; justify-content: flex-start; flex: 1;"></div>
+            </div>
+            
         </div>
     </div>
 
@@ -321,7 +333,8 @@
         function resizeApp() {
             const scaler = document.getElementById('scaler');
             if (isMobileMode) {
-                let scale = Math.min(window.innerWidth / 740, window.innerHeight / 1250);
+                // Divisor changed from 740 to 620 to dynamically zoom the board inward on mobile
+                let scale = Math.min(window.innerWidth / 620, window.innerHeight / 1200);
                 scaler.style.transform = `scale(${scale})`;
             } else {
                 const isPortrait = window.innerHeight > window.innerWidth;
@@ -333,21 +346,31 @@
 
         if (isMobileMode) {
             document.body.classList.add('mobile-mode');
+            document.getElementById('mobile-bottom-bar').style.display = 'flex';
             
-            const left = document.querySelector('.left-column');
-            const right = document.querySelector('.right-column');
-            const reserveRow = document.getElementById('my-reserve-row');
+            const left = document.getElementById('mobile-left');
+            const right = document.getElementById('mobile-right');
+            const center = document.getElementById('mobile-center');
             
-            left.style.display = 'flex'; 
-            left.style.position = 'absolute'; left.style.top = '10px'; left.style.left = '10px'; left.style.zIndex = '50';
-            left.style.width = '200px';
+            left.appendChild(document.getElementById('status-panel'));
+            left.appendChild(document.getElementById('turn-header')); 
             
-            document.getElementById('draw-label').style.display = 'none';
-            document.getElementById('draw-count').style.display = 'none';
-            reserveRow.appendChild(document.getElementById('draw-pile-wrapper'));
+            center.appendChild(document.getElementById('draw-pile-wrapper'));
             
-            right.style.display = 'none';
+            right.appendChild(document.getElementById('active-card-panel'));
+            
+            const decPanel = document.getElementById('decision-panel');
+            center.appendChild(decPanel);
+            decPanel.style.position = 'relative';
+            decPanel.style.top = '0';
+            decPanel.style.left = '0';
+            decPanel.style.transform = 'none';
+            decPanel.style.marginTop = '10px';
+            
             document.getElementById('discard-pile-wrapper').style.display = 'none';
+            document.querySelector('.left-column').style.display = 'none';
+            document.querySelector('.right-column').style.display = 'none';
+            document.getElementById('main-app').style.flexDirection = 'column';
         }
 
         const gameCode = localStorage.getItem("pawnderGameCode");
@@ -372,15 +395,35 @@
 
         window.leaveGame = function() { localStorage.removeItem("pawnderGameCode"); localStorage.removeItem("pawnderPlayerColor"); window.location.href = "index.html"; };
 
+        // Instructions Modal Fetcher
+        window.showInstructions = async function() {
+            const modal = document.getElementById('instructions-modal');
+            const content = document.getElementById('instructions-content');
+            try {
+                const response = await fetch('instructions.txt');
+                if (response.ok) {
+                    content.innerText = await response.text();
+                } else {
+                    content.innerText = "Instructions file not found. Please create 'instructions.txt' in your repository root folder.";
+                }
+            } catch (e) {
+                content.innerText = "Error loading instructions.txt";
+            }
+            modal.style.display = 'flex';
+        };
+        window.closeInstructions = function() { document.getElementById('instructions-modal').style.display = 'none'; };
+
+
         let localData = null, isMyTurn = false, gamePhase = "playing", turnPhase = 1, selectedPawn = null, validMoves = [], activeCardExecution = null, pendingInterruptInterval = null;
         let isDrawingState = false; 
         let executingCardSource = null;
         let executingCardIndex = null;
-        let lastSeenTurn = null; // TRACKER FOR STRICT PHASE RESET
+        let lastSeenTurn = null; 
 
         const isInFieldOfPlay = (r) => r >= 2 && r <= 5;
         const CARD_W = isMobileMode ? 224 : 160;
         const CARD_H = isMobileMode ? 154 : 110;
+        const BLOCK_OFFSET = isMobileMode ? 56 : 40;
 
         function generateCardHTML(card, extraClass="") {
             if(!card) return '';
@@ -401,7 +444,7 @@
         function showDecisionPanel(text, buttonsHtml, showAnchor=false) {
             if (isMobileMode) return; 
             document.getElementById('decision-text').innerHTML = text; document.getElementById('decision-buttons').innerHTML = buttonsHtml;
-            document.getElementById('decision-card-anchor').style.display = showAnchor ? "block" : "none"; 
+            document.getElementById('decision-card-anchor').style.display = showAnchor && !isMobileMode ? "block" : "none"; 
             document.getElementById('decision-panel').style.display = "flex";
         }
         window.closeDecisionPanel = function() { document.getElementById('decision-panel').style.display = "none"; }
@@ -455,14 +498,17 @@
                 res1El.style.opacity = '1'; res2El.style.opacity = '1';
             }
 
+            const infoBtnHtml = `<button class="action-bar-btn" onclick="showInstructions()" style="border-radius: 50%; width: 42px; height: 42px; padding: 0; display: flex; justify-content: center; align-items: center; font-size: 18px; border: 2px solid #8c7650; background: #0b0b0b; color: #e8d0a8;">i</button>`;
+
             if (!isMyTurn) {
-                bar.innerHTML = `<div style="color:#e8d0a8; font-weight:bold; font-size:18px; width:100%; text-align:center;">Waiting for Opponent...</div>`;
+                bar.innerHTML = `${infoBtnHtml}<div style="color:#e8d0a8; font-weight:bold; font-size:16px; flex:1; text-align:center;">Waiting for Opponent...</div><div style="width:42px;"></div>`;
                 return;
             }
             
             if (activeCardExecution) {
                 bar.innerHTML = `
-                    <div style="color:#ffd700; font-weight:bold; font-size:18px;">Executing Card...</div>
+                    ${infoBtnHtml}
+                    <div style="color:#ffd700; font-weight:bold; font-size:16px; flex:1; text-align:center;">Executing Card...</div>
                     <button class="action-bar-btn" onclick="cancelExecution()">Cancel</button>
                 `;
                 return;
@@ -470,11 +516,12 @@
             
             if (turnPhase === 1) {
                 bar.innerHTML = `
-                    <div style="color:#fff; font-weight:bold; font-size:16px;">Step 1: Pawn Move</div>
-                    <button class="action-bar-btn" onclick="confirmSkip('cards')">Skip to Cards</button>
+                    ${infoBtnHtml}
+                    <div style="color:#fff; font-weight:bold; font-size:15px; flex:1; text-align:center;">Step 1: Pawn Move</div>
+                    <button class="action-bar-btn" onclick="confirmSkip('cards')">Skip</button>
                 `;
             } else if (turnPhase === 2) {
-                bar.innerHTML = `<div style="color:#fff; font-weight:bold; font-size:18px; width:100%; text-align:center;">Step 2: Draw or Play Card</div>`;
+                bar.innerHTML = `${infoBtnHtml}<div style="color:#fff; font-weight:bold; font-size:15px; flex:1; text-align:center;">Step 2: Draw or Play Card</div><div style="width:42px;"></div>`;
                 
                 if (isDrawingState) {
                     drawBtns.innerHTML = `<button class="under-card-btn" onclick="executeCard(0, 'draw')">Play</button>`;
@@ -604,6 +651,20 @@
             }
         };
 
+        window.swapReserveAndPlay = async function(reserveIndex) {
+            const reserveKey = myColor === 'white' ? 'playerWhiteReserve' : 'playerBlackReserve';
+            const drawnCard = localData.deck.shift();
+            const cardToPlay = localData[reserveKey].splice(reserveIndex, 1, drawnCard)[0]; 
+            closeDecisionPanel();
+            
+            if (isMobileMode) {
+                document.getElementById('draw-pile-flipper').classList.remove('flipped');
+                startCardExecution(cardToPlay);
+            } else {
+                animateFlight(document.getElementById('decision-card-anchor'), document.getElementById(`my-reserve-${reserveIndex+1}`), drawnCard, 'reserve', () => startCardExecution(cardToPlay));
+            }
+        };
+
         window.executeCard = function(index, source) {
             closeDecisionPanel();
             let card;
@@ -628,6 +689,9 @@
             
             if (!isMobileMode) {
                 document.getElementById('instructions-panel').style.display = "none"; 
+                document.getElementById('active-card-panel').style.display = "block";
+                document.getElementById('active-card-container').innerHTML = generateCardHTML(card);
+            } else {
                 document.getElementById('active-card-panel').style.display = "block";
                 document.getElementById('active-card-container').innerHTML = generateCardHTML(card);
             }
@@ -752,12 +816,20 @@
             }
         }
 
+        function createOffscreenDest() {
+            const dest = document.createElement('div');
+            dest.style.position = 'absolute'; dest.style.top = '1500px'; dest.style.left = '350px'; dest.style.width = CARD_W + 'px'; dest.style.height = CARD_H + 'px';
+            document.getElementById('scaler').appendChild(dest);
+            return dest;
+        }
+
         async function finalizeCardTurn() {
             const cardToDiscard = activeCardExecution; activeCardExecution = null;
             document.getElementById('active-card-container').innerHTML = '';
             
             if (isMobileMode) {
                 document.getElementById('draw-pile-flipper').classList.remove('flipped');
+                document.getElementById('active-card-panel').style.display = "none"; 
                 localData.discardPile.push(cardToDiscard);
                 checkDeckResetOrEndTurn();
             } else {
@@ -812,7 +884,6 @@
                 if(data.isInitialized) {
                     if (data.gameMode === 'local') { myColor = data.currentTurn; }
                     
-                    // STRICT TURN RESET LOGIC (Fixes the Pass & Play skip bug)
                     if (lastSeenTurn !== data.currentTurn) {
                         turnPhase = 1;
                         isDrawingState = false;
