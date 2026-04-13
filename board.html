@@ -36,10 +36,7 @@
         .inactive-step { color: #666; }
 
         .center-column { display: flex; flex-direction: column; align-items: center; gap: 10px; width: 700px; position: relative; }
-        
-        /* Added smooth transitions for row toggling */
-        .cards-row { display: flex; flex-direction: row; justify-content: center; align-items: center; gap: 20px; width: 100%; position: relative; transition: all 0.4s ease-in-out; opacity: 1; height: 154px; }
-        .hidden-row { height: 0 !important; opacity: 0 !important; margin: 0 !important; padding: 0 !important; overflow: hidden !important; pointer-events: none; }
+        .cards-row { display: flex; flex-direction: row; justify-content: center; align-items: center; gap: 20px; width: 100%; position: relative; transition: all 0.4s ease-in-out; height: 154px; }
         
         #game-area { position: relative; width: 700px; height: 770px; transition: transform 0.6s ease-in-out; box-shadow: 0 10px 30px rgba(0,0,0,0.8); z-index: 5;}
         .rotate-180 { transform: rotate(180deg); }
@@ -50,6 +47,7 @@
         .highlight-attack { background-color: rgba(255, 0, 0, 0.35) !important; border: 2px solid rgba(255, 0, 0, 0.8); }
         .highlight-rescue { background-color: rgba(0, 150, 255, 0.35) !important; border: 2px solid rgba(0, 150, 255, 0.8); }
         
+        /* 3D Pawns with counter-rotation logic so lighting always faces the player */
         .pawn { width: 46px; height: 46px; border-radius: 50%; box-shadow: 0 10px 10px rgba(0,0,0,0.7); position: relative; pointer-events: none; transition: transform 0.2s;}
         .pawn::before { content: ''; position: absolute; top: -12px; left: 8px; width: 30px; height: 30px; border-radius: 50%; box-shadow: 0 6px 4px rgba(0,0,0,0.5); }
         .pawn-white { background: radial-gradient(circle at 50% 70%, #d4d4d4, #888 70%, #555); border: 1px solid #666; }
@@ -58,6 +56,9 @@
         .pawn-black::before { background: radial-gradient(circle at 40% 30%, #666, #222 60%, #000); border: 1px solid #000; }
         .pawn.selected { transform: scale(1.15); box-shadow: 0 12px 15px rgba(255,215,0,0.6); z-index: 5; }
         .pawn.selected::before { box-shadow: 0 0 12px #ffd700, 0 6px 4px rgba(0,0,0,0.5); }
+        
+        .rotate-180 .pawn { transform: rotate(180deg); }
+        .rotate-180 .pawn.selected { transform: rotate(180deg) scale(1.15); }
 
         .right-column { display: flex; flex-direction: column; justify-content: center; height: 770px; width: 280px; align-items: center; position: relative;}
         
@@ -88,8 +89,8 @@
         .flipper .front, .flipper .back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 8px;}
         .flipper .back { transform: rotateY(180deg); }
 
+        .under-card-btn-row { display: none; }
         .mobile-fixed-bar { display: none; }
-        .view-toggle-arrow { display: none; }
 
         /* MOBILE CSS OVERRIDES */
         .mobile-mode .info-panel { display: none !important; }
@@ -109,20 +110,6 @@
         /* Drag UI Feedback */
         .mobile-mode .draggable { touch-action: none; cursor: grab; }
         .mobile-mode .drag-over { background-color: rgba(255, 215, 0, 0.15) !important; border-color: #ffd700 !important; box-shadow: 0 0 15px #ffd700 !important; }
-
-        /* Expand/Collapse Toggle */
-        .mobile-mode .view-toggle-arrow {
-            display: block; position: fixed; top: 70px; left: 50%; transform: translateX(-50%);
-            background: #8c7650; color: #0b0b0b; padding: 6px 24px;
-            border-bottom-left-radius: 8px; border-bottom-right-radius: 8px;
-            font-family: 'Cinzel', serif; font-weight: bold; font-size: 14px;
-            z-index: 1000; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.6);
-            transition: all 0.3s ease;
-        }
-        .mobile-mode .view-toggle-arrow.expanded {
-            top: auto; bottom: 130px; border-radius: 8px 8px 0 0;
-            box-shadow: 0 -4px 6px rgba(0,0,0,0.6);
-        }
 
         .mobile-mode .mobile-fixed-bar { display: flex; position: fixed; left: 0; width: 100vw; box-sizing: border-box; z-index: 1000; padding: 0 25px; align-items: center; justify-content: space-between; }
         .mobile-mode .top-bar { top: 0; height: 70px; background: linear-gradient(180deg, #1f1a15, #0b0b0b); border-bottom: 2px solid #8c7650; box-shadow: 0 4px 15px rgba(0,0,0,0.9); }
@@ -168,7 +155,6 @@
         <button onclick="leaveGame()" class="back-btn">&#8592; Back</button>
         <div class="game-code-display">GAME: <span id="top-game-code"></span></div>
     </div>
-    <div id="view-toggle-arrow" class="view-toggle-arrow" onclick="toggleOpponentView()">▼ View Opponent Cards ▼</div>
     
     <div id="mobile-action-bar" class="mobile-fixed-bar action-bar"></div>
 
@@ -202,7 +188,7 @@
             </div>
 
             <div class="center-column">
-                <div class="cards-row hidden-row" style="transform: rotate(180deg);" id="opp-reserve-row">
+                <div class="cards-row" style="transform: rotate(180deg);" id="opp-reserve-row">
                     <div class="card-slot horizontal-card" id="opp-reserve-2">RESERVE 2</div>
                     <div class="card-slot horizontal-card" id="opp-reserve-1">RESERVE 1</div>
                 </div>
@@ -369,7 +355,6 @@
         function resizeApp() {
             const scaler = document.getElementById('scaler');
             if (isMobileMode) {
-                // Safely calculates available vertical area strictly between the Fixed Header (70px) and new taller Footer (130px) + buffer
                 let scale = Math.min(window.innerWidth / 740, (window.innerHeight - 230) / 950);
                 scaler.style.transform = `scale(${scale})`;
             } else {
@@ -394,9 +379,6 @@
             document.querySelector('.right-column').style.display = 'none';
             document.getElementById('discard-pile-wrapper').style.display = 'none';
             document.getElementById('main-app').style.flexDirection = 'column';
-
-            // Ensure Opponent row starts hidden on mobile
-            document.getElementById('opp-reserve-row').classList.add('hidden-row');
         }
 
         const gameCode = localStorage.getItem("pawnderGameCode");
@@ -447,33 +429,11 @@
         let executingCardSource = null;
         let executingCardIndex = null;
         let lastSeenTurn = null; 
-        let isOpponentView = false; // Tracks the sliding board state
 
         const isInFieldOfPlay = (r) => r >= 2 && r <= 5;
         const CARD_W = isMobileMode ? 224 : 160;
         const CARD_H = isMobileMode ? 154 : 110;
 
-        // View Opponent Slider Logic
-        window.toggleOpponentView = function() {
-            isOpponentView = !isOpponentView;
-            const arrow = document.getElementById('view-toggle-arrow');
-            const oppRow = document.getElementById('opp-reserve-row');
-            const myRow = document.getElementById('my-reserve-row');
-            
-            if (isOpponentView) {
-                arrow.innerText = '▲ Back to My Cards ▲';
-                arrow.classList.add('expanded');
-                oppRow.classList.remove('hidden-row');
-                myRow.classList.add('hidden-row');
-            } else {
-                arrow.innerText = '▼ View Opponent Cards ▼';
-                arrow.classList.remove('expanded');
-                oppRow.classList.add('hidden-row');
-                myRow.classList.remove('hidden-row');
-            }
-        }
-
-        // Monochromatic Icons
         function generateCardHTML(card, extraClass="") {
             if(!card) return '';
             let icon = '&#10021;';
@@ -537,7 +497,6 @@
             const res2El = document.getElementById('my-reserve-2');
             const drawPile = document.getElementById('draw-pile-boundary');
             
-            // Dim inactive cards
             if (isDrawingState || activeCardExecution || !isMyTurn || turnPhase === 1) {
                 res1El.style.opacity = '0.4'; res2El.style.opacity = '0.4';
             } else {
@@ -546,7 +505,6 @@
 
             const infoBtnHtml = `<button class="action-bar-btn" onclick="showInstructions()" style="border-radius: 50%; width: 42px; height: 42px; padding: 0; display: flex; justify-content: center; align-items: center; font-size: 18px; border: 2px solid #8c7650; background: #0b0b0b; color: #e8d0a8; flex-shrink: 0;">i</button>`;
             
-            // Reset Draggable States
             drawPile.classList.remove('draggable'); res1El.classList.remove('draggable'); res2El.classList.remove('draggable');
 
             if (!isMyTurn) {
@@ -565,10 +523,12 @@
                 return;
             } 
             
+            const turnPrefix = localData.gameMode === 'local' ? '' : `<span style="color:#4CAF50; margin-right: 8px;">${myColor.toUpperCase()}'S TURN:</span><br>`;
+
             if (turnPhase === 1) {
                 bar.innerHTML = `
                     ${infoBtnHtml}
-                    <div style="color:#fff; font-weight:bold; font-size:15px; flex:1; text-align:center;">Step 1: Move Pawn</div>
+                    <div style="color:#fff; font-weight:bold; font-size:15px; flex:1; text-align:center;">${turnPrefix}Step 1: Move Pawn</div>
                     <button class="action-bar-btn" onclick="confirmSkip('cards')" style="flex-shrink:0;">Skip</button>
                 `;
             } else if (turnPhase === 2) {
@@ -580,7 +540,6 @@
                     <div style="width:42px; flex-shrink:0;"></div>
                 `;
                 
-                // Activate Draggable Zones for Phase 2
                 if (isDrawingState) {
                     drawPile.classList.add('draggable');
                     drawPile.setAttribute('data-source', 'draw');
@@ -607,8 +566,13 @@
                 dragGhost = target.cloneNode(true);
                 dragGhost.style.position = 'fixed';
                 dragGhost.style.zIndex = '9999';
-                dragGhost.style.pointerEvents = 'none'; // Critical for hit detection
+                dragGhost.style.pointerEvents = 'none'; 
                 dragGhost.style.opacity = '0.9';
+                
+                // Highlight without scaling
+                dragGhost.style.transform = 'none';
+                dragGhost.style.boxShadow = '0 0 15px 5px #ffd700';
+                dragGhost.style.border = '2px solid #ffd700';
                 
                 const rect = target.getBoundingClientRect();
                 dragGhost.style.width = rect.width + 'px';
@@ -620,7 +584,7 @@
                 
             } else {
                 const drawPile = e.target.closest('#draw-pile-boundary');
-                if (drawPile && !isDrawingState && turnPhase === 2 && !activeCardExecution && isMyTurn && !isOpponentView) {
+                if (drawPile && !isDrawingState && turnPhase === 2 && !activeCardExecution && isMyTurn) {
                     processDraw();
                 }
             }
@@ -702,6 +666,7 @@
             activeCardExecution = null; selectedPawn = null; validMoves = [];
             
             if (isMobileMode) {
+                document.getElementById('active-card-panel').style.display = "none"; 
                 renderCardSlots(localData); updateMobileUI(); renderBoard(JSON.parse(localData.boardState));
             }
         }
@@ -735,8 +700,14 @@
             const myRes = myColor === 'white' ? localData.playerWhiteReserve : localData.playerBlackReserve;
             
             if (drawnCard.action === 'block') {
-                localData.deck.shift(); 
-                takeBlockCard(drawnCard);
+                if (isMobileMode) {
+                    localData.deck.shift(); 
+                    takeBlockCard(drawnCard);
+                } else {
+                    animateFlight(document.getElementById('draw-pile-boundary'), document.getElementById('decision-card-anchor'), drawnCard, 'draw', () => {
+                        showDecisionPanel("", `<button class="btn" onclick="takeBlockCard()">Take Block Card</button>`, true);
+                    });
+                }
                 return;
             }
 
@@ -754,7 +725,7 @@
         }
 
         window.takeBlockCard = async function(preDrawnCard = null) {
-            const card = preDrawnCard; 
+            const card = preDrawnCard || localData.deck.shift(); 
             closeDecisionPanel();
             const blockKey = myColor === 'white' ? 'playerWhiteBlocks' : 'playerBlackBlocks';
             
@@ -823,6 +794,9 @@
             
             if (!isMobileMode) {
                 document.getElementById('instructions-panel').style.display = "none"; 
+                document.getElementById('active-card-panel').style.display = "block";
+                document.getElementById('active-card-container').innerHTML = generateCardHTML(card);
+            } else {
                 document.getElementById('active-card-panel').style.display = "block";
                 document.getElementById('active-card-container').innerHTML = generateCardHTML(card);
             }
@@ -953,6 +927,7 @@
             
             if (isMobileMode) {
                 document.getElementById('draw-pile-flipper').classList.remove('flipped');
+                document.getElementById('active-card-panel').style.display = "none"; 
                 localData.discardPile.push(cardToDiscard);
                 checkDeckResetOrEndTurn();
             } else {
@@ -984,9 +959,38 @@
 
         window.submitInterruptDecision = async function(useBlock) {
             clearInterval(pendingInterruptInterval); closeModal();
-            let actInt = localData.activeInterrupt; actInt.active = false; actInt.blocked = useBlock;
-            if(useBlock) { if(myColor === 'white') localData.playerWhiteBlocks.pop(); else localData.playerBlackBlocks.pop(); }
-            await updateDoc(doc(db, "games", gameCode), { activeInterrupt: actInt, playerWhiteBlocks: localData.playerWhiteBlocks, playerBlackBlocks: localData.playerBlackBlocks });
+            let actInt = localData.activeInterrupt; 
+            const defenderColor = actInt.attacker === 'white' ? 'black' : 'white';
+
+            if (localData.gameMode === 'local') {
+                let st = JSON.parse(localData.boardState);
+                let originalColor = myColor;
+                myColor = actInt.attacker; // Temporarily execute the turn as the attacker
+                
+                if (useBlock) {
+                    if (defenderColor === 'white') localData.playerWhiteBlocks.pop();
+                    else localData.playerBlackBlocks.pop();
+
+                    await updateDoc(doc(db, "games", gameCode), { 
+                        activeInterrupt: null, 
+                        playerWhiteBlocks: localData.playerWhiteBlocks, 
+                        playerBlackBlocks: localData.playerBlackBlocks 
+                    });
+                    
+                    if (activeCardExecution) finalizeCardTurn(); else checkDeckResetOrEndTurn();
+                } else {
+                    await updateDoc(doc(db, "games", gameCode), { activeInterrupt: null });
+                    executeBoardMove(st, actInt.to.r, actInt.to.c, true);
+                }
+                myColor = originalColor; // Restore (though the listener will cleanly overwrite this)
+            } else {
+                actInt.active = false; actInt.blocked = useBlock;
+                if(useBlock) { 
+                    if(defenderColor === 'white') localData.playerWhiteBlocks.pop(); 
+                    else localData.playerBlackBlocks.pop(); 
+                }
+                await updateDoc(doc(db, "games", gameCode), { activeInterrupt: actInt, playerWhiteBlocks: localData.playerWhiteBlocks, playerBlackBlocks: localData.playerBlackBlocks });
+            }
         };
 
         const masterDeck = [...Array(4).fill({ title: 'Extra Move', text: 'Make one additional standard pawn move', action: 'extra_move' }), ...Array(4).fill({ title: 'Block', text: 'Stash this card. Use at any time to block an opponent.', action: 'block' }), ...Array(2).fill({ title: 'Move Sideways', text: 'Move one White pawn sideways.', colorTarget: 'white', action: 'sideways' }), ...Array(2).fill({ title: 'Move Sideways', text: 'Move one Black pawn sideways.', colorTarget: 'black', action: 'sideways' }), ...Array(2).fill({ title: 'Remove', text: 'Remove one White pawn from either Safe Zone', colorTarget: 'white', zone: 'safe', action: 'remove' }), ...Array(2).fill({ title: 'Remove', text: 'Remove one Black pawn from either Safe Zone', colorTarget: 'black', zone: 'safe', action: 'remove' }), ...Array(2).fill({ title: 'Remove', text: 'Remove one White pawn from Field of Play', colorTarget: 'white', zone: 'field', action: 'remove' }), ...Array(2).fill({ title: 'Remove', text: 'Remove one Black pawn from Field of Play', colorTarget: 'black', zone: 'field', action: 'remove' }), ...Array(4).fill({ title: 'Enhanced Move', text: "Move one pawn as if it's a Queen", piece: 'queen', action: 'enhanced' }), ...Array(4).fill({ title: 'Enhanced Move', text: "Move one pawn as if it's a Knight", piece: 'knight', action: 'enhanced' }), ...Array(4).fill({ title: 'Enhanced Move', text: "Move one pawn as if it's a Bishop", piece: 'bishop', action: 'enhanced' }), ...Array(4).fill({ title: 'Enhanced Move', text: "Move one pawn as if it's a Rook", piece: 'rook', action: 'enhanced' }), ...Array(4).fill({ title: 'Enhanced Move', text: "Move one pawn as if it's a King", piece: 'king', action: 'enhanced' })];
@@ -1005,7 +1009,14 @@
                     return;
                 }
                 if(data.isInitialized) {
-                    if (data.gameMode === 'local') { myColor = data.currentTurn; }
+                    if (data.gameMode === 'local') { 
+                        myColor = data.currentTurn; 
+                        
+                        // Pass & Play Interrupt Override: Forces perspective flip to the Defender seamlessly
+                        if (data.activeInterrupt && data.activeInterrupt.active) {
+                            myColor = data.activeInterrupt.attacker === 'white' ? 'black' : 'white';
+                        }
+                    }
                     
                     if (lastSeenTurn !== data.currentTurn) {
                         turnPhase = 1;
@@ -1018,7 +1029,7 @@
                     }
                     
                     document.getElementById('game-area').classList.toggle('rotate-180', myColor === 'black');
-                    document.getElementById('board-decorations').setAttribute('transform', myColor === 'black' ? 'rotate(180 500 500)' : 'rotate(0 500 500)');
+                    document.getElementById('board-decorations').setAttribute('transform', myColor === 'black' ? 'rotate(180 500 550)' : 'rotate(0 500 550)');
 
                     data.playerWhiteReserve = data.playerWhiteReserve || []; data.playerBlackReserve = data.playerBlackReserve || [];
                     data.playerWhiteBlocks = data.playerWhiteBlocks || []; data.playerBlackBlocks = data.playerBlackBlocks || [];
@@ -1114,7 +1125,7 @@
             const capLayer = document.getElementById('captures-layer'); capLayer.innerHTML = '';
             
             const topY = 47; const botY = 698; 
-            const xCoords = [75, 131, 187, 243, 299, 355, 411, 467, 523, 579]; 
+            const xCoords = [73, 129, 185, 241, 297, 353, 409, 465, 521, 577]; 
             
             let topPawns = data.capturedWhite;
             let topClass = 'pawn-white';
@@ -1124,10 +1135,10 @@
 
             for(let i=0; i<Math.min(topPawns, 10); i++) {
                 let idx = 9-i; 
-                capLayer.innerHTML += `<div class="pawn ${topClass}" style="position:absolute; left:${xCoords[idx]}px; top:${topY}px; pointer-events:none;"></div>`;
+                capLayer.innerHTML += `<div class="pawn ${topClass}" style="position:absolute; left:${xCoords[idx]}px; top:${topY-25}px; pointer-events:none;"></div>`;
             }
             for(let i=0; i<Math.min(botPawns, 10); i++) {
-                capLayer.innerHTML += `<div class="pawn ${botClass}" style="position:absolute; left:${xCoords[i]}px; top:${botY}px; pointer-events:none;"></div>`;
+                capLayer.innerHTML += `<div class="pawn ${botClass}" style="position:absolute; left:${xCoords[i]}px; top:${botY-25}px; pointer-events:none;"></div>`;
             }
         }
 
