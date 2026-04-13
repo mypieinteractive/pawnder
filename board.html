@@ -62,14 +62,10 @@
 
         .right-column { display: flex; flex-direction: column; justify-content: center; height: 770px; width: 280px; align-items: center; position: relative;}
         
-        /* Card Slots default to fully transparent to hide empty slots cleanly */
         .card-slot { border: 2px dashed transparent; display: flex; justify-content: center; align-items: center; color: transparent; font-size: 14px; text-align: center; box-sizing: border-box; background: transparent; border-radius: 8px; cursor: pointer; position: relative; transition: opacity 0.3s, border-color 0.3s, background 0.3s, color 0.3s;}
         .horizontal-card { width: 160px; height: 110px; }
-        
-        /* Applied dynamically when a slot is a valid drop target */
         .card-slot.active-drop-zone { border-color: rgba(232, 208, 168, 0.6); background: rgba(0,0,0,0.3); color: rgba(232, 208, 168, 0.5); }
 
-        /* CARD TYPOGRAPHY OVERHAUL */
         .card-face { background: #ffffff; color: #111111; width: 160px; height: 110px; border: 2px solid #8c7650; display: flex; box-shadow: 2px 4px 8px rgba(0,0,0,0.8); box-sizing: border-box; border-radius: 8px; overflow: hidden; position: absolute; pointer-events: none;}
         .card-left { flex: 0.35; display: flex; align-items: center; justify-content: center; border-right: 1px solid #ccc; background: #f9f9f9;}
         .card-right { flex: 1; padding: 8px 12px; display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-start; text-align: left; }
@@ -107,7 +103,6 @@
         .mobile-mode .horizontal-card, .mobile-mode .card-face, .mobile-mode #anim-container { width: 224px !important; height: 154px !important; }
         .mobile-mode .card-left { padding: 10px; }
         
-        /* Mobile Typography Overrides */
         .mobile-mode .card-right { padding: 12px 16px; justify-content: flex-start; }
         .mobile-mode .card-title { font-size: 14px; margin-top: 2px; margin-bottom: 6px; }
         .mobile-mode .card-text { font-size: 17px; font-weight: normal; line-height: 1.25; }
@@ -116,7 +111,6 @@
         .mobile-mode .cards-row { width: 720px !important; gap: 10px !important; flex-wrap: nowrap !important; justify-content: center !important; }
         .mobile-mode .card-container { display: flex; flex-direction: column; align-items: center; flex-shrink: 0; }
         
-        /* Drag UI Feedback */
         .mobile-mode .draggable { touch-action: none; cursor: grab; }
         .mobile-mode .drag-over { background-color: rgba(255, 215, 0, 0.15) !important; border-color: #ffd700 !important; box-shadow: 0 0 15px #ffd700 !important; }
 
@@ -128,7 +122,6 @@
         .mobile-mode #top-game-code { color: #fff; }
         .mobile-mode .action-bar-btn { background: #d9534f; color: #fff; border: 1px solid #ff9999; padding: 14px 20px; border-radius: 4px; font-family: 'Cinzel', serif; font-weight: bold; font-size: 16px; box-shadow: 0 2px 6px rgba(0,0,0,0.5); cursor: pointer; flex-shrink: 0;}
 
-        /* The Active Move Drop Zone */
         .mobile-mode .active-move-slot {
             width: 140px; height: 96px; border: 2px dashed transparent; border-radius: 8px;
             display: flex; justify-content: center; align-items: center;
@@ -136,7 +129,6 @@
             text-align: center; position: relative; background: transparent;
             transition: all 0.2s;
         }
-        /* Reveal drop zone when active */
         .mobile-mode .active-move-slot.active-drop-zone { border-color: #8c7650; background: rgba(0,0,0,0.4); color: rgba(232, 208, 168, 0.5); }
         
         .mobile-mode .active-move-slot .card-face {
@@ -613,7 +605,6 @@
             updateDropZones();
         }
 
-        // --- NATIVE MOBILE DRAG AND DROP ENGINE ---
         let dragGhost = null;
         let dragSource = null;
         let isDragging = false;
@@ -776,18 +767,13 @@
             isDrawingState = true;
             const drawnCard = localData.deck[0]; 
             const myRes = myColor === 'white' ? localData.playerWhiteReserve : localData.playerBlackReserve;
-            
-            if (drawnCard.action === 'block') {
-                if (isMobileMode) {
-                    localData.deck.shift(); 
-                    takeBlockCard(drawnCard);
-                } else {
-                    let btns = `<button class="btn" onclick="takeBlockCard()">Store Block</button>`;
-                    document.getElementById('decision-card-anchor').innerHTML = generateCardHTML(drawnCard);
-                    const subText = "Store this Block card to use against future attacks.";
-                    animateFlight(document.getElementById('draw-pile-boundary'), document.getElementById('decision-card-anchor'), drawnCard, 'draw', () => showDecisionPanel(subText, btns, true));
-                    updateDropZones();
-                }
+
+            if (!isMobileMode && drawnCard.action === 'block') {
+                let btns = `<button class="btn" onclick="takeBlockCard()">Store Block</button>`;
+                document.getElementById('decision-card-anchor').innerHTML = generateCardHTML(drawnCard);
+                const subText = "Store this Block card to use against future attacks.";
+                animateFlight(document.getElementById('draw-pile-boundary'), document.getElementById('decision-card-anchor'), drawnCard, 'draw', () => showDecisionPanel(subText, btns, true));
+                updateDropZones();
                 return;
             }
 
