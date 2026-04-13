@@ -47,6 +47,7 @@
         .highlight-attack { background-color: rgba(255, 0, 0, 0.35) !important; border: 2px solid rgba(255, 0, 0, 0.8); }
         .highlight-rescue { background-color: rgba(0, 150, 255, 0.35) !important; border: 2px solid rgba(0, 150, 255, 0.8); }
         
+        /* Base 3D Pawn */
         .pawn { width: 46px; height: 46px; border-radius: 50%; box-shadow: 0 10px 10px rgba(0,0,0,0.7); position: relative; pointer-events: none; transition: transform 0.2s;}
         .pawn::before { content: ''; position: absolute; top: -12px; left: 8px; width: 30px; height: 30px; border-radius: 50%; box-shadow: 0 6px 4px rgba(0,0,0,0.5); }
         .pawn-white { background: radial-gradient(circle at 50% 70%, #d4d4d4, #888 70%, #555); border: 1px solid #666; }
@@ -56,16 +57,22 @@
         .pawn.selected { transform: scale(1.15); box-shadow: 0 12px 15px rgba(255,215,0,0.6); z-index: 5; }
         .pawn.selected::before { box-shadow: 0 0 12px #ffd700, 0 6px 4px rgba(0,0,0,0.5); }
 
+        /* Rotated 3D Pawn - Counter-rotates to keep top-down shading accurate */
+        #game-area.rotate-180 .pawn { transform: rotate(180deg); box-shadow: 0 -10px 10px rgba(0,0,0,0.7); }
+        #game-area.rotate-180 .pawn::before { box-shadow: 0 -6px 4px rgba(0,0,0,0.5); }
+        #game-area.rotate-180 .pawn.selected { transform: rotate(180deg) scale(1.15); box-shadow: 0 -12px 15px rgba(255,215,0,0.6); }
+        #game-area.rotate-180 .pawn.selected::before { box-shadow: 0 0 12px #ffd700, 0 -6px 4px rgba(0,0,0,0.5); }
+
         .right-column { display: flex; flex-direction: column; justify-content: center; height: 770px; width: 280px; align-items: center; position: relative;}
         
         .card-slot { border: 2px dashed rgba(232, 208, 168, 0.6); display: flex; justify-content: center; align-items: center; color: rgba(232, 208, 168, 0.5); font-size: 14px; text-align: center; box-sizing: border-box; background: rgba(0,0,0,0.3); border-radius: 8px; cursor: pointer; position: relative; transition: opacity 0.3s;}
         .horizontal-card { width: 160px; height: 110px; }
         
-        .card-face { background: #ffffff; color: #111111; width: 160px; height: 110px; border: 2px solid #8c7650; display: flex; font-family: 'Cinzel', serif; box-shadow: 2px 4px 8px rgba(0,0,0,0.8); box-sizing: border-box; border-radius: 8px; overflow: hidden; position: absolute; }
+        .card-face { background: #ffffff; color: #111111; width: 160px; height: 110px; border: 2px solid #8c7650; display: flex; font-family: 'Cinzel', serif; box-shadow: 2px 4px 8px rgba(0,0,0,0.8); box-sizing: border-box; border-radius: 8px; overflow: hidden; position: absolute; cursor: grab;}
         .card-left { flex: 1; padding: 6px; display: flex; flex-direction: column; align-items: center; justify-content: space-between; font-size: 11px; font-weight: bold; border-right: 1px solid #ccc; background: #f9f9f9;}
         .card-right { flex: 1.8; padding: 8px; display: flex; align-items: center; justify-content: center; text-align: center; font-size: 10px; font-weight: bold; }
         .card-icon { font-size: 32px; margin-top: 5px; color: #555;}
-        .face-down { background-color: #0b0b0b; background-image: url('logo.png'); background-size: 80%; background-repeat: no-repeat; background-position: center; }
+        .face-down { background-color: #0b0b0b; background-image: url('logo.png'); background-size: 80%; background-repeat: no-repeat; background-position: center; cursor: default; }
 
         .block-shield { position: absolute; display: none; font-size: 40px; filter: drop-shadow(0 4px 6px #000); z-index: 20;}
         .shield-badge { position: absolute; top: -5px; right: -5px; background: #d9534f; color: white; border-radius: 50%; width: 22px; height: 22px; font-size: 13px; font-family: sans-serif; display: flex; justify-content: center; align-items: center; font-weight: bold; border: 2px solid #fff; }
@@ -83,41 +90,23 @@
         .flipper .front, .flipper .back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 8px;}
         .flipper .back { transform: rotateY(180deg); }
 
-        .under-card-btn-row { display: none; }
         .mobile-fixed-bar { display: none; }
+        #opp-toggle-btn { display: none; }
 
         /* --- NATIVE MOBILE APP CSS OVERRIDES --- */
         .mobile-mode .info-panel { display: none !important; }
         .mobile-mode #status-panel { display: none !important; }
         .mobile-mode .center-column { width: 740px !important; margin: 0 auto; }
-        .mobile-mode .horizontal-card, .mobile-mode .card-face, .mobile-mode #anim-container { width: 224px !important; height: 154px !important; }
         
-        /* Forces the 3 Cards into a perfect, un-wrappable row */
+        .mobile-mode #opp-toggle-btn { display: block; background: rgba(17,14,10, 0.8); border: 1px solid #8c7650; color: #e8d0a8; font-family: 'Cinzel', serif; font-weight: bold; width: 200px; padding: 8px; border-radius: 4px; cursor: pointer; margin-bottom: 10px; z-index: 50;}
+        .mobile-mode #opp-reserve-row { display: none; margin-bottom: 15px; }
+
+        .mobile-mode .horizontal-card, .mobile-mode .card-face, .mobile-mode #anim-container { width: 224px !important; height: 154px !important; }
         .mobile-mode .cards-row { width: 720px !important; gap: 10px !important; flex-wrap: nowrap !important; justify-content: center !important; }
         .mobile-mode .card-container { display: flex; flex-direction: column; align-items: center; flex-shrink: 0; }
-        .mobile-mode .under-card-btn-row { display: flex; gap: 10px; width: 100%; margin-top: 15px; height: 40px; justify-content: center; }
-        .mobile-mode .under-card-btn { flex: 1; background: #0b0b0b; border: 2px solid #8c7650; color: #e8d0a8; border-radius: 4px; font-family: 'Cinzel', serif; font-weight: bold; font-size: 14px; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.8); }
-        .mobile-mode .under-card-btn:active { background: #e8d0a8; color: #0b0b0b; }
         .mobile-mode .card-left { font-size: 14px; padding: 8px; }
         .mobile-mode .card-right { font-size: 13px; padding: 10px; }
         .mobile-mode .card-icon { font-size: 44px; }
-
-        /* The Centered Execution Panel */
-        .mobile-mode #active-card-panel {
-            position: absolute;
-            top: 385px; /* Centers perfectly over the 770px SVG Board */
-            left: 50%;
-            transform: translate(-50%, -50%);
-            z-index: 600;
-            background: rgba(11, 11, 11, 0.95);
-            border: 2px solid #8c7650;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.9);
-            display: none; 
-            width: auto;
-        }
-        .mobile-mode #active-card-container { margin-top: 10px; width: 224px !important; height: 154px !important;}
 
         /* The Fixed Viewport Bars */
         .mobile-mode .mobile-fixed-bar {
@@ -138,17 +127,33 @@
             border-bottom: 2px solid #8c7650;
             box-shadow: 0 4px 15px rgba(0,0,0,0.9);
         }
+        /* Increased height to 180px for Drag and Drop Action Slot */
         .mobile-mode .action-bar {
             bottom: 0;
-            height: 90px;
+            height: 180px;
             background: linear-gradient(0deg, #1f1a15, #0b0b0b);
             border-top: 2px solid #8c7650;
             box-shadow: 0 -4px 15px rgba(0,0,0,0.9);
+            flex-direction: column;
+            justify-content: center;
+            gap: 15px;
         }
         .mobile-mode .back-btn { background: transparent; border: none; color: #e8d0a8; font-size: 20px; font-family: 'Cinzel', serif; font-weight: bold; cursor: pointer; padding: 10px 0; }
         .mobile-mode .game-code-display { font-size: 18px; font-weight: bold; color: #e8d0a8; letter-spacing: 2px; }
         .mobile-mode #top-game-code { color: #fff; }
-        .mobile-mode .action-bar-btn { background: #d9534f; color: #fff; border: 1px solid #ff9999; padding: 14px 20px; border-radius: 4px; font-family: 'Cinzel', serif; font-weight: bold; font-size: 16px; box-shadow: 0 2px 6px rgba(0,0,0,0.5); cursor: pointer; }
+        .mobile-mode .action-bar-btn { background: #d9534f; color: #fff; border: 1px solid #ff9999; padding: 10px 15px; border-radius: 4px; font-family: 'Cinzel', serif; font-weight: bold; font-size: 14px; box-shadow: 0 2px 6px rgba(0,0,0,0.5); cursor: pointer; }
+
+        /* The Drag Drop Target Zone */
+        .mobile-mode #active-drop-zone {
+            width: 134px; height: 92px; /* Roughly 60% of native card size */
+            border: 2px dashed #8c7650;
+            border-radius: 6px;
+            display: flex; justify-content: center; align-items: center;
+            color: #8c7650; font-weight: bold; font-size: 12px;
+            transition: all 0.2s;
+            position: relative;
+        }
+        .mobile-mode .drop-highlight { border-color: #ffd700 !important; color: #ffd700 !important; box-shadow: 0 0 15px rgba(255,215,0,0.5); }
 
     </style>
 </head>
@@ -175,7 +180,8 @@
         <div class="game-code-display">GAME: <span id="top-game-code"></span></div>
     </div>
     
-    <div id="mobile-action-bar" class="mobile-fixed-bar action-bar"></div>
+    <div id="mobile-action-bar" class="mobile-fixed-bar action-bar">
+        </div>
 
     <div class="scale-wrapper" id="scaler">
         <div id="anim-container"><div class="flipper" id="anim-flipper"><div class="front card-face face-down"></div><div class="back" id="anim-back"></div></div></div>
@@ -208,6 +214,8 @@
             </div>
 
             <div class="center-column">
+                <button id="opp-toggle-btn" onclick="toggleOpponent()">🔽 Show Opponent Cards</button>
+
                 <div class="cards-row" style="transform: rotate(180deg);" id="opp-reserve-row">
                     <div class="card-slot horizontal-card" id="opp-reserve-2">RESERVE 2</div>
                     <div class="card-slot horizontal-card" id="opp-reserve-1">RESERVE 1</div>
@@ -274,7 +282,7 @@
                             </g>
                         </g>
 
-                        <text x="500" y="40" text-anchor="middle" dominant-baseline="central" font-size="20" fill="#e8d0a8" letter-spacing="2">Captures</text>
+                        <g transform="translate(500, 40) rotate(180)"><text x="0" y="0" text-anchor="middle" dominant-baseline="central" font-size="20" fill="#e8d0a8" letter-spacing="2">Captures</text></g>
                         <rect x="100" y="60" width="800" height="80" fill="none" stroke="#e8d0a8" stroke-width="2"/>
                         <path d="M180 60 v80 M260 60 v80 M340 60 v80 M420 60 v80 M500 60 v80 M580 60 v80 M660 60 v80 M740 60 v80 M820 60 v80" stroke="#e8d0a8" stroke-width="2"/>
                         <g fill="#e8d0a8" font-size="34">
@@ -312,12 +320,10 @@
 
                 <div class="cards-row" id="my-reserve-row">
                     <div class="card-container">
-                        <div class="card-slot horizontal-card" id="my-reserve-1" onclick="!isMobileMode && handleReserveClick(1)">RESERVE 1</div>
-                        <div class="under-card-btn-row" id="my-res-1-btns"></div>
+                        <div class="card-slot horizontal-card drop-zone" id="my-reserve-1" onclick="!isMobileMode && handleReserveClick(1)">RESERVE 1</div>
                     </div>
                     <div class="card-container">
-                        <div class="card-slot horizontal-card" id="my-reserve-2" onclick="!isMobileMode && handleReserveClick(2)">RESERVE 2</div>
-                        <div class="under-card-btn-row" id="my-res-2-btns"></div>
+                        <div class="card-slot horizontal-card drop-zone" id="my-reserve-2" onclick="!isMobileMode && handleReserveClick(2)">RESERVE 2</div>
                     </div>
                 </div>
             </div>
@@ -332,14 +338,13 @@
                 <div style="display: flex; gap: 30px; margin: auto 0;" id="draw-discard-container">
                     <div style="display: flex; flex-direction: column; align-items: center; gap: 10px;" id="draw-pile-wrapper" class="card-container">
                         <div style="font-size: 16px; letter-spacing: 2px;" id="draw-label">DRAW</div>
-                        <div class="card-slot horizontal-card" onclick="!isMobileMode && handleDrawClick()" style="cursor: pointer; border: none; perspective: 1000px;" id="draw-pile-boundary">
+                        <div class="card-slot horizontal-card" onclick="isMobileMode ? processDrawTap() : handleDrawClick()" style="cursor: pointer; border: none; perspective: 1000px;" id="draw-pile-boundary">
                             <div class="flipper" id="draw-pile-flipper" style="width: 100%; height: 100%; transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1); transform-style: preserve-3d;">
                                 <div class="front card-face face-down" id="draw-pile" style="position: absolute; width: 100%; height: 100%; backface-visibility: hidden;"></div>
                                 <div class="back card-face" id="draw-pile-back" style="position: absolute; width: 100%; height: 100%; backface-visibility: hidden; transform: rotateY(180deg);"></div>
                             </div>
                         </div>
                         <div id="draw-count" style="font-size: 10px; color:#aaa; letter-spacing:1px; margin-top:5px;"></div>
-                        <div class="under-card-btn-row" id="draw-btns"></div>
                     </div>
                     <div style="display: flex; flex-direction: column; align-items: center; gap: 10px;" id="discard-pile-wrapper">
                         <div style="font-size: 16px; letter-spacing: 2px;">DISCARD</div>
@@ -349,7 +354,6 @@
                     </div>
                 </div>
             </div>
-            
         </div>
     </div>
 
@@ -378,8 +382,8 @@
         function resizeApp() {
             const scaler = document.getElementById('scaler');
             if (isMobileMode) {
-                // Safely calculates available vertical area strictly between the Fixed Header and Footer
-                let scale = Math.min(window.innerWidth / 740, (window.innerHeight - 180) / 950);
+                // Fixed Header (70) + Action Bar (180) + Buffer (20) = 270px deducted for safe-area zooming
+                let scale = Math.min(window.innerWidth / 740, (window.innerHeight - 270) / 950);
                 scaler.style.transform = `scale(${scale})`;
             } else {
                 const isPortrait = window.innerHeight > window.innerWidth;
@@ -391,6 +395,8 @@
 
         if (isMobileMode) {
             document.body.classList.add('mobile-mode');
+            document.getElementById('mobile-top-bar').style.display = 'flex';
+            document.getElementById('mobile-action-bar').style.display = 'flex';
             
             const reserveRow = document.getElementById('my-reserve-row');
             
@@ -402,10 +408,25 @@
             document.querySelector('.right-column').style.display = 'none';
             document.getElementById('discard-pile-wrapper').style.display = 'none';
             document.getElementById('main-app').style.flexDirection = 'column';
-
-            const centerCol = document.querySelector('.center-column');
-            centerCol.appendChild(document.getElementById('active-card-panel'));
         }
+
+        let showingOpponent = false;
+        window.toggleOpponent = function() {
+            showingOpponent = !showingOpponent;
+            const btn = document.getElementById('opp-toggle-btn');
+            const oppRow = document.getElementById('opp-reserve-row');
+            const myRow = document.getElementById('my-reserve-row');
+            
+            if (showingOpponent) {
+                btn.innerHTML = '🔼 Back to My Cards';
+                oppRow.style.display = 'flex';
+                myRow.style.display = 'none';
+            } else {
+                btn.innerHTML = '🔽 Show Opponent Cards';
+                oppRow.style.display = 'none';
+                myRow.style.display = 'flex';
+            }
+        };
 
         const gameCode = localStorage.getItem("pawnderGameCode");
         let myColor = localStorage.getItem("pawnderPlayerColor"); 
@@ -437,14 +458,9 @@
             const content = document.getElementById('instructions-content');
             try {
                 const response = await fetch('instructions.txt');
-                if (response.ok) {
-                    content.innerText = await response.text();
-                } else {
-                    content.innerText = "Instructions file not found. Please create 'instructions.txt' in your repository root folder.";
-                }
-            } catch (e) {
-                content.innerText = "Error loading instructions.txt";
-            }
+                if (response.ok) { content.innerText = await response.text(); } 
+                else { content.innerText = "Instructions file not found. Please create 'instructions.txt' in your repository root folder."; }
+            } catch (e) { content.innerText = "Error loading instructions.txt"; }
             modal.style.display = 'flex';
         };
         window.closeInstructions = function() { document.getElementById('instructions-modal').style.display = 'none'; };
@@ -459,7 +475,6 @@
         const isInFieldOfPlay = (r) => r >= 2 && r <= 5;
         const CARD_W = isMobileMode ? 224 : 160;
         const CARD_H = isMobileMode ? 154 : 110;
-        const BLOCK_OFFSET = isMobileMode ? 56 : 40;
 
         function generateCardHTML(card, extraClass="") {
             if(!card) return '';
@@ -515,15 +530,90 @@
             setTimeout(() => { animCont.style.display = 'none'; if(onComplete) onComplete(); }, 600);
         }
 
+        // --- NEW: TOUCH DRAG AND DROP ENGINE ---
+        let isDragging = false;
+        let dragClone = null;
+        let dragSourceStr = null; 
+        let dragIndexVal = null;
+        let startX, startY, initialRect;
+
+        document.addEventListener('touchstart', (e) => {
+            if (!isMobileMode || !isMyTurn || activeCardExecution || turnPhase === 1) return;
+            
+            const cardEl = e.target.closest('.card-face');
+            if (!cardEl || cardEl.classList.contains('face-down')) return;
+
+            const wrapper = cardEl.closest('.card-slot');
+            if (!wrapper) return;
+
+            if (wrapper.id === 'draw-pile-boundary' && isDrawingState) {
+                dragSourceStr = 'draw'; dragIndexVal = 0;
+            } else if (wrapper.id === 'my-reserve-1' && !isDrawingState && localData.playerWhiteReserve[0]) {
+                dragSourceStr = 'reserve'; dragIndexVal = 0;
+            } else if (wrapper.id === 'my-reserve-2' && !isDrawingState && localData.playerWhiteReserve[1]) {
+                dragSourceStr = 'reserve'; dragIndexVal = 1;
+            } else { return; }
+
+            isDragging = true;
+            initialRect = cardEl.getBoundingClientRect();
+            
+            dragClone = cardEl.cloneNode(true);
+            dragClone.style.position = 'fixed';
+            dragClone.style.top = initialRect.top + 'px'; dragClone.style.left = initialRect.left + 'px';
+            dragClone.style.width = initialRect.width + 'px'; dragClone.style.height = initialRect.height + 'px';
+            dragClone.style.zIndex = '9999'; dragClone.style.pointerEvents = 'none'; 
+            dragClone.style.boxShadow = '0 20px 40px rgba(0,0,0,0.8)';
+            dragClone.style.transform = 'scale(1.05)';
+            document.body.appendChild(dragClone);
+
+            cardEl.style.opacity = '0.3'; 
+            startX = e.touches[0].clientX; startY = e.touches[0].clientY;
+            
+            document.getElementById('active-drop-zone').classList.add('drop-highlight');
+            if (dragSourceStr === 'draw') {
+                document.getElementById('my-reserve-1').classList.add('drop-highlight');
+                document.getElementById('my-reserve-2').classList.add('drop-highlight');
+            }
+        }, {passive: false});
+
+        document.addEventListener('touchmove', (e) => {
+            if (!isDragging || !dragClone) return;
+            e.preventDefault(); 
+            const dx = e.touches[0].clientX - startX; const dy = e.touches[0].clientY - startY;
+            dragClone.style.top = (initialRect.top + dy) + 'px'; dragClone.style.left = (initialRect.left + dx) + 'px';
+        }, {passive: false});
+
+        document.addEventListener('touchend', (e) => {
+            if (!isDragging) return;
+            isDragging = false;
+            
+            document.getElementById('active-drop-zone').classList.remove('drop-highlight');
+            document.getElementById('my-reserve-1').classList.remove('drop-highlight');
+            document.getElementById('my-reserve-2').classList.remove('drop-highlight');
+
+            const touch = e.changedTouches[0];
+            const dropTarget = document.elementFromPoint(touch.clientX, touch.clientY);
+            const dropZone = dropTarget ? dropTarget.closest('.drop-zone') : null;
+            
+            document.querySelectorAll('.card-face').forEach(el => el.style.opacity = '1');
+            
+            if (dropZone) {
+                if (dropZone.id === 'active-drop-zone') {
+                    executeCard(dragIndexVal, dragSourceStr);
+                } else if (dropZone.id === 'my-reserve-1' && dragSourceStr === 'draw') {
+                    reserveCard(0);
+                } else if (dropZone.id === 'my-reserve-2' && dragSourceStr === 'draw') {
+                    reserveCard(1);
+                }
+            }
+            
+            if (dragClone) { dragClone.remove(); dragClone = null; }
+            dragSourceStr = null;
+        });
+
         function updateMobileUI() {
             if (!isMobileMode || !localData) return;
             const bar = document.getElementById('mobile-action-bar');
-            const res1Btns = document.getElementById('my-res-1-btns');
-            const res2Btns = document.getElementById('my-res-2-btns');
-            const drawBtns = document.getElementById('draw-btns');
-            
-            res1Btns.innerHTML = ''; res2Btns.innerHTML = ''; drawBtns.innerHTML = '';
-            const myRes = myColor === 'white' ? localData.playerWhiteReserve : localData.playerBlackReserve;
             
             const res1El = document.getElementById('my-reserve-1');
             const res2El = document.getElementById('my-reserve-2');
@@ -535,40 +625,60 @@
             }
 
             const infoBtnHtml = `<button class="action-bar-btn" onclick="showInstructions()" style="border-radius: 50%; width: 42px; height: 42px; padding: 0; display: flex; justify-content: center; align-items: center; font-size: 18px; border: 2px solid #8c7650; background: #0b0b0b; color: #e8d0a8; flex-shrink: 0;">i</button>`;
-            const turnPrefix = localData.gameMode === 'local' ? '' : `<span style="color:#4CAF50; margin-right: 8px;">${myColor.toUpperCase()}'S TURN:</span><br>`;
+            const turnPrefix = localData.gameMode === 'local' ? '' : `<span style="color:#4CAF50;">${myColor.toUpperCase()}'S TURN:</span><br>`;
 
             if (!isMyTurn) {
-                bar.innerHTML = `${infoBtnHtml}<div style="color:#e8d0a8; font-weight:bold; font-size:16px; flex:1; text-align:center;">Waiting for Opponent...</div><div style="width:42px;"></div>`;
+                bar.innerHTML = `
+                    <div style="display:flex; width:100%; justify-content:space-between; align-items:center;">
+                        ${infoBtnHtml}<div style="color:#e8d0a8; font-weight:bold; font-size:16px; flex:1; text-align:center;">Waiting for Opponent...</div><div style="width:42px;"></div>
+                    </div>
+                `;
                 return;
             }
             
             if (activeCardExecution) {
                 bar.innerHTML = `
-                    ${infoBtnHtml}
-                    <div style="color:#ffd700; font-weight:bold; font-size:16px; flex:1; text-align:center; line-height: 1.3;">${turnPrefix}Executing Card...</div>
-                    <button class="action-bar-btn" onclick="cancelExecution()">Cancel</button>
+                    <div style="display:flex; width:100%; justify-content:space-between; align-items:center;">
+                        ${infoBtnHtml}
+                        <div style="color:#ffd700; font-weight:bold; font-size:14px; flex:1; text-align:center; line-height: 1.3;">${turnPrefix}Executing Card...</div>
+                        <button class="action-bar-btn" onclick="cancelExecution()">Cancel</button>
+                    </div>
+                    <div id="active-drop-zone" class="drop-zone" style="width: 134px; height: 92px; border:none; display:flex; justify-content:center; align-items:center;">
+                        <div style="transform: scale(0.6); transform-origin: center center;">${generateCardHTML(activeCardExecution)}</div>
+                    </div>
                 `;
                 return;
             } 
             
             if (turnPhase === 1) {
                 bar.innerHTML = `
-                    ${infoBtnHtml}
-                    <div style="color:#fff; font-weight:bold; font-size:15px; flex:1; text-align:center; line-height: 1.3;">${turnPrefix}Step 1: Move Pawn</div>
-                    <button class="action-bar-btn" onclick="confirmSkip('cards')">Skip</button>
+                    <div style="display:flex; width:100%; justify-content:space-between; align-items:center;">
+                        ${infoBtnHtml}
+                        <div style="color:#fff; font-weight:bold; font-size:14px; flex:1; text-align:center; line-height: 1.3;">${turnPrefix}Step 1: Move Pawn</div>
+                        <button class="action-bar-btn" onclick="confirmSkip('cards')">Skip</button>
+                    </div>
+                    <div id="active-drop-zone" class="drop-zone" style="opacity: 0.3; border: 2px dashed #666; width: 134px; height: 92px; border-radius: 6px; display:flex; justify-content:center; align-items:center; color:#666; font-size:12px; font-weight:bold;">LOCKED</div>
                 `;
             } else if (turnPhase === 2) {
-                bar.innerHTML = `${infoBtnHtml}<div style="color:#fff; font-weight:bold; font-size:15px; flex:1; text-align:center; line-height: 1.3;">${turnPrefix}Step 2: Draw or Play Card</div><div style="width:42px;"></div>`;
+                bar.innerHTML = `
+                    <div style="display:flex; width:100%; justify-content:space-between; align-items:center;">
+                        ${infoBtnHtml}
+                        <div style="color:#fff; font-weight:bold; font-size:14px; flex:1; text-align:center; line-height: 1.3;">${turnPrefix}Step 2: Drag Card to Play</div>
+                        <div style="width:42px;"></div>
+                    </div>
+                    <div id="active-drop-zone" class="drop-zone" style="border: 2px dashed #8c7650; width: 134px; height: 92px; border-radius: 6px; display:flex; justify-content:center; align-items:center; color:#8c7650; font-size:12px; font-weight:bold;">DROP CARD HERE</div>
+                `;
                 
                 if (isDrawingState) {
-                    drawBtns.innerHTML = `<button class="under-card-btn" onclick="executeCard(0, 'draw')">Play</button>`;
-                    if (myRes.length < 2) {
-                        drawBtns.innerHTML += `<button class="under-card-btn" onclick="reserveCard()">Reserve</button>`;
-                    }
+                    document.getElementById('my-reserve-1').style.opacity = '0.4';
+                    document.getElementById('my-reserve-2').style.opacity = '0.4';
+                    document.getElementById('draw-pile-boundary').style.opacity = '1';
+                    document.getElementById('draw-pile-boundary').style.boxShadow = '0 0 15px 5px rgba(255, 215, 0, 0.4)';
                 } else {
-                    if (myRes[0]) res1Btns.innerHTML = `<button class="under-card-btn" onclick="executeCard(0, 'reserve')">Play</button>`;
-                    if (myRes[1]) res2Btns.innerHTML = `<button class="under-card-btn" onclick="executeCard(1, 'reserve')">Play</button>`;
-                    drawBtns.innerHTML = `<button class="under-card-btn" onclick="processDraw()">Draw</button>`;
+                    document.getElementById('my-reserve-1').style.opacity = '1';
+                    document.getElementById('my-reserve-2').style.opacity = '1';
+                    document.getElementById('draw-pile-boundary').style.opacity = '1';
+                    document.getElementById('draw-pile-boundary').style.boxShadow = 'none';
                 }
             }
         }
@@ -589,15 +699,20 @@
             }
         }
 
+        window.processDrawTap = function() {
+            if (!isMyTurn || activeCardExecution || gamePhase !== 'playing') return;
+            if (turnPhase === 2 && !isDrawingState) {
+                processDraw();
+            }
+        }
+
         window.handleDrawClick = async function() {
-            if (isMobileMode) return; 
             if(!isMyTurn || activeCardExecution || gamePhase !== "playing") return;
             if(turnPhase === 1) { showDecisionPanel("Skip pawn move and draw?", `<button class="btn" onclick="closeDecisionPanel()">Cancel</button><button class="btn" onclick="confirmSkip('draw')">Yes</button>`); return; }
             processDraw();
         };
 
         window.handleReserveClick = async function(slotNum) {
-            if (isMobileMode) return; 
             if(!isMyTurn || activeCardExecution || gamePhase !== "playing") return;
             const myRes = myColor === 'white' ? localData.playerWhiteReserve : localData.playerBlackReserve;
             if(slotNum - 1 >= myRes.length) return; 
@@ -649,6 +764,7 @@
             
             if (isMobileMode) {
                 document.getElementById('draw-pile-flipper').classList.remove('flipped');
+                isDrawingState = false;
                 localData[blockKey].push(card); checkDeckResetOrEndTurn(); 
             } else {
                 animateFlight(document.getElementById('decision-card-anchor'), document.getElementById(`my-block-shield`), card, 'reserve', () => {
@@ -688,20 +804,6 @@
             }
         };
 
-        window.swapReserveAndPlay = async function(reserveIndex) {
-            const reserveKey = myColor === 'white' ? 'playerWhiteReserve' : 'playerBlackReserve';
-            const drawnCard = localData.deck.shift();
-            const cardToPlay = localData[reserveKey].splice(reserveIndex, 1, drawnCard)[0]; 
-            closeDecisionPanel();
-            
-            if (isMobileMode) {
-                document.getElementById('draw-pile-flipper').classList.remove('flipped');
-                startCardExecution(cardToPlay);
-            } else {
-                animateFlight(document.getElementById('decision-card-anchor'), document.getElementById(`my-reserve-${reserveIndex+1}`), drawnCard, 'reserve', () => startCardExecution(cardToPlay));
-            }
-        };
-
         window.executeCard = function(index, source) {
             closeDecisionPanel();
             let card;
@@ -728,10 +830,7 @@
                 document.getElementById('instructions-panel').style.display = "none"; 
                 document.getElementById('active-card-panel').style.display = "block";
                 document.getElementById('active-card-container').innerHTML = generateCardHTML(card);
-            } else {
-                document.getElementById('active-card-panel').style.display = "block";
-                document.getElementById('active-card-container').innerHTML = generateCardHTML(card);
-            }
+            } 
 
             if(card.action === 'skip' || card.action === 'block') finalizeCardTurn();
             else renderBoard(JSON.parse(localData.boardState)); 
@@ -853,20 +952,12 @@
             }
         }
 
-        function createOffscreenDest() {
-            const dest = document.createElement('div');
-            dest.style.position = 'absolute'; dest.style.top = '1500px'; dest.style.left = '350px'; dest.style.width = CARD_W + 'px'; dest.style.height = CARD_H + 'px';
-            document.getElementById('scaler').appendChild(dest);
-            return dest;
-        }
-
         async function finalizeCardTurn() {
             const cardToDiscard = activeCardExecution; activeCardExecution = null;
             document.getElementById('active-card-container').innerHTML = '';
             
             if (isMobileMode) {
                 document.getElementById('draw-pile-flipper').classList.remove('flipped');
-                document.getElementById('active-card-panel').style.display = "none"; 
                 localData.discardPile.push(cardToDiscard);
                 checkDeckResetOrEndTurn();
             } else {
@@ -932,7 +1023,7 @@
                     }
                     
                     document.getElementById('game-area').classList.toggle('rotate-180', myColor === 'black');
-                    document.getElementById('board-decorations').setAttribute('transform', myColor === 'black' ? 'rotate(180 500 500)' : 'rotate(0 500 500)');
+                    document.getElementById('board-decorations').setAttribute('transform', myColor === 'black' ? 'rotate(180 500 550)' : 'rotate(0 500 550)');
 
                     data.playerWhiteReserve = data.playerWhiteReserve || []; data.playerBlackReserve = data.playerBlackReserve || [];
                     data.playerWhiteBlocks = data.playerWhiteBlocks || []; data.playerBlackBlocks = data.playerBlackBlocks || [];
@@ -952,7 +1043,7 @@
                             }
                         } else {
                             if (isMobileMode) {
-                                document.getElementById('mobile-action-bar').innerHTML = `<div style="color:#ffd700; font-weight:bold; font-size:18px; width:100%; text-align:center;">Waiting for Opponent Block...</div>`;
+                                document.getElementById('mobile-action-bar').innerHTML = `<div style="display:flex; width:100%; justify-content:space-between; align-items:center;"><div style="color:#ffd700; font-weight:bold; font-size:16px; width:100%; text-align:center;">Waiting for Opponent Block...</div></div>`;
                             } else {
                                 document.getElementById('turn-header').innerText = "Waiting for Opponent Block..."; document.getElementById('turn-header').style.color = "#ffd700";
                             }
