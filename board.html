@@ -18,7 +18,8 @@
             font-family: 'Cinzel', serif; color: #e8d0a8; 
             overflow: hidden; touch-action: none; 
         }
-        .scale-wrapper { display: flex; justify-content: center; align-items: center; width: 1350px; height: 1000px; transform-origin: center; position: relative; }
+        /* Increased height to 1100px to accommodate taller SVG board */
+        .scale-wrapper { display: flex; justify-content: center; align-items: center; width: 1350px; height: 1100px; transform-origin: center; position: relative; }
         @media (orientation: portrait) { body:not(.mobile-mode) .scale-wrapper { transform: rotate(90deg); } }
         
         .app-container { display: flex; flex-direction: row; justify-content: center; align-items: center; gap: 20px; width: 100%; position: relative; }
@@ -34,27 +35,32 @@
         .active-step { color: #ffd700; text-shadow: 0 0 8px rgba(255, 215, 0, 0.4); }
         .inactive-step { color: #666; }
 
-        .center-column { display: flex; flex-direction: column; align-items: center; gap: 10px; width: 700px; }
+        .center-column { display: flex; flex-direction: column; align-items: center; gap: 10px; width: 700px; position: relative; }
         .cards-row { display: flex; flex-direction: row; justify-content: center; align-items: center; gap: 20px; width: 100%; position: relative; }
         
-        #game-area { position: relative; width: 700px; height: 700px; transition: transform 0.6s ease-in-out; box-shadow: 0 10px 30px rgba(0,0,0,0.8); z-index: 5;}
+        /* Adjusted height for the new 1000x1100 SVG ratio (700 x 770) */
+        #game-area { position: relative; width: 700px; height: 770px; transition: transform 0.6s ease-in-out; box-shadow: 0 10px 30px rgba(0,0,0,0.8); z-index: 5;}
         .rotate-180 { transform: rotate(180deg); }
         
-        /* HTML Grid dynamically recalibrated to cover the new 720x720 SVG grid (scaled by 0.7) */
-        #interactive-grid { position: absolute; top: 98px; left: 98px; width: 504px; height: 504px; display: grid; grid-template-columns: repeat(8, 1fr); grid-template-rows: repeat(8, 1fr); z-index: 10; }
+        /* HTML Grid calibrated for 720x720 internal SVG grid overlay */
+        #interactive-grid { position: absolute; top: 133px; left: 98px; width: 504px; height: 504px; display: grid; grid-template-columns: repeat(8, 1fr); grid-template-rows: repeat(8, 1fr); z-index: 10; }
         .grid-cell { box-sizing: border-box; display: flex; justify-content: center; align-items: center; cursor: pointer; border-radius: 4px; }
         .highlight-move { background-color: rgba(0, 255, 0, 0.25) !important; border: 2px solid rgba(0, 255, 0, 0.8); }
         .highlight-attack { background-color: rgba(255, 0, 0, 0.35) !important; border: 2px solid rgba(255, 0, 0, 0.8); }
         .highlight-rescue { background-color: rgba(0, 150, 255, 0.35) !important; border: 2px solid rgba(0, 150, 255, 0.8); }
         
-        /* Pawns scaled up to 50px to better fill the new 90x90 grid cells */
-        .pawn { width: 50px; height: 50px; border-radius: 50%; box-shadow: 0 4px 6px rgba(0,0,0,0.6), inset 0 -4px 4px rgba(0,0,0,0.3); position: relative; pointer-events: none; }
-        .pawn::before { content: ''; position: absolute; top: 4px; left: 4px; right: 4px; bottom: 4px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.2); }
-        .pawn-white { background: radial-gradient(circle at 30% 30%, #ffffff, #d4d4d4 60%, #888888); border: 2px solid #555; }
-        .pawn-black { background: radial-gradient(circle at 30% 30%, #555555, #222222 60%, #000000); border: 2px solid #111; }
-        .pawn.selected { border-color: #ffd700; box-shadow: 0 0 12px #ffd700; transform: scale(1.15); z-index: 5; }
+        /* --- BRAND NEW 3D PAWN PERSPECTIVE CSS --- */
+        .pawn { width: 46px; height: 46px; border-radius: 50%; box-shadow: 0 10px 10px rgba(0,0,0,0.7); position: relative; pointer-events: none; transition: transform 0.2s;}
+        /* The "Head" of the pawn, shifted up and left to create a 60-degree top-down angled perspective */
+        .pawn::before { content: ''; position: absolute; top: -12px; left: 8px; width: 30px; height: 30px; border-radius: 50%; box-shadow: 0 6px 4px rgba(0,0,0,0.5); }
+        .pawn-white { background: radial-gradient(circle at 50% 70%, #d4d4d4, #888 70%, #555); border: 1px solid #666; }
+        .pawn-white::before { background: radial-gradient(circle at 40% 30%, #ffffff, #d4d4d4 60%, #888); border: 1px solid #999; }
+        .pawn-black { background: radial-gradient(circle at 50% 70%, #444, #111 70%, #000); border: 1px solid #111; }
+        .pawn-black::before { background: radial-gradient(circle at 40% 30%, #666, #222 60%, #000); border: 1px solid #000; }
+        .pawn.selected { transform: scale(1.15); box-shadow: 0 12px 15px rgba(255,215,0,0.6); z-index: 5; }
+        .pawn.selected::before { box-shadow: 0 0 12px #ffd700, 0 6px 4px rgba(0,0,0,0.5); }
 
-        .right-column { display: flex; flex-direction: column; justify-content: center; height: 700px; width: 280px; align-items: center; position: relative;}
+        .right-column { display: flex; flex-direction: column; justify-content: center; height: 770px; width: 280px; align-items: center; position: relative;}
         
         .card-slot { border: 2px dashed rgba(232, 208, 168, 0.6); display: flex; justify-content: center; align-items: center; color: rgba(232, 208, 168, 0.5); font-size: 14px; text-align: center; box-sizing: border-box; background: rgba(0,0,0,0.3); border-radius: 8px; cursor: pointer; position: relative; transition: opacity 0.3s;}
         .horizontal-card { width: 160px; height: 110px; }
@@ -83,14 +89,11 @@
 
         .under-card-btn-row { display: none; }
         #mobile-action-bar { display: none; }
+        #mobile-top-bar { display: none; }
 
         /* MOBILE CSS OVERRIDES */
         .mobile-mode .info-panel { display: none !important; }
-        .mobile-mode #status-panel { width: 90%; margin: 0 auto; box-sizing: border-box;}
-        .mobile-mode #status-panel h2 { font-size: 18px; margin-bottom: 12px; }
-        .mobile-mode #display-game-code { font-size: 32px !important; letter-spacing: 4px; }
-        .mobile-mode #leave-game-btn { font-size: 16px; padding: 10px 18px; }
-        .mobile-mode #turn-header { font-size: 22px; margin-top: 15px; }
+        .mobile-mode #status-panel { display: none !important; } /* Hidden in favor of new top bar */
 
         .mobile-mode .horizontal-card, 
         .mobile-mode .card-face, 
@@ -164,6 +167,12 @@
             </div>
 
             <div class="center-column">
+                
+                <div id="mobile-top-bar" style="width: 100%; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <button onclick="leaveGame()" style="background:transparent; border:none; color:#e8d0a8; font-size:24px; font-family:'Cinzel', serif; font-weight:bold; cursor:pointer; padding: 0;">&#8592; Back</button>
+                    <div style="font-size:20px; font-weight:bold; color:#e8d0a8; letter-spacing:2px;">GAME: <span id="top-game-code" style="color:#fff;"></span></div>
+                </div>
+
                 <div class="cards-row" style="transform: rotate(180deg);" id="opp-reserve-row">
                     <div class="card-slot horizontal-card" id="opp-reserve-2">RESERVE 2</div>
                     <div class="card-slot horizontal-card" id="opp-reserve-1">RESERVE 1</div>
@@ -173,66 +182,66 @@
                     <div id="my-block-shield" class="block-shield" style="bottom: -20px; left: -20px;">🛡️<div class="shield-badge"></div></div>
                     <div id="opp-block-shield" class="block-shield" style="top: -20px; right: -20px; transform: rotate(180deg);">🛡️<div class="shield-badge"></div></div>
 
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" width="700" height="700" style="display: block; position: absolute; top: 0; left: 0;">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1100" width="700" height="770" style="display: block; position: absolute; top: 0; left: 0;">
                         <defs>
                             <pattern id="safeHatch" width="14" height="14" patternTransform="rotate(45 0 0)" patternUnits="userSpaceOnUse">
                                 <line x1="0" y1="0" x2="0" y2="14" stroke="#0b0b0b" stroke-width="4" stroke-opacity="0.8"/>
                                 <line x1="0" y1="0" x2="0" y2="14" stroke="#e8d0a8" stroke-width="2" stroke-opacity="0.9"/>
                             </pattern>
                         </defs>
-                        <rect width="1000" height="1000" fill="#000000"/>
-                        <rect x="10" y="10" width="980" height="980" fill="none" stroke="#e8d0a8" stroke-width="2"/>
-                        <rect x="20" y="20" width="960" height="960" fill="none" stroke="#e8d0a8" stroke-width="1"/>
+                        <rect width="1000" height="1100" fill="#000000"/>
+                        <rect x="10" y="10" width="980" height="1080" fill="none" stroke="#e8d0a8" stroke-width="2"/>
+                        <rect x="20" y="20" width="960" height="1060" fill="none" stroke="#e8d0a8" stroke-width="1"/>
                         
-                        <rect x="140" y="140" width="720" height="720" fill="#000" stroke="#e8d0a8" stroke-width="3"/>
+                        <rect x="140" y="190" width="720" height="720" fill="#000" stroke="#e8d0a8" stroke-width="3"/>
                         
                         <g fill="#e8d0a8" opacity="0.85">
-                            <rect x="140" y="140" width="90" height="90"/><rect x="320" y="140" width="90" height="90"/><rect x="500" y="140" width="90" height="90"/><rect x="680" y="140" width="90" height="90"/>
-                            <rect x="230" y="230" width="90" height="90"/><rect x="410" y="230" width="90" height="90"/><rect x="590" y="230" width="90" height="90"/><rect x="770" y="230" width="90" height="90"/>
-                            <rect x="140" y="320" width="90" height="90"/><rect x="320" y="320" width="90" height="90"/><rect x="500" y="320" width="90" height="90"/><rect x="680" y="320" width="90" height="90"/>
-                            <rect x="230" y="410" width="90" height="90"/><rect x="410" y="410" width="90" height="90"/><rect x="590" y="410" width="90" height="90"/><rect x="770" y="410" width="90" height="90"/>
-                            <rect x="140" y="500" width="90" height="90"/><rect x="320" y="500" width="90" height="90"/><rect x="500" y="500" width="90" height="90"/><rect x="680" y="500" width="90" height="90"/>
-                            <rect x="230" y="590" width="90" height="90"/><rect x="410" y="590" width="90" height="90"/><rect x="590" y="590" width="90" height="90"/><rect x="770" y="590" width="90" height="90"/>
-                            <rect x="140" y="680" width="90" height="90"/><rect x="320" y="680" width="90" height="90"/><rect x="500" y="680" width="90" height="90"/><rect x="680" y="680" width="90" height="90"/>
-                            <rect x="230" y="770" width="90" height="90"/><rect x="410" y="770" width="90" height="90"/><rect x="590" y="770" width="90" height="90"/><rect x="770" y="770" width="90" height="90"/>
+                            <rect x="140" y="190" width="90" height="90"/><rect x="320" y="190" width="90" height="90"/><rect x="500" y="190" width="90" height="90"/><rect x="680" y="190" width="90" height="90"/>
+                            <rect x="230" y="280" width="90" height="90"/><rect x="410" y="280" width="90" height="90"/><rect x="590" y="280" width="90" height="90"/><rect x="770" y="280" width="90" height="90"/>
+                            <rect x="140" y="370" width="90" height="90"/><rect x="320" y="370" width="90" height="90"/><rect x="500" y="370" width="90" height="90"/><rect x="680" y="370" width="90" height="90"/>
+                            <rect x="230" y="460" width="90" height="90"/><rect x="410" y="460" width="90" height="90"/><rect x="590" y="460" width="90" height="90"/><rect x="770" y="460" width="90" height="90"/>
+                            <rect x="140" y="550" width="90" height="90"/><rect x="320" y="550" width="90" height="90"/><rect x="500" y="550" width="90" height="90"/><rect x="680" y="550" width="90" height="90"/>
+                            <rect x="230" y="640" width="90" height="90"/><rect x="410" y="640" width="90" height="90"/><rect x="590" y="640" width="90" height="90"/><rect x="770" y="640" width="90" height="90"/>
+                            <rect x="140" y="730" width="90" height="90"/><rect x="320" y="730" width="90" height="90"/><rect x="500" y="730" width="90" height="90"/><rect x="680" y="730" width="90" height="90"/>
+                            <rect x="230" y="820" width="90" height="90"/><rect x="410" y="820" width="90" height="90"/><rect x="590" y="820" width="90" height="90"/><rect x="770" y="820" width="90" height="90"/>
                         </g>
 
-                        <rect x="140" y="140" width="720" height="180" fill="url(#safeHatch)" stroke="none" pointer-events="none"/>
-                        <rect x="140" y="680" width="720" height="180" fill="url(#safeHatch)" stroke="none" pointer-events="none"/>
+                        <rect x="140" y="190" width="720" height="180" fill="url(#safeHatch)" stroke="none" pointer-events="none"/>
+                        <rect x="140" y="730" width="720" height="180" fill="url(#safeHatch)" stroke="none" pointer-events="none"/>
                         
                         <g stroke="#111111" stroke-width="5" stroke-linecap="round" opacity="0.9">
-                            <line x1="325" y1="505" x2="405" y2="585"/> <line x1="405" y1="505" x2="325" y2="585"/>
-                            <line x1="595" y1="415" x2="675" y2="495"/> <line x1="675" y1="415" x2="595" y2="495"/>
+                            <line x1="335" y1="565" x2="395" y2="625"/> <line x1="395" y1="565" x2="335" y2="625"/>
+                            <line x1="605" y1="475" x2="665" y2="535"/> <line x1="665" y1="475" x2="605" y2="535"/>
                         </g>
                         
                         <g stroke="#e8d0a8" stroke-width="5" stroke-linecap="round" opacity="0.9">
-                            <line x1="415" y1="325" x2="495" y2="405"/> <line x1="495" y1="325" x2="415" y2="405"/>
-                            <line x1="505" y1="595" x2="585" y2="675"/> <line x1="585" y1="595" x2="505" y2="675"/>
+                            <line x1="425" y1="385" x2="485" y2="445"/> <line x1="485" y1="385" x2="425" y2="445"/>
+                            <line x1="515" y1="655" x2="575" y2="715"/> <line x1="575" y1="655" x2="515" y2="715"/>
                         </g>
 
-                        <path d="M230 140 v720 M320 140 v720 M410 140 v720 M500 140 v720 M590 140 v720 M680 140 v720 M770 140 v720" stroke="#000" stroke-width="2"/>
-                        <path d="M140 230 h720 M140 320 h720 M140 410 h720 M140 500 h720 M140 590 h720 M140 680 h720 M140 770 h720" stroke="#000" stroke-width="2"/>
+                        <path d="M230 190 v720 M320 190 v720 M410 190 v720 M500 190 v720 M590 190 v720 M680 190 v720 M770 190 v720" stroke="#000" stroke-width="2"/>
+                        <path d="M140 280 h720 M140 370 h720 M140 460 h720 M140 550 h720 M140 640 h720 M140 730 h720 M140 820 h720" stroke="#000" stroke-width="2"/>
 
                         <g id="board-decorations" style="transition: transform 0.6s ease-in-out;">
-                            <g transform="translate(910, 230) rotate(-90)">
+                            <g transform="translate(910, 280) rotate(-90)">
                                 <text x="0" y="-12" text-anchor="middle" font-size="22" fill="#e8d0a8" letter-spacing="2">SAFE</text>
                                 <text x="0" y="16" text-anchor="middle" font-size="22" fill="#e8d0a8" letter-spacing="2">ZONE</text>
                             </g>
                             
-                            <g transform="translate(910, 500) rotate(-90)">
+                            <g transform="translate(910, 550) rotate(-90)">
                                 <text x="0" y="-12" text-anchor="middle" font-size="22" fill="#e8d0a8" letter-spacing="2">FIELD OF</text>
                                 <text x="0" y="16" text-anchor="middle" font-size="22" fill="#e8d0a8" letter-spacing="2">PLAY</text>
                             </g>
                             
-                            <g transform="translate(910, 770) rotate(-90)">
+                            <g transform="translate(910, 820) rotate(-90)">
                                 <text x="0" y="-12" text-anchor="middle" font-size="22" fill="#e8d0a8" letter-spacing="2">SAFE</text>
                                 <text x="0" y="16" text-anchor="middle" font-size="22" fill="#e8d0a8" letter-spacing="2">ZONE</text>
                             </g>
                         </g>
 
+                        <text x="500" y="40" text-anchor="middle" dominant-baseline="central" font-size="20" fill="#e8d0a8" letter-spacing="2">Captures</text>
                         <rect x="100" y="60" width="800" height="80" fill="none" stroke="#e8d0a8" stroke-width="2"/>
                         <path d="M180 60 v80 M260 60 v80 M340 60 v80 M420 60 v80 M500 60 v80 M580 60 v80 M660 60 v80 M740 60 v80 M820 60 v80" stroke="#e8d0a8" stroke-width="2"/>
-                        <g transform="translate(500, 160) rotate(180)"><text x="0" y="0" text-anchor="middle" dominant-baseline="central" font-size="20" fill="#e8d0a8" letter-spacing="2">Captures</text></g>
                         <g fill="#e8d0a8" font-size="34">
                             <g transform="translate(140, 100) rotate(180)"><text x="0" y="0" text-anchor="middle" dominant-baseline="central">10</text></g>
                             <g transform="translate(220, 100) rotate(180)"><text x="0" y="0" text-anchor="middle" dominant-baseline="central">9</text></g>
@@ -246,20 +255,20 @@
                             <g transform="translate(860, 100) rotate(180)"><text x="0" y="0" text-anchor="middle" dominant-baseline="central">1</text></g>
                         </g>
 
-                        <text x="500" y="840" text-anchor="middle" dominant-baseline="central" font-size="20" fill="#e8d0a8" letter-spacing="2">Captures</text>
-                        <rect x="100" y="860" width="800" height="80" fill="none" stroke="#e8d0a8" stroke-width="2"/>
-                        <path d="M180 860 v80 M260 860 v80 M340 860 v80 M420 860 v80 M500 860 v80 M580 860 v80 M660 860 v80 M740 860 v80 M820 860 v80" stroke="#e8d0a8" stroke-width="2"/>
+                        <text x="500" y="1060" text-anchor="middle" dominant-baseline="central" font-size="20" fill="#e8d0a8" letter-spacing="2">Captures</text>
+                        <rect x="100" y="950" width="800" height="80" fill="none" stroke="#e8d0a8" stroke-width="2"/>
+                        <path d="M180 950 v80 M260 950 v80 M340 950 v80 M420 950 v80 M500 950 v80 M580 950 v80 M660 950 v80 M740 950 v80 M820 950 v80" stroke="#e8d0a8" stroke-width="2"/>
                         <g fill="#e8d0a8" font-size="34">
-                            <text x="140" y="900" text-anchor="middle" dominant-baseline="central">1</text>
-                            <text x="220" y="900" text-anchor="middle" dominant-baseline="central">2</text>
-                            <text x="300" y="900" text-anchor="middle" dominant-baseline="central">3</text>
-                            <text x="380" y="900" text-anchor="middle" dominant-baseline="central">4</text>
-                            <text x="460" y="900" text-anchor="middle" dominant-baseline="central">5</text>
-                            <text x="540" y="900" text-anchor="middle" dominant-baseline="central">6</text>
-                            <text x="620" y="900" text-anchor="middle" dominant-baseline="central">7</text>
-                            <text x="700" y="900" text-anchor="middle" dominant-baseline="central">8</text>
-                            <text x="780" y="900" text-anchor="middle" dominant-baseline="central">9</text>
-                            <text x="860" y="900" text-anchor="middle" dominant-baseline="central">10</text>
+                            <text x="140" y="990" text-anchor="middle" dominant-baseline="central">1</text>
+                            <text x="220" y="990" text-anchor="middle" dominant-baseline="central">2</text>
+                            <text x="300" y="990" text-anchor="middle" dominant-baseline="central">3</text>
+                            <text x="380" y="990" text-anchor="middle" dominant-baseline="central">4</text>
+                            <text x="460" y="990" text-anchor="middle" dominant-baseline="central">5</text>
+                            <text x="540" y="990" text-anchor="middle" dominant-baseline="central">6</text>
+                            <text x="620" y="990" text-anchor="middle" dominant-baseline="central">7</text>
+                            <text x="700" y="990" text-anchor="middle" dominant-baseline="central">8</text>
+                            <text x="780" y="990" text-anchor="middle" dominant-baseline="central">9</text>
+                            <text x="860" y="990" text-anchor="middle" dominant-baseline="central">10</text>
                         </g>
                     </svg>
                     <div id="captures-layer" style="position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:11;"></div>
@@ -340,7 +349,7 @@
         function resizeApp() {
             const scaler = document.getElementById('scaler');
             if (isMobileMode) {
-                // REVERTED to original Version 1.27 logic (740/1250) to perfectly preserve UI borders and card sizes
+                // Divisor changed to 1250 to pad out the slightly taller layout seamlessly
                 let scale = Math.min(window.innerWidth / 740, window.innerHeight / 1250);
                 scaler.style.transform = `scale(${scale})`;
             } else {
@@ -353,21 +362,29 @@
 
         if (isMobileMode) {
             document.body.classList.add('mobile-mode');
+            document.getElementById('mobile-bottom-bar').style.display = 'flex';
+            document.getElementById('mobile-top-bar').style.display = 'flex';
             
-            const left = document.querySelector('.left-column');
-            const right = document.querySelector('.right-column');
-            const reserveRow = document.getElementById('my-reserve-row');
+            const left = document.getElementById('mobile-left');
+            const right = document.getElementById('mobile-right');
+            const center = document.getElementById('mobile-center');
             
-            left.style.display = 'flex'; 
-            left.style.position = 'absolute'; left.style.top = '10px'; left.style.left = '10px'; left.style.zIndex = '50';
-            left.style.width = '200px';
+            center.appendChild(document.getElementById('draw-pile-wrapper'));
             
-            document.getElementById('draw-label').style.display = 'none';
-            document.getElementById('draw-count').style.display = 'none';
-            reserveRow.appendChild(document.getElementById('draw-pile-wrapper'));
+            right.appendChild(document.getElementById('active-card-panel'));
             
-            right.style.display = 'none';
+            const decPanel = document.getElementById('decision-panel');
+            center.appendChild(decPanel);
+            decPanel.style.position = 'relative';
+            decPanel.style.top = '0';
+            decPanel.style.left = '0';
+            decPanel.style.transform = 'none';
+            decPanel.style.marginTop = '10px';
+            
             document.getElementById('discard-pile-wrapper').style.display = 'none';
+            document.querySelector('.left-column').style.display = 'none';
+            document.querySelector('.right-column').style.display = 'none';
+            document.getElementById('main-app').style.flexDirection = 'column';
         }
 
         const gameCode = localStorage.getItem("pawnderGameCode");
@@ -389,8 +406,12 @@
 
         if(!gameCode || !myColor) window.location.href = "index.html";
         document.getElementById('display-game-code').innerText = gameCode;
+        if (isMobileMode) document.getElementById('top-game-code').innerText = gameCode;
 
-        window.leaveGame = function() { localStorage.removeItem("pawnderGameCode"); localStorage.removeItem("pawnderPlayerColor"); window.location.href = "index.html"; };
+        // Redirects to lobby and pre-fills the back-code
+        window.leaveGame = function() { 
+            window.location.href = "index.html?left=" + gameCode; 
+        };
 
         // Instructions Modal Fetcher
         window.showInstructions = async function() {
@@ -477,7 +498,7 @@
         }
 
         function updateMobileUI() {
-            if (!isMobileMode) return;
+            if (!isMobileMode || !localData) return;
             const bar = document.getElementById('mobile-action-bar');
             const res1Btns = document.getElementById('my-res-1-btns');
             const res2Btns = document.getElementById('my-res-2-btns');
@@ -495,7 +516,8 @@
                 res1El.style.opacity = '1'; res2El.style.opacity = '1';
             }
 
-            const infoBtnHtml = `<button class="action-bar-btn" onclick="showInstructions()" style="border-radius: 50%; width: 42px; height: 42px; padding: 0; display: flex; justify-content: center; align-items: center; font-size: 18px; border: 2px solid #8c7650; background: #0b0b0b; color: #e8d0a8;">i</button>`;
+            const infoBtnHtml = `<button class="action-bar-btn" onclick="showInstructions()" style="border-radius: 50%; width: 42px; height: 42px; padding: 0; display: flex; justify-content: center; align-items: center; font-size: 18px; border: 2px solid #8c7650; background: #0b0b0b; color: #e8d0a8; flex-shrink: 0;">i</button>`;
+            const turnPrefix = localData.gameMode === 'local' ? '' : `<span style="color:#4CAF50; margin-right: 8px;">${myColor.toUpperCase()}'S TURN:</span><br>`;
 
             if (!isMyTurn) {
                 bar.innerHTML = `${infoBtnHtml}<div style="color:#e8d0a8; font-weight:bold; font-size:16px; flex:1; text-align:center;">Waiting for Opponent...</div><div style="width:42px;"></div>`;
@@ -505,7 +527,7 @@
             if (activeCardExecution) {
                 bar.innerHTML = `
                     ${infoBtnHtml}
-                    <div style="color:#ffd700; font-weight:bold; font-size:16px; flex:1; text-align:center;">Executing Card...</div>
+                    <div style="color:#ffd700; font-weight:bold; font-size:14px; flex:1; text-align:center; line-height: 1.3;">${turnPrefix}Executing Card...</div>
                     <button class="action-bar-btn" onclick="cancelExecution()">Cancel</button>
                 `;
                 return;
@@ -514,11 +536,11 @@
             if (turnPhase === 1) {
                 bar.innerHTML = `
                     ${infoBtnHtml}
-                    <div style="color:#fff; font-weight:bold; font-size:15px; flex:1; text-align:center;">Step 1: Pawn Move</div>
+                    <div style="color:#fff; font-weight:bold; font-size:14px; flex:1; text-align:center; line-height: 1.3;">${turnPrefix}Step 1: Move Pawn</div>
                     <button class="action-bar-btn" onclick="confirmSkip('cards')">Skip</button>
                 `;
             } else if (turnPhase === 2) {
-                bar.innerHTML = `${infoBtnHtml}<div style="color:#fff; font-weight:bold; font-size:15px; flex:1; text-align:center;">Step 2: Draw or Play Card</div><div style="width:42px;"></div>`;
+                bar.innerHTML = `${infoBtnHtml}<div style="color:#fff; font-weight:bold; font-size:14px; flex:1; text-align:center; line-height: 1.3;">${turnPrefix}Step 2: Draw or Play Card</div><div style="width:42px;"></div>`;
                 
                 if (isDrawingState) {
                     drawBtns.innerHTML = `<button class="under-card-btn" onclick="executeCard(0, 'draw')">Play</button>`;
@@ -987,9 +1009,9 @@
         function renderCaptures(data) {
             const capLayer = document.getElementById('captures-layer'); capLayer.innerHTML = '';
             
-            // Adjusted HTML coordinates for 0.7 scale. SVG Centers = 140,220... HTML Centers = 98,154... pawn offsets are -25px.
-            const topY = 70; const botY = 630; 
-            const xCoords = [73, 129, 185, 241, 297, 353, 409, 465, 521, 577]; 
+            // Mathematically calculated HTML CSS centers for the 10x80 Capture squares based on the new 700x770 layout scale
+            const topY = 47; const botY = 698; 
+            const xCoords = [75, 131, 187, 243, 299, 355, 411, 467, 523, 579]; 
             
             let topPawns = data.capturedWhite;
             let topClass = 'pawn-white';
@@ -999,10 +1021,10 @@
 
             for(let i=0; i<Math.min(topPawns, 10); i++) {
                 let idx = 9-i; 
-                capLayer.innerHTML += `<div class="pawn ${topClass}" style="position:absolute; left:${xCoords[idx]}px; top:${topY-25}px; pointer-events:none;"></div>`;
+                capLayer.innerHTML += `<div class="pawn ${topClass}" style="position:absolute; left:${xCoords[idx]}px; top:${topY}px; pointer-events:none;"></div>`;
             }
             for(let i=0; i<Math.min(botPawns, 10); i++) {
-                capLayer.innerHTML += `<div class="pawn ${botClass}" style="position:absolute; left:${xCoords[i]}px; top:${botY-25}px; pointer-events:none;"></div>`;
+                capLayer.innerHTML += `<div class="pawn ${botClass}" style="position:absolute; left:${xCoords[i]}px; top:${botY}px; pointer-events:none;"></div>`;
             }
         }
 
