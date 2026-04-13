@@ -36,7 +36,7 @@
         .inactive-step { color: #666; }
 
         .center-column { display: flex; flex-direction: column; align-items: center; gap: 10px; width: 700px; position: relative; }
-        .cards-row { display: flex; flex-direction: row; justify-content: center; align-items: center; gap: 20px; width: 100%; position: relative; transition: all 0.4s ease-in-out; height: 154px; }
+        .cards-row { display: flex; flex-direction: row; justify-content: center; align-items: center; gap: 20px; width: 100%; position: relative; transition: all 0.4s ease-in-out; }
         
         #game-area { position: relative; width: 700px; height: 770px; transition: transform 0.6s ease-in-out; box-shadow: 0 10px 30px rgba(0,0,0,0.8); z-index: 5;}
         .rotate-180 { transform: rotate(180deg); }
@@ -364,7 +364,7 @@
             const scaler = document.getElementById('scaler');
             if (isMobileMode) {
                 // Safely calculates available vertical area exactly between the fixed headers, ensuring flawless centering and no overlaps!
-                let scale = Math.min(window.innerWidth / 740, (window.innerHeight - 220) / 1100);
+                let scale = Math.min(window.innerWidth / 740, (window.innerHeight - 200) / 1200);
                 scaler.style.transform = `scale(${scale})`;
             } else {
                 const isPortrait = window.innerHeight > window.innerWidth;
@@ -573,7 +573,7 @@
                 dragSource = target.getAttribute('data-source');
                 
                 dragGhost = target.cloneNode(true);
-                dragGhost.style.position = 'fixed';
+                dragGhost.style.position = 'absolute'; 
                 dragGhost.style.zIndex = '9999';
                 dragGhost.style.pointerEvents = 'none'; 
                 dragGhost.style.opacity = '0.9';
@@ -586,12 +586,8 @@
                     ghostFace.style.borderColor = '#ffd700';
                 }
                 
-                const rect = target.getBoundingClientRect();
-                dragGhost.style.width = rect.width + 'px';
-                dragGhost.style.height = rect.height + 'px';
-                
-                document.body.appendChild(dragGhost);
-                updateGhostPos(e.clientX, e.clientY, rect.width, rect.height);
+                document.getElementById('scaler').appendChild(dragGhost);
+                updateGhostPos(e.clientX, e.clientY);
                 target.style.opacity = '0.2';
                 
             } else {
@@ -604,14 +600,21 @@
 
         document.addEventListener('pointermove', (e) => {
             if (!isDragging || !dragGhost) return;
-            const rect = dragGhost.getBoundingClientRect();
-            updateGhostPos(e.clientX, e.clientY, rect.width, rect.height);
+            updateGhostPos(e.clientX, e.clientY);
             checkDropTargets(e.clientX, e.clientY);
         });
 
-        function updateGhostPos(x, y, w, h) {
-            dragGhost.style.left = (x - w/2) + 'px';
-            dragGhost.style.top = (y - h/2) + 'px';
+        function updateGhostPos(clientX, clientY) {
+            const scaler = document.getElementById('scaler');
+            const scale = parseFloat(scaler.style.transform.replace(/[^\d.]/g, '')) || 1;
+            const rect = scaler.getBoundingClientRect();
+
+            // Translate Viewport Touch Coordinates to the interior of the Scaled Wrapper
+            const x = (clientX - rect.left) / scale;
+            const y = (clientY - rect.top) / scale;
+
+            dragGhost.style.left = (x - (CARD_W/2)) + 'px';
+            dragGhost.style.top = (y - (CARD_H/2)) + 'px';
         }
 
         function checkDropTargets(x, y) {
@@ -737,7 +740,10 @@
             
             if (isMobileMode) {
                 document.getElementById('draw-pile-flipper').classList.remove('flipped');
-                localData[blockKey].push(card); checkDeckResetOrEndTurn(); 
+                // Added brief delay to allow visual rotation back to deck before opponent's turn kicks in
+                setTimeout(() => {
+                    localData[blockKey].push(card); checkDeckResetOrEndTurn(); 
+                }, 800);
             } else {
                 animateFlight(document.getElementById('decision-card-anchor'), document.getElementById(`my-block-shield`), card, 'reserve', () => {
                     localData[blockKey].push(card); checkDeckResetOrEndTurn(); 
@@ -767,7 +773,9 @@
             if (isMobileMode) {
                 isDrawingState = false;
                 document.getElementById('draw-pile-flipper').classList.remove('flipped');
-                localData[reserveKey].push(card); checkDeckResetOrEndTurn();
+                setTimeout(() => {
+                    localData[reserveKey].push(card); checkDeckResetOrEndTurn();
+                }, 800);
             } else {
                 const targetIdx = localData[reserveKey].length;
                 animateFlight(document.getElementById('decision-card-anchor'), document.getElementById(`my-reserve-${targetIdx+1}`), card, 'reserve', () => {
@@ -929,6 +937,7 @@
             let triggersRescue = oppSafe && myCaptures > 0;
 
             if(activeCardExecution) {
+                renderBoard(state); // Instantly show the piece move before the delay kicks in
                 if(triggersRescue) { localData.gamePhase = 'rescue'; finalizeCardTurn(); }
                 else finalizeCardTurn();
             } else {
@@ -954,9 +963,12 @@
             
             if (isMobileMode) {
                 document.getElementById('draw-pile-flipper').classList.remove('flipped');
-                document.getElementById('active-card-panel').style.display = "none"; 
-                localData.discardPile.push(cardToDiscard);
-                checkDeckResetOrEndTurn();
+                // Added 800ms delay so the player can see their move finish before the board whips around
+                setTimeout(() => {
+                    document.getElementById('active-card-panel').style.display = "none"; 
+                    localData.discardPile.push(cardToDiscard);
+                    checkDeckResetOrEndTurn();
+                }, 800);
             } else {
                 animateFlight(document.getElementById('active-card-panel'), document.getElementById('discard-pile-boundary'), cardToDiscard, 'discard', async () => {
                     localData.discardPile.push(cardToDiscard);
@@ -1196,4 +1208,4 @@
         }
     </script>
 </body>
-</html> 
+</html>
