@@ -1,4 +1,4 @@
-<!DOCTYPE html> 
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -18,7 +18,6 @@
             font-family: 'Cinzel', serif; color: #e8d0a8; 
             overflow: hidden; touch-action: none; 
         }
-        /* Increased height to 1100px to accommodate taller SVG board */
         .scale-wrapper { display: flex; justify-content: center; align-items: center; width: 1350px; height: 1100px; transform-origin: center; position: relative; }
         @media (orientation: portrait) { body:not(.mobile-mode) .scale-wrapper { transform: rotate(90deg); } }
         
@@ -38,20 +37,17 @@
         .center-column { display: flex; flex-direction: column; align-items: center; gap: 10px; width: 700px; position: relative; }
         .cards-row { display: flex; flex-direction: row; justify-content: center; align-items: center; gap: 20px; width: 100%; position: relative; }
         
-        /* Adjusted height for the new 1000x1100 SVG ratio (700 x 770) */
         #game-area { position: relative; width: 700px; height: 770px; transition: transform 0.6s ease-in-out; box-shadow: 0 10px 30px rgba(0,0,0,0.8); z-index: 5;}
         .rotate-180 { transform: rotate(180deg); }
         
-        /* HTML Grid calibrated for 720x720 internal SVG grid overlay */
         #interactive-grid { position: absolute; top: 133px; left: 98px; width: 504px; height: 504px; display: grid; grid-template-columns: repeat(8, 1fr); grid-template-rows: repeat(8, 1fr); z-index: 10; }
         .grid-cell { box-sizing: border-box; display: flex; justify-content: center; align-items: center; cursor: pointer; border-radius: 4px; }
         .highlight-move { background-color: rgba(0, 255, 0, 0.25) !important; border: 2px solid rgba(0, 255, 0, 0.8); }
         .highlight-attack { background-color: rgba(255, 0, 0, 0.35) !important; border: 2px solid rgba(255, 0, 0, 0.8); }
         .highlight-rescue { background-color: rgba(0, 150, 255, 0.35) !important; border: 2px solid rgba(0, 150, 255, 0.8); }
         
-        /* --- BRAND NEW 3D PAWN PERSPECTIVE CSS --- */
+        /* The 3D Pawn Base and Head */
         .pawn { width: 46px; height: 46px; border-radius: 50%; box-shadow: 0 10px 10px rgba(0,0,0,0.7); position: relative; pointer-events: none; transition: transform 0.2s;}
-        /* The "Head" of the pawn, shifted up and left to create a 60-degree top-down angled perspective */
         .pawn::before { content: ''; position: absolute; top: -12px; left: 8px; width: 30px; height: 30px; border-radius: 50%; box-shadow: 0 6px 4px rgba(0,0,0,0.5); }
         .pawn-white { background: radial-gradient(circle at 50% 70%, #d4d4d4, #888 70%, #555); border: 1px solid #666; }
         .pawn-white::before { background: radial-gradient(circle at 40% 30%, #ffffff, #d4d4d4 60%, #888); border: 1px solid #999; }
@@ -93,7 +89,10 @@
 
         /* MOBILE CSS OVERRIDES */
         .mobile-mode .info-panel { display: none !important; }
-        .mobile-mode #status-panel { display: none !important; } /* Hidden in favor of new top bar */
+        .mobile-mode #status-panel { display: none !important; }
+
+        /* Forces the center column to explicitly hold the width of the unified card row */
+        .mobile-mode .center-column { width: 740px !important; margin: 0 auto; }
 
         .mobile-mode .horizontal-card, 
         .mobile-mode .card-face, 
@@ -101,20 +100,43 @@
         .mobile-mode #decision-card-anchor {
             width: 224px !important; height: 154px !important; 
         }
+
+        /* STRICTLY ENFORCED SINGLE ROW FOR ACTION CARDS */
+        .mobile-mode .cards-row { 
+            width: 720px !important; 
+            gap: 10px !important; 
+            flex-wrap: nowrap !important; /* Prevents wrapping */
+            justify-content: center !important;
+        }
         
-        .mobile-mode .card-container { display: flex; flex-direction: column; align-items: center; }
+        .mobile-mode .card-container { display: flex; flex-direction: column; align-items: center; flex-shrink: 0; }
         .mobile-mode .under-card-btn-row { display: flex; gap: 10px; width: 100%; margin-top: 15px; height: 40px; justify-content: center; }
         .mobile-mode .under-card-btn { flex: 1; background: #0b0b0b; border: 2px solid #8c7650; color: #e8d0a8; border-radius: 4px; font-family: 'Cinzel', serif; font-weight: bold; font-size: 14px; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.8); }
         .mobile-mode .under-card-btn:active { background: #e8d0a8; color: #0b0b0b; }
 
-        .mobile-mode #mobile-action-bar { display: flex; position: absolute; bottom: 0; left: 0; width: 100vw; height: 80px; background: linear-gradient(180deg, #1f1a15, #0b0b0b); border-top: 2px solid #8c7650; justify-content: space-between; align-items: center; padding: 0 25px; box-sizing: border-box; z-index: 500; box-shadow: 0 -4px 15px rgba(0,0,0,0.9); }
+        /* Mobile Action Bar - Inside the flow, scales perfectly without overlapping bottom */
+        .mobile-mode #mobile-action-bar { 
+            display: flex; 
+            position: relative; 
+            width: 720px; 
+            height: 80px; 
+            background: linear-gradient(180deg, #1f1a15, #0b0b0b); 
+            border: 2px solid #8c7650; 
+            border-radius: 8px;
+            justify-content: space-between; 
+            align-items: center; 
+            padding: 0 25px; 
+            box-sizing: border-box; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.9); 
+            margin: 10px auto 0 auto;
+            z-index: 500;
+        }
         .mobile-mode .action-bar-btn { background: #d9534f; color: #fff; border: 1px solid #ff9999; padding: 12px 15px; border-radius: 4px; font-family: 'Cinzel', serif; font-weight: bold; font-size: 14px; box-shadow: 0 2px 6px rgba(0,0,0,0.5); cursor: pointer; }
 
         .mobile-mode .card-left { font-size: 14px; padding: 8px; }
         .mobile-mode .card-right { font-size: 13px; padding: 10px; }
         .mobile-mode .card-icon { font-size: 44px; }
         .mobile-mode #active-card-container { margin-top: 5px; }
-
     </style>
 </head>
 <body>
@@ -134,8 +156,6 @@
             <div id="instructions-content" style="overflow-y:auto; font-family:sans-serif; font-size:14px; line-height:1.6; white-space:pre-wrap; color:#ddd; padding-right:10px;">Loading...</div>
         </div>
     </div>
-
-    <div id="mobile-action-bar"></div>
 
     <div class="scale-wrapper" id="scaler">
         <div id="anim-container"><div class="flipper" id="anim-flipper"><div class="front card-face face-down"></div><div class="back" id="anim-back"></div></div></div>
@@ -167,7 +187,6 @@
             </div>
 
             <div class="center-column">
-                
                 <div id="mobile-top-bar" style="width: 100%; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                     <button onclick="leaveGame()" style="background:transparent; border:none; color:#e8d0a8; font-size:24px; font-family:'Cinzel', serif; font-weight:bold; cursor:pointer; padding: 0;">&#8592; Back</button>
                     <div style="font-size:20px; font-weight:bold; color:#e8d0a8; letter-spacing:2px;">GAME: <span id="top-game-code" style="color:#fff;"></span></div>
@@ -284,7 +303,9 @@
                         <div class="card-slot horizontal-card" id="my-reserve-2" onclick="!isMobileMode && handleReserveClick(2)">RESERVE 2</div>
                         <div class="under-card-btn-row" id="my-res-2-btns"></div>
                     </div>
-                </div>
+                    </div>
+                
+                <div id="mobile-action-bar"></div>
             </div>
 
             <div class="right-column">
@@ -315,12 +336,6 @@
                 </div>
             </div>
             
-            <div id="mobile-bottom-bar" style="display: none; width: 600px; flex-direction: row; justify-content: center; gap: 20px; margin: 30px auto 0 auto;">
-                <div id="mobile-left" style="display: flex; flex-direction: column; gap: 10px; align-items: center; justify-content: flex-start; flex: 1;"></div>
-                <div id="mobile-center" style="display: flex; flex-direction: column; align-items: center; gap: 10px; position: relative; flex: 1;"></div>
-                <div id="mobile-right" style="display: flex; flex-direction: column; gap: 10px; align-items: center; justify-content: flex-start; flex: 1;"></div>
-            </div>
-            
         </div>
     </div>
 
@@ -349,8 +364,8 @@
         function resizeApp() {
             const scaler = document.getElementById('scaler');
             if (isMobileMode) {
-                // Divisor changed to 1250 to pad out the slightly taller layout seamlessly
-                let scale = Math.min(window.innerWidth / 740, window.innerHeight / 1250);
+                // Divisor changed to 1350 to ensure the newly appended Action Bar perfectly fits within 100vh
+                let scale = Math.min(window.innerWidth / 740, window.innerHeight / 1350);
                 scaler.style.transform = `scale(${scale})`;
             } else {
                 const isPortrait = window.innerHeight > window.innerWidth;
@@ -362,29 +377,22 @@
 
         if (isMobileMode) {
             document.body.classList.add('mobile-mode');
-            document.getElementById('mobile-bottom-bar').style.display = 'flex';
             document.getElementById('mobile-top-bar').style.display = 'flex';
             
-            const left = document.getElementById('mobile-left');
-            const right = document.getElementById('mobile-right');
-            const center = document.getElementById('mobile-center');
+            const left = document.querySelector('.left-column');
+            const right = document.querySelector('.right-column');
+            const reserveRow = document.getElementById('my-reserve-row');
             
-            center.appendChild(document.getElementById('draw-pile-wrapper'));
+            left.style.display = 'flex'; 
+            left.style.position = 'absolute'; left.style.top = '10px'; left.style.left = '10px'; left.style.zIndex = '50';
+            left.style.width = '200px';
             
-            right.appendChild(document.getElementById('active-card-panel'));
+            document.getElementById('draw-label').style.display = 'none';
+            document.getElementById('draw-count').style.display = 'none';
+            reserveRow.appendChild(document.getElementById('draw-pile-wrapper'));
             
-            const decPanel = document.getElementById('decision-panel');
-            center.appendChild(decPanel);
-            decPanel.style.position = 'relative';
-            decPanel.style.top = '0';
-            decPanel.style.left = '0';
-            decPanel.style.transform = 'none';
-            decPanel.style.marginTop = '10px';
-            
+            right.style.display = 'none';
             document.getElementById('discard-pile-wrapper').style.display = 'none';
-            document.querySelector('.left-column').style.display = 'none';
-            document.querySelector('.right-column').style.display = 'none';
-            document.getElementById('main-app').style.flexDirection = 'column';
         }
 
         const gameCode = localStorage.getItem("pawnderGameCode");
@@ -408,12 +416,10 @@
         document.getElementById('display-game-code').innerText = gameCode;
         if (isMobileMode) document.getElementById('top-game-code').innerText = gameCode;
 
-        // Redirects to lobby and pre-fills the back-code
         window.leaveGame = function() { 
             window.location.href = "index.html?left=" + gameCode; 
         };
 
-        // Instructions Modal Fetcher
         window.showInstructions = async function() {
             const modal = document.getElementById('instructions-modal');
             const content = document.getElementById('instructions-content');
@@ -1009,7 +1015,6 @@
         function renderCaptures(data) {
             const capLayer = document.getElementById('captures-layer'); capLayer.innerHTML = '';
             
-            // Mathematically calculated HTML CSS centers for the 10x80 Capture squares based on the new 700x770 layout scale
             const topY = 47; const botY = 698; 
             const xCoords = [75, 131, 187, 243, 299, 355, 411, 467, 523, 579]; 
             
