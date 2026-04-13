@@ -16,7 +16,7 @@
             margin: 0; padding: 0; background-color: #0b0b0b; 
             display: flex; justify-content: center; align-items: center; 
             height: 100vh; width: 100vw; overflow: hidden;
-            touch-action: none; /* Prevents mobile swipe scrolling & pull-to-refresh */
+            touch-action: none; 
             font-family: 'Cinzel', serif; color: #e8d0a8;
         }
         
@@ -36,23 +36,27 @@
             max-width: 500px; display: flex; flex-direction: column; align-items: center;
         }
         
-        img.logo { width: 100%; max-width: 400px; margin-bottom: 40px; }
+        img.logo { width: 100%; max-width: 400px; margin-bottom: 30px; }
         
         h3 { font-size: 18px; letter-spacing: 2px; margin-bottom: 15px; font-weight: normal;}
         
+        .mode-toggle { display: flex; justify-content: center; width: 100%; margin-bottom: 20px; border: 1px solid #8c7650; border-radius: 4px; overflow: hidden; }
+        .mode-btn { background: #0b0b0b; color: #e8d0a8; border: none; padding: 12px 10px; font-family: 'Cinzel', serif; font-size: 14px; cursor: pointer; flex: 1; transition: 0.2s; margin: 0; border-radius: 0; }
+        .mode-btn.active { background: #e8d0a8; color: #0b0b0b; font-weight: bold; }
+
         input {
             width: 80%; padding: 12px; margin: 10px 0; font-size: 18px;
             text-align: center; background: #000; color: #e8d0a8;
             border: 1px solid #8c7650; border-radius: 4px; font-family: 'Cinzel', serif;
         }
         
-        button {
+        button.action-btn {
             background-color: #0b0b0b; color: #e8d0a8; border: 1px solid #e8d0a8;
             padding: 12px 30px; font-size: 16px; cursor: pointer; margin-top: 10px;
             font-family: 'Cinzel', serif; font-weight: bold; letter-spacing: 2px;
-            transition: all 0.2s; border-radius: 4px;
+            transition: all 0.2s; border-radius: 4px; width: 80%;
         }
-        button:hover { background-color: #e8d0a8; color: #0b0b0b; }
+        button.action-btn:hover { background-color: #e8d0a8; color: #0b0b0b; }
         
         .divider { margin: 30px 0; font-style: italic; color: #8c7650; letter-spacing: 4px;}
         #status-message { margin-top: 20px; font-weight: bold; color: #d9534f; height: 20px;}
@@ -65,8 +69,11 @@
             <img src="logo.png" alt="Pawnder" class="logo">
             
             <div style="width: 100%;">
-                <h3>Start a New Game</h3>
-                <button id="create-btn">Create Game</button>
+                <div class="mode-toggle">
+                    <button id="mode-remote" class="mode-btn active">Remote Play</button>
+                    <button id="mode-local" class="mode-btn">Pass & Play</button>
+                </div>
+                <button id="create-btn" class="action-btn">Create Game</button>
             </div>
 
             <div class="divider">- OR -</div>
@@ -75,7 +82,7 @@
                 <h3>Join a Game</h3>
                 <input type="text" id="game-code-input" placeholder="Enter 4-Digit Code" maxlength="4">
                 <br>
-                <button id="join-btn">Join Game</button>
+                <button id="join-btn" class="action-btn">Join Game</button>
             </div>
 
             <div id="status-message"></div>
@@ -101,10 +108,7 @@
         function isMobileDevice() {
             return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768;
         }
-        
-        if (isMobileDevice()) {
-            document.body.classList.add('mobile-mode');
-        }
+        if (isMobileDevice()) document.body.classList.add('mobile-mode');
 
         function resizeApp() {
             const scaler = document.getElementById('scaler');
@@ -113,14 +117,19 @@
                 scaler.style.transform = `scale(${scale})`;
             } else {
                 const isPortrait = window.innerHeight > window.innerWidth;
-                let scale = isPortrait 
-                    ? Math.min(window.innerWidth / 700, window.innerHeight / 1000) 
-                    : Math.min(window.innerWidth / 1000, window.innerHeight / 700);
+                let scale = isPortrait ? Math.min(window.innerWidth / 700, window.innerHeight / 1000) : Math.min(window.innerWidth / 1000, window.innerHeight / 700);
                 scaler.style.transform = isPortrait ? `scale(${scale}) rotate(90deg)` : `scale(${scale})`;
             }
         }
-        window.addEventListener('resize', resizeApp);
-        resizeApp();
+        window.addEventListener('resize', resizeApp); resizeApp();
+
+        let selectedMode = 'remote';
+        document.getElementById('mode-remote').addEventListener('click', (e) => {
+            selectedMode = 'remote'; e.target.classList.add('active'); document.getElementById('mode-local').classList.remove('active');
+        });
+        document.getElementById('mode-local').addEventListener('click', (e) => {
+            selectedMode = 'local'; e.target.classList.add('active'); document.getElementById('mode-remote').classList.remove('active');
+        });
 
         const createBtn = document.getElementById('create-btn');
         const joinBtn = document.getElementById('join-btn');
@@ -131,13 +140,12 @@
 
         createBtn.addEventListener('click', async () => {
             const gameCode = generateGameCode();
-            statusMsg.style.color = '#e8d0a8';
-            statusMsg.innerText = `Creating game ${gameCode}...`;
+            statusMsg.style.color = '#e8d0a8'; statusMsg.innerText = `Creating game ${gameCode}...`;
 
             try {
                 await setDoc(doc(db, "games", gameCode), {
-                    status: "waiting", playerWhite: "connected", playerBlack: null,
-                    currentTurn: "white", isInitialized: false, createdAt: new Date()
+                    status: "waiting", playerWhite: "connected", playerBlack: selectedMode === 'local' ? "connected" : null,
+                    currentTurn: "white", isInitialized: false, createdAt: new Date(), gameMode: selectedMode
                 });
                 localStorage.setItem("pawnderGameCode", gameCode);
                 localStorage.setItem("pawnderPlayerColor", "white");
@@ -157,6 +165,7 @@
                 const gameSnap = await getDoc(gameRef);
                 if (gameSnap.exists()) {
                     const gameData = gameSnap.data();
+                    if(gameData.gameMode === 'local') { statusMsg.style.color = '#d9534f'; statusMsg.innerText = "This is a single-device local game."; return; }
                     if(gameData.status === "waiting" && !gameData.playerBlack) {
                         await setDoc(gameRef, { playerBlack: "connected", status: "playing" }, { merge: true });
                         localStorage.setItem("pawnderGameCode", code);
