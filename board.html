@@ -336,9 +336,12 @@
             const right = document.getElementById('mobile-right');
             const center = document.getElementById('mobile-center');
             
+            // Moved turn-header under the status-panel
             left.appendChild(document.getElementById('status-panel'));
+            left.appendChild(document.getElementById('turn-header')); 
+            
             center.appendChild(document.getElementById('draw-pile-wrapper'));
-            center.appendChild(document.getElementById('turn-header'));
+            
             right.appendChild(document.getElementById('instructions-panel'));
             right.appendChild(document.getElementById('active-card-panel'));
             
@@ -850,7 +853,7 @@
 
         function renderCaptures(data) {
             const capLayer = document.getElementById('captures-layer'); capLayer.innerHTML = '';
-            const topY = 70; const botY = 870; 
+            const topY = 100; const botY = 900; 
             const xCoords = [140, 220, 300, 380, 460, 540, 620, 700, 780, 860]; 
             
             let topPawns = myColor === 'white' ? data.capturedWhite : data.capturedBlack;
