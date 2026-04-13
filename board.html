@@ -336,7 +336,6 @@
             const right = document.getElementById('mobile-right');
             const center = document.getElementById('mobile-center');
             
-            // Moved turn-header under the status-panel
             left.appendChild(document.getElementById('status-panel'));
             left.appendChild(document.getElementById('turn-header')); 
             
@@ -856,10 +855,14 @@
             const topY = 100; const botY = 900; 
             const xCoords = [140, 220, 300, 380, 460, 540, 620, 700, 780, 860]; 
             
-            let topPawns = myColor === 'white' ? data.capturedWhite : data.capturedBlack;
-            let botPawns = myColor === 'white' ? data.capturedBlack : data.capturedWhite;
-            let topClass = myColor === 'white' ? 'pawn-white' : 'pawn-black';
-            let botClass = myColor === 'white' ? 'pawn-black' : 'pawn-white';
+            // Trophies are fixed to their respective sides in absolute coordinate space.
+            // Black's side (top) holds captured White pawns.
+            let topPawns = data.capturedWhite;
+            let topClass = 'pawn-white';
+            
+            // White's side (bottom) holds captured Black pawns.
+            let botPawns = data.capturedBlack;
+            let botClass = 'pawn-black';
 
             for(let i=0; i<Math.min(topPawns, 10); i++) {
                 let idx = 9-i; 
