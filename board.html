@@ -64,7 +64,7 @@
 
         .block-stash { position: relative; height: 110px; display: none; transition: width 0.3s; }
         
-        #decision-panel { position: absolute; top: 150px; left: -20px; width: 320px; background: linear-gradient(135deg, #1f1a15, #110e0a); border: 2px solid #8c7650; padding: 20px; border-radius: 6px; box-shadow: 0 10px 40px rgba(0,0,0,0.9); text-align: center; display: none; flex-direction: column; align-items: center; gap: 15px; z-index: 100; }
+        #decision-panel { position: absolute; top: 150px; left: -20px; width: 320px; background: linear-gradient(135deg, #1f1a15, #110e0a); border: 2px solid #8c7650; padding: 20px; border-radius: 6px; box-shadow: 0 10px 40px rgba(0,0,0,0.9); text-align: center; display: none; flex-direction: column; align-items: center; gap: 10px; z-index: 100; }
         .decision-buttons { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; width: 100%;}
         .btn { background: #0b0b0b; color: #e8d0a8; border: 1px solid #e8d0a8; padding: 8px 16px; font-family: 'Cinzel', serif; font-size: 12px; cursor: pointer; border-radius: 3px; font-weight: bold;}
         
@@ -96,6 +96,20 @@
         .mobile-mode .card-right { font-size: 13px; padding: 10px; }
         .mobile-mode .card-icon { font-size: 44px; }
         .mobile-mode #active-card-container { margin-top: 5px; }
+
+        /* Strip backgrounds and borders from the action panel to sit seamlessly under the deck */
+        .mobile-mode #decision-panel {
+            background: transparent !important;
+            border: none !important;
+            box-shadow: none !important;
+            padding: 5px !important;
+            width: 100% !important;
+            margin-top: 0px !important;
+        }
+        .mobile-mode #decision-text {
+            font-size: 16px;
+            text-shadow: 0 2px 4px #000;
+        }
     </style>
 </head>
 <body>
@@ -303,7 +317,8 @@
         function resizeApp() {
             const scaler = document.getElementById('scaler');
             if (isMobileMode) {
-                let scale = Math.min(window.innerWidth / 700, window.innerHeight / 1100);
+                // Increased division factor to 1150 to add bottom padding and prevent action buttons from pushing off screen
+                let scale = Math.min(window.innerWidth / 700, window.innerHeight / 1150);
                 scaler.style.transform = `scale(${scale})`;
             } else {
                 const isPortrait = window.innerHeight > window.innerWidth;
@@ -400,7 +415,7 @@
         }
 
         function animateFlight(startEl, endEl, cardData, animType, onComplete) {
-            if (isMobileMode) return; // Mobile uses in-place flipping
+            if (isMobileMode) return; 
             
             const animCont = document.getElementById('anim-container'), flipper = document.getElementById('anim-flipper'), backFace = document.getElementById('anim-back');
             const startBox = getOffset(startEl), endBox = getOffset(endEl);
@@ -669,6 +684,13 @@
             }
         }
 
+        function createOffscreenDest() {
+            const dest = document.createElement('div');
+            dest.style.position = 'absolute'; dest.style.top = '1500px'; dest.style.left = '350px'; dest.style.width = CARD_W + 'px'; dest.style.height = CARD_H + 'px';
+            document.getElementById('scaler').appendChild(dest);
+            return dest;
+        }
+
         async function finalizeCardTurn() {
             const cardToDiscard = activeCardExecution; activeCardExecution = null;
             document.getElementById('active-card-container').innerHTML = '';
@@ -728,7 +750,6 @@
                     return;
                 }
                 if(data.isInitialized) {
-                    // Handle Single Device Mode Override
                     if (data.gameMode === 'local') { myColor = data.currentTurn; }
                     
                     document.getElementById('game-area').classList.toggle('rotate-180', myColor === 'black');
@@ -787,14 +808,18 @@
         function renderCardSlots(data) {
             const myRes = myColor === 'white' ? data.playerWhiteReserve : data.playerBlackReserve;
             const oppRes = myColor === 'white' ? data.playerBlackReserve : data.playerWhiteReserve;
+            
+            // Opponent reserves face up
             document.getElementById('my-reserve-1').innerHTML = myRes[0] ? generateCardHTML(myRes[0]) : "RESERVE 1";
             document.getElementById('my-reserve-2').innerHTML = myRes[1] ? generateCardHTML(myRes[1]) : "RESERVE 2";
-            document.getElementById('opp-reserve-1').innerHTML = oppRes[0] ? '<div class="card-face face-down"></div>' : "RESERVE 1";
-            document.getElementById('opp-reserve-2').innerHTML = oppRes[1] ? '<div class="card-face face-down"></div>' : "RESERVE 2";
+            document.getElementById('opp-reserve-1').innerHTML = oppRes[0] ? generateCardHTML(oppRes[0]) : "RESERVE 1";
+            document.getElementById('opp-reserve-2').innerHTML = oppRes[1] ? generateCardHTML(oppRes[1]) : "RESERVE 2";
 
             const myBlocks = myColor === 'white' ? data.playerWhiteBlocks : data.playerBlackBlocks;
             const oppBlocks = myColor === 'white' ? data.playerBlackBlocks : data.playerWhiteBlocks;
-            renderBlockStash('my-block-stash', myBlocks, false); renderBlockStash('opp-block-stash', oppBlocks, true);
+            
+            renderBlockStash('my-block-stash', myBlocks); 
+            renderBlockStash('opp-block-stash', oppBlocks);
 
             const dC = data.deck.length; document.getElementById('draw-count').innerText = `CARDS LEFT: ${dC}`;
             let shadow = []; for(let i=1; i<=Math.min(dC, 6); i++) shadow.push(`${i*1.5}px ${i*1.5}px 0px rgba(140, 118, 80, 0.9)`);
@@ -806,7 +831,7 @@
             }
         }
 
-        function renderBlockStash(elementId, blockArray, isOpponent) {
+        function renderBlockStash(elementId, blockArray) {
             const stashEl = document.getElementById(elementId);
             if (!blockArray || blockArray.length === 0) {
                 stashEl.style.display = 'none'; stashEl.innerHTML = ''; return;
@@ -816,16 +841,12 @@
 
             let html = '';
             blockArray.forEach((card, i) => {
-                let leftOffset = i * BLOCK_OFFSET;
-                if(isOpponent) html += `<div class="card-face face-down" style="position:absolute; left:${leftOffset}px; z-index:${i}; box-shadow: -2px 0 5px rgba(0,0,0,0.5);"></div>`;
-                else html += generateCardHTML(card, `block-card`); 
+                html += generateCardHTML(card, `block-card`); 
             });
             stashEl.innerHTML = html;
             
-            if(!isOpponent) {
-                const myCards = stashEl.querySelectorAll('.card-face');
-                myCards.forEach((el, i) => { el.style.position = 'absolute'; el.style.left = `${i*BLOCK_OFFSET}px`; el.style.zIndex = i; el.style.boxShadow = '-2px 0 5px rgba(0,0,0,0.5)'; });
-            }
+            const myCards = stashEl.querySelectorAll('.card-face');
+            myCards.forEach((el, i) => { el.style.position = 'absolute'; el.style.left = `${i*BLOCK_OFFSET}px`; el.style.zIndex = i; el.style.boxShadow = '-2px 0 5px rgba(0,0,0,0.5)'; });
         }
 
         function renderCaptures(data) {
