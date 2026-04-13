@@ -78,8 +78,9 @@
         .flipper .back { transform: rotateY(180deg); }
 
         /* MOBILE CSS OVERRIDES */
-        .mobile-mode .info-panel { padding: 10px; font-size: 12px; border-radius: 8px;}
+        .mobile-mode .info-panel { padding: 10px; font-size: 12px; border-radius: 8px; width: 90%; margin: 0 auto; box-sizing: border-box;}
         .mobile-mode .info-panel h3 { font-size: 14px; margin-bottom: 5px;}
+        .mobile-mode #status-panel { width: 90%; margin: 0 auto; box-sizing: border-box;}
         .mobile-mode #status-panel h2 { font-size: 18px; margin-bottom: 12px; }
         .mobile-mode #display-game-code { font-size: 32px !important; letter-spacing: 4px; }
         .mobile-mode #leave-game-btn { font-size: 16px; padding: 10px 18px; }
@@ -195,19 +196,19 @@
                             <g transform="translate(100, 500) rotate(90)"><image href="logo.png" x="-400" y="-87.5" width="800" height="175" preserveAspectRatio="xMidYMid meet" /></g>
                             <path d="M 830,180 L 840,180 L 840,340 L 830,340" fill="none" stroke="#e8d0a8" stroke-width="2"/>
                             
-                            <g transform="translate(860, 260) rotate(-90)">
+                            <g transform="translate(885, 260) rotate(-90)">
                                 <text x="0" y="-12" text-anchor="middle" font-size="22" fill="#e8d0a8" letter-spacing="2">SAFE</text>
                                 <text x="0" y="16" text-anchor="middle" font-size="22" fill="#e8d0a8" letter-spacing="2">ZONE</text>
                             </g>
                             
                             <path d="M 830,340 L 840,340 L 840,660 L 830,660" fill="none" stroke="#e8d0a8" stroke-width="2"/>
-                            <g transform="translate(860, 500) rotate(-90)">
+                            <g transform="translate(885, 500) rotate(-90)">
                                 <text x="0" y="-12" text-anchor="middle" font-size="22" fill="#e8d0a8" letter-spacing="2">FIELD OF</text>
                                 <text x="0" y="16" text-anchor="middle" font-size="22" fill="#e8d0a8" letter-spacing="2">PLAY</text>
                             </g>
                             
                             <path d="M 830,660 L 840,660 L 840,820 L 830,820" fill="none" stroke="#e8d0a8" stroke-width="2"/>
-                            <g transform="translate(860, 740) rotate(-90)">
+                            <g transform="translate(885, 740) rotate(-90)">
                                 <text x="0" y="-12" text-anchor="middle" font-size="22" fill="#e8d0a8" letter-spacing="2">SAFE</text>
                                 <text x="0" y="16" text-anchor="middle" font-size="22" fill="#e8d0a8" letter-spacing="2">ZONE</text>
                             </g>
@@ -317,7 +318,6 @@
         function resizeApp() {
             const scaler = document.getElementById('scaler');
             if (isMobileMode) {
-                // Increased division factor to 1150 to add bottom padding and prevent action buttons from pushing off screen
                 let scale = Math.min(window.innerWidth / 700, window.innerHeight / 1150);
                 scaler.style.transform = `scale(${scale})`;
             } else {
@@ -809,7 +809,6 @@
             const myRes = myColor === 'white' ? data.playerWhiteReserve : data.playerBlackReserve;
             const oppRes = myColor === 'white' ? data.playerBlackReserve : data.playerWhiteReserve;
             
-            // Opponent reserves face up
             document.getElementById('my-reserve-1').innerHTML = myRes[0] ? generateCardHTML(myRes[0]) : "RESERVE 1";
             document.getElementById('my-reserve-2').innerHTML = myRes[1] ? generateCardHTML(myRes[1]) : "RESERVE 2";
             document.getElementById('opp-reserve-1').innerHTML = oppRes[0] ? generateCardHTML(oppRes[0]) : "RESERVE 1";
