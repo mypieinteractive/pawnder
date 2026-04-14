@@ -64,14 +64,43 @@
         
         .card-slot { border: 2px dashed transparent; display: flex; justify-content: center; align-items: center; color: transparent; font-size: 14px; text-align: center; box-sizing: border-box; background: transparent; border-radius: 8px; cursor: pointer; position: relative; transition: opacity 0.3s, border-color 0.3s, background 0.3s, color 0.3s;}
         .horizontal-card { width: 160px; height: 110px; }
-        .card-slot.active-drop-zone { border-color: rgba(232, 208, 168, 0.6); background: rgba(0,0,0,0.3); color: rgba(232, 208, 168, 0.5); }
 
-        .card-face { background: #ffffff; color: #111111; width: 160px; height: 110px; border: 2px solid #8c7650; display: flex; font-family: 'Cinzel', serif; box-shadow: 2px 4px 8px rgba(0,0,0,0.8); box-sizing: border-box; border-radius: 8px; overflow: hidden; position: absolute; pointer-events: none;}
-        .card-left { flex: 0.35; display: flex; align-items: center; justify-content: center; border-right: 1px solid #ccc; background: #f9f9f9;}
-        .card-right { flex: 1; padding: 8px 12px; display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-start; text-align: left; }
-        .card-title { font-size: 11px; font-weight: bold; color: #8c7650; margin-top: 2px; margin-bottom: 4px; font-family: 'Cinzel', serif; letter-spacing: 1px; line-height: 1.1; }
-        .card-text { font-size: 13px; font-weight: bold; color: #222; line-height: 1.3; font-family: sans-serif; }
-        .card-icon { font-size: 36px; color: #555; }
+        /* --- SINGLE COLUMN READABLE CARD DESIGN --- */
+        .card-face { 
+            background: #ffffff; color: #111111; 
+            width: 160px; height: 110px; 
+            border: 2px solid #8c7650; 
+            display: flex; flex-direction: column; /* Vertical layout */
+            font-family: 'Cinzel', serif; 
+            box-shadow: 2px 4px 8px rgba(0,0,0,0.8); 
+            box-sizing: border-box; border-radius: 8px; 
+            overflow: hidden; position: absolute; pointer-events: none;
+            padding: 8px;
+        }
+
+        .card-header {
+            display: flex; flex-direction: row; align-items: center;
+            gap: 8px; margin-bottom: 6px;
+            height: 30px; flex-shrink: 0;
+        }
+
+        .card-icon { font-size: 24px; color: #555; line-height: 1; }
+        
+        .card-title { 
+            font-size: 14px; /* INCREASED */
+            font-weight: bold; color: #8c7650; 
+            font-family: 'Cinzel', serif; letter-spacing: 1px; line-height: 1.1;
+            text-align: left; margin: 0;
+        }
+
+        .card-text { 
+            font-size: 16px; /* INCREASED SIGNIFICANTLY */
+            font-weight: bold; color: #222; 
+            line-height: 1.2; font-family: sans-serif;
+            text-align: left; margin: 0;
+            overflow-y: auto; flex-grow: 1;
+        }
+
         .face-down { background-color: #0b0b0b; background-image: url('logo.png'); background-size: 80%; background-repeat: no-repeat; background-position: center; pointer-events: none;}
 
         .block-shield { position: absolute; display: none; font-size: 40px; filter: drop-shadow(0 4px 6px #000); z-index: 20;}
@@ -100,20 +129,31 @@
         .mobile-mode #status-panel { display: none !important; }
         .mobile-mode .center-column { width: 740px !important; margin: 0 auto; }
         
+        /* Optimized Mobile Dimensions */
         .mobile-mode .horizontal-card, .mobile-mode .card-face, .mobile-mode #anim-container { width: 224px !important; height: 154px !important; }
-        .mobile-mode .card-left { padding: 10px; }
         
-        .mobile-mode .card-right { padding: 12px 16px; justify-content: flex-start; }
-        .mobile-mode .card-title { font-size: 14px; margin-top: 2px; margin-bottom: 6px; }
-        .mobile-mode .card-text { font-size: 17px; font-weight: normal; line-height: 1.25; }
-        .mobile-mode .card-icon { font-size: 48px; }
+        /* Mobile Specific Font Upscaling */
+        .mobile-mode .card-face { padding: 12px !important; }
+        .mobile-mode .card-header { gap: 12px !important; margin-bottom: 10px !important; height: 40px !important;}
+        .mobile-mode .card-icon { font-size: 36px !important; }
+        .mobile-mode .card-title { font-size: 18px !important; }
+        .mobile-mode .card-text { font-size: 22px !important; line-height: 1.25 !important; }
         
         .mobile-mode .cards-row { width: 720px !important; gap: 10px !important; flex-wrap: nowrap !important; justify-content: center !important; }
         .mobile-mode .card-container { display: flex; flex-direction: column; align-items: center; flex-shrink: 0; }
         
-        /* Drag UI Feedback */
-        .mobile-mode .draggable { touch-action: none; cursor: grab; }
-        .mobile-mode .drag-over { background-color: rgba(255, 215, 0, 0.15) !important; border-color: #ffd700 !important; box-shadow: 0 0 15px #ffd700 !important; }
+        /* Mobile Selection & Target Highlights */
+        .mobile-mode .selected-card-glow { box-shadow: 0 0 15px 5px #ffd700 !important; border: 2px solid #ffd700 !important; border-radius: 8px; transform: scale(1.05); z-index: 20; transition: all 0.2s; }
+        .mobile-mode .selected-card-glow .card-face { border: none !important; } /* Prevents double border */
+
+        .mobile-mode .active-drop-zone { 
+            border-color: #ffd700 !important; 
+            background: rgba(255, 215, 0, 0.15) !important; 
+            color: #ffd700 !important; 
+            box-shadow: 0 0 10px rgba(255, 215, 0, 0.5) !important;
+            cursor: pointer;
+            font-weight: bold;
+        }
 
         .mobile-mode .mobile-fixed-bar { display: flex; position: fixed; left: 0; width: 100vw; box-sizing: border-box; z-index: 1000; padding: 0 25px; align-items: center; justify-content: space-between; }
         .mobile-mode .top-bar { top: 0; height: 70px; background: linear-gradient(180deg, #1f1a15, #0b0b0b); border-bottom: 2px solid #8c7650; box-shadow: 0 4px 15px rgba(0,0,0,0.9); }
@@ -131,11 +171,8 @@
             text-align: center; position: relative; background: transparent;
             transition: all 0.2s;
         }
-        .mobile-mode .active-move-slot.active-drop-zone { border-color: #8c7650 !important; background: rgba(0,0,0,0.4) !important; color: rgba(232, 208, 168, 0.5) !important; }
-        .mobile-mode .active-move-slot .drop-text { display: none; }
-        .mobile-mode .active-move-slot.active-drop-zone .drop-text { display: block; }
-        
-        .mobile-block-card-display { position: relative !important; top: 0 !important; left: 0 !important; transform: none !important; margin: 0 auto; }
+        /* New scale for single column inside scaled wrapper */
+        .mobile-mode .active-move-slot .card-face { transform: scale(0.62); transform-origin: center; }
 
     </style>
 </head>
@@ -300,12 +337,10 @@
 
                 <div class="cards-row" id="my-reserve-row">
                     <div class="card-container">
-                        <div class="card-slot horizontal-card" id="my-reserve-1" onclick="!isMobileMode && handleReserveClick(1)">RESERVE 1</div>
-                        <div class="under-card-btn-row" id="my-res-1-btns"></div>
+                        <div class="card-slot horizontal-card" id="my-reserve-1"></div>
                     </div>
                     <div class="card-container">
-                        <div class="card-slot horizontal-card" id="my-reserve-2" onclick="!isMobileMode && handleReserveClick(2)">RESERVE 2</div>
-                        <div class="under-card-btn-row" id="my-res-2-btns"></div>
+                        <div class="card-slot horizontal-card" id="my-reserve-2"></div>
                     </div>
                 </div>
             </div>
@@ -327,7 +362,6 @@
                             </div>
                         </div>
                         <div id="draw-count" style="font-size: 10px; color:#aaa; letter-spacing:1px; margin-top:5px;"></div>
-                        <div class="under-card-btn-row" id="draw-btns"></div>
                     </div>
                     <div style="display: flex; flex-direction: column; align-items: center; gap: 10px;" id="discard-pile-wrapper">
                         <div style="font-size: 16px; letter-spacing: 2px;">DISCARD</div>
@@ -440,11 +474,14 @@
         let executingCardSource = null;
         let executingCardIndex = null;
         let lastSeenTurn = null; 
+        
+        let selectedCardSource = null; 
 
         const isInFieldOfPlay = (r) => r >= 2 && r <= 5;
         const CARD_W = isMobileMode ? 224 : 160;
         const CARD_H = isMobileMode ? 154 : 110;
 
+        /* --- UPDATED CARDS HTML GENERATOR (SINGLE COLUMN) --- */
         function generateCardHTML(card, extraClass="") {
             if(!card) return '';
             let icon = '&#10021;';
@@ -453,7 +490,17 @@
             if(card.action === 'block' || card.action === 'skip') icon = '&#128737;&#xFE0E;'; 
             if(card.action === 'extra_move') icon = '&#8648;';
             if(card.action === 'sideways') icon = '&#8644;';
-            return `<div class="card-face ${extraClass}"><div class="card-left"><div class="card-icon">${icon}</div></div><div class="card-right"><div class="card-title">${card.title}</div><div class="card-text">${card.text}</div></div></div>`;
+            
+            // New Single-Column Layout
+            return `
+                <div class="card-face ${extraClass}">
+                    <div class="card-header">
+                        <div class="card-icon">${icon}</div>
+                        <div class="card-title">${card.title}</div>
+                    </div>
+                    <div class="card-text">${card.text}</div>
+                </div>
+            `;
         }
 
         function showModal(text, subtext, buttonsHtml) {
@@ -499,28 +546,28 @@
             if(animType === 'draw') flipper.classList.add('flipped');
             setTimeout(() => { animCont.style.display = 'none'; if(onComplete) onComplete(); }, 600);
         }
+        
+        window.selectCardForMove = function(source) {
+            if (selectedCardSource === source) {
+                selectedCardSource = null; 
+            } else {
+                selectedCardSource = source; 
+            }
+            updateMobileUI();
+        };
 
-        function updateDropZones(dragging = false) {
-            if (!localData) return;
-            const activeSlot = document.getElementById('active-move-slot');
-            const r1 = document.getElementById('my-reserve-1');
-            const r2 = document.getElementById('my-reserve-2');
-            
-            if (activeSlot && turnPhase === 2 && !activeCardExecution) {
-                if (dragging) activeSlot.classList.add('active-drop-zone');
-                else activeSlot.classList.remove('active-drop-zone');
-            }
+        window.handleTargetClick = function(target) {
+            if (!selectedCardSource) return;
 
-            const myRes = myColor === 'white' ? localData.playerWhiteReserve : localData.playerBlackReserve;
+            if (target === 'active-move') {
+                if (selectedCardSource === 'draw') executeCard(0, 'draw');
+                else if (selectedCardSource === 'reserve-0') executeCard(0, 'reserve');
+                else if (selectedCardSource === 'reserve-1') executeCard(1, 'reserve');
+            } else if (target === 'reserve' && selectedCardSource === 'draw') {
+                reserveCard();
+            }
             
-            if (r1) {
-                if (dragging && dragSource === 'draw' && !myRes[0]) r1.classList.add('active-drop-zone');
-                else r1.classList.remove('active-drop-zone');
-            }
-            if (r2) {
-                if (dragging && dragSource === 'draw' && !myRes[1]) r2.classList.add('active-drop-zone');
-                else r2.classList.remove('active-drop-zone');
-            }
+            selectedCardSource = null;
         }
 
         function updateMobileUI() {
@@ -531,6 +578,10 @@
             const res2El = document.getElementById('my-reserve-2');
             const drawPile = document.getElementById('draw-pile-boundary');
             
+            res1El.classList.remove('selected-card-glow', 'active-drop-zone');
+            res2El.classList.remove('selected-card-glow', 'active-drop-zone');
+            drawPile.classList.remove('selected-card-glow');
+
             if (isDrawingState || activeCardExecution || !isMyTurn || turnPhase === 1) {
                 res1El.style.opacity = '0.4'; res2El.style.opacity = '0.4';
             } else {
@@ -540,11 +591,10 @@
             const infoBtnHtml = `<button class="action-bar-btn" onclick="showInstructions()" style="border-radius: 50%; width: 42px; height: 42px; padding: 0; display: flex; justify-content: center; align-items: center; font-size: 18px; border: 2px solid #8c7650; background: #0b0b0b; color: #e8d0a8; flex-shrink: 0;">i</button>`;
             const turnPrefix = localData.gameMode === 'local' ? '' : `<span style="color:#4CAF50; margin-right: 8px;">${myColor.toUpperCase()}'S TURN:</span><br>`;
             
-            drawPile.classList.remove('draggable'); res1El.classList.remove('draggable'); res2El.classList.remove('draggable');
+            drawPile.removeAttribute('onclick'); res1El.removeAttribute('onclick'); res2El.removeAttribute('onclick');
 
             if (!isMyTurn) {
                 bar.innerHTML = `${infoBtnHtml}<div style="color:#e8d0a8; font-weight:bold; font-size:16px; flex:1; text-align:center;">Waiting for Opponent...</div><div style="width:42px;"></div>`;
-                updateDropZones();
                 return;
             }
             
@@ -556,7 +606,6 @@
                     </div>
                     <button class="action-bar-btn" onclick="cancelExecution()" style="flex-shrink:0;">Cancel</button>
                 `;
-                updateDropZones();
                 return;
             } 
             
@@ -567,6 +616,9 @@
                     <button class="action-bar-btn" onclick="confirmSkip('cards')" style="flex-shrink:0;">Skip</button>
                 `;
             } else if (turnPhase === 2) {
+                
+                const myRes = myColor === 'white' ? localData.playerWhiteReserve : localData.playerBlackReserve;
+                
                 if (isDrawingState) {
                     const drawnCard = localData.deck[0];
                     if (drawnCard.action === 'block') {
@@ -574,182 +626,65 @@
                     } else {
                         bar.innerHTML = `
                             ${infoBtnHtml}
-                            <div id="active-move-slot" class="active-move-slot active-drop-zone">
-                                <span class="drop-text">Drag Card<br>Here to Play</span>
+                            <div id="active-move-slot" class="active-move-slot ${selectedCardSource ? 'active-drop-zone' : ''}" onclick="handleTargetClick('active-move')">
+                                <span>${selectedCardSource ? 'Play Action' : 'Select a Card'}</span>
                             </div>
                             <div style="width:42px; flex-shrink:0;"></div>
                         `;
-                        drawPile.classList.add('draggable');
-                        drawPile.setAttribute('data-source', 'draw');
+                        drawPile.setAttribute('onclick', "selectCardForMove('draw')");
+                        if (selectedCardSource === 'draw') drawPile.classList.add('selected-card-glow');
                     }
                 } else {
                     bar.innerHTML = `
                         ${infoBtnHtml}
-                        <div id="active-move-slot" class="active-move-slot active-drop-zone">
-                            <span class="drop-text">Drag Card<br>Here to Play</span>
+                        <div id="active-move-slot" class="active-move-slot ${selectedCardSource ? 'active-drop-zone' : ''}" onclick="handleTargetClick('active-move')">
+                            <span>${selectedCardSource ? 'Play Action' : 'Select a Card'}</span>
                         </div>
                         <div style="width:42px; flex-shrink:0;"></div>
                     `;
-                    const myRes = myColor === 'white' ? localData.playerWhiteReserve : localData.playerBlackReserve;
-                    if (myRes[0]) { res1El.classList.add('draggable'); res1El.setAttribute('data-source', 'reserve-0'); }
-                    if (myRes[1]) { res2El.classList.add('draggable'); res2El.setAttribute('data-source', 'reserve-1'); }
+                    drawPile.setAttribute('onclick', "processDraw()");
                 }
-            }
-            updateDropZones();
-        }
 
-        let dragGhost = null;
-        let dragSource = null;
-        let isDragging = false;
-
-        document.addEventListener('pointerdown', (e) => {
-            if (!isMobileMode) return;
-            
-            let target = e.target.closest('.draggable');
-            const drawPile = e.target.closest('#draw-pile-boundary');
-            
-            if (!target && drawPile && turnPhase === 2 && !activeCardExecution && isMyTurn) {
-                target = drawPile;
-                dragSource = 'draw';
-            } else if (target) {
-                dragSource = target.getAttribute('data-source');
-                if (dragSource === 'draw-direct') dragSource = 'draw';
-            } else {
-                return;
-            }
-
-            isDragging = true;
-            
-            if (dragSource === 'draw') {
-                if (localData.deck.length === 0) { isDragging = false; return; }
-                const drawnCard = localData.deck[0];
-                if (drawnCard.action === 'block') {
-                    isDragging = false;
-                    localData.deck.shift();
-                    takeBlockCard(drawnCard);
-                    return;
-                }
-                
-                const temp = document.createElement('div');
-                temp.innerHTML = generateCardHTML(drawnCard);
-                dragGhost = temp.firstElementChild;
-            } else {
-                dragGhost = target.cloneNode(true);
-                target.style.opacity = '0.2';
-            }
-            
-            dragGhost.style.position = 'absolute'; 
-            dragGhost.style.zIndex = '9999';
-            dragGhost.style.pointerEvents = 'none'; 
-            dragGhost.style.opacity = '0.95';
-            dragGhost.style.margin = '0';
-            dragGhost.style.transform = 'none !important'; 
-            dragGhost.style.width = CARD_W + 'px';
-            dragGhost.style.height = CARD_H + 'px';
-            
-            const ghostFace = dragGhost.classList.contains('card-face') ? dragGhost : dragGhost.querySelector('.card-face');
-            if (ghostFace) {
-                ghostFace.style.boxShadow = '0 0 15px 5px #ffd700';
-                ghostFace.style.border = '2px solid #ffd700';
-                ghostFace.style.transform = 'none';
-            }
-            
-            document.getElementById('scaler').style.zIndex = '9999';
-            document.getElementById('scaler').appendChild(dragGhost);
-            updateGhostPos(e.clientX, e.clientY);
-            
-            updateDropZones(true); 
-        });
-
-        document.addEventListener('pointermove', (e) => {
-            if (!isDragging || !dragGhost) return;
-            updateGhostPos(e.clientX, e.clientY);
-            checkDropTargets(e.clientX, e.clientY);
-        });
-
-        function updateGhostPos(clientX, clientY) {
-            const scaler = document.getElementById('scaler');
-            const scale = parseFloat(scaler.style.transform.replace(/[^\d.]/g, '')) || 1;
-            const rect = scaler.getBoundingClientRect();
-            const x = (clientX - rect.left) / scale;
-            const y = (clientY - rect.top) / scale;
-            dragGhost.style.left = (x - (CARD_W/2)) + 'px';
-            dragGhost.style.top = (y - (CARD_H/2)) + 'px';
-        }
-
-        function checkDropTargets(x, y) {
-            const activeSlot = document.getElementById('active-move-slot');
-            const r1 = document.getElementById('my-reserve-1');
-            const r2 = document.getElementById('my-reserve-2');
-            
-            if (activeSlot) activeSlot.classList.remove('drag-over');
-            if (r1) r1.classList.remove('drag-over');
-            if (r2) r2.classList.remove('drag-over');
-
-            if (activeSlot && isInside(x, y, activeSlot)) {
-                activeSlot.classList.add('drag-over');
-            } else if (dragSource === 'draw') {
-                const myRes = myColor === 'white' ? localData.playerWhiteReserve : localData.playerBlackReserve;
-                if (!myRes[0] && r1 && isInside(x, y, r1)) r1.classList.add('drag-over');
-                else if (!myRes[1] && r2 && isInside(x, y, r2)) r2.classList.add('drag-over');
-            }
-        }
-
-        function isInside(x, y, el) {
-            const rect = el.getBoundingClientRect();
-            return x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom;
-        }
-
-        document.addEventListener('pointerup', (e) => {
-            if (!isMobileMode || !isDragging) return;
-            isDragging = false;
-            
-            document.getElementById('scaler').style.zIndex = '10';
-            updateDropZones(false);
-            
-            const original = document.querySelector(`.draggable[data-source="${dragSource}"]`);
-            if (original) original.style.opacity = '1';
-            if (dragGhost) { dragGhost.remove(); dragGhost = null; }
-            
-            const activeSlot = document.getElementById('active-move-slot');
-            const r1 = document.getElementById('my-reserve-1');
-            const r2 = document.getElementById('my-reserve-2');
-            
-            if (activeSlot) activeSlot.classList.remove('drag-over');
-            if (r1) r1.classList.remove('drag-over');
-            if (r2) r2.classList.remove('drag-over');
-
-            let dropTarget = null;
-            if (activeSlot && isInside(e.clientX, e.clientY, activeSlot)) {
-                dropTarget = 'active-move';
-            } else if (dragSource === 'draw') {
-                const myRes = myColor === 'white' ? localData.playerWhiteReserve : localData.playerBlackReserve;
-                if (!myRes[0] && r1 && isInside(e.clientX, e.clientY, r1)) dropTarget = 'reserve-slot';
-                else if (!myRes[1] && r2 && isInside(e.clientX, e.clientY, r2)) dropTarget = 'reserve-slot';
-            }
-
-            if (dropTarget === 'active-move') {
-                if (dragSource === 'draw') executeCard(0, 'draw');
-                else if (dragSource === 'reserve-0') executeCard(0, 'reserve');
-                else if (dragSource === 'reserve-1') executeCard(1, 'reserve');
-            } else if (dropTarget === 'reserve-slot' && dragSource === 'draw') {
-                const myRes = myColor === 'white' ? localData.playerWhiteReserve : localData.playerBlackReserve;
-                if (myRes.length < 2) {
-                    reserveCard();
+                if (myRes[0]) {
+                    res1El.innerHTML = generateCardHTML(myRes[0]);
+                    res1El.setAttribute('onclick', "selectCardForMove('reserve-0')");
+                    if (selectedCardSource === 'reserve-0') res1El.classList.add('selected-card-glow');
                 } else {
-                    showModal("Reserves Full", "You must play the drawn card.", `<button class="btn" onclick="closeModal()">OK</button>`);
+                    if (selectedCardSource === 'draw') {
+                        res1El.innerHTML = "Move to<br>Reserve 1";
+                        res1El.classList.add('active-drop-zone');
+                        res1El.setAttribute('onclick', "handleTargetClick('reserve')");
+                    } else {
+                        res1El.innerHTML = "";
+                    }
+                }
+
+                if (myRes[1]) {
+                    res2El.innerHTML = generateCardHTML(myRes[1]);
+                    res2El.setAttribute('onclick', "selectCardForMove('reserve-1')");
+                    if (selectedCardSource === 'reserve-1') res2El.classList.add('selected-card-glow');
+                } else {
+                    if (selectedCardSource === 'draw') {
+                        res2El.innerHTML = "Move to<br>Reserve 2";
+                        res2El.classList.add('active-drop-zone');
+                        res2El.setAttribute('onclick', "handleTargetClick('reserve')");
+                    } else {
+                        res2El.innerHTML = "";
+                    }
                 }
             }
-        });
+        }
 
         window.cancelExecution = function() {
             if (executingCardSource === 'draw') {
                 localData.deck.unshift(activeCardExecution);
-                isDrawingState = false; 
+                isDrawingState = true;
+                selectedCardSource = 'draw'; 
             } else {
                 const resKey = myColor === 'white' ? 'playerWhiteReserve' : 'playerBlackReserve';
                 localData[resKey].splice(executingCardIndex, 0, activeCardExecution);
                 isDrawingState = false;
+                selectedCardSource = executingCardSource; 
             }
             activeCardExecution = null; selectedPawn = null; validMoves = [];
             
@@ -781,6 +716,7 @@
             const myRes = myColor === 'white' ? localData.playerWhiteReserve : localData.playerBlackReserve;
             
             if (isMobileMode) {
+                selectedCardSource = null;
                 if (myRes.length === 0 && localData.deck.length > 0) {
                     processDraw();
                 } else {
@@ -806,20 +742,19 @@
                 document.getElementById('decision-card-anchor').innerHTML = generateCardHTML(drawnCard);
                 const subText = "Store this Block card to use against future attacks.";
                 animateFlight(document.getElementById('draw-pile-boundary'), document.getElementById('decision-card-anchor'), drawnCard, 'draw', () => showDecisionPanel(subText, btns, true));
-                updateDropZones();
                 return;
             }
 
             if (isMobileMode) {
+                document.getElementById('draw-pile-flipper').classList.remove('flipped');
                 document.getElementById('draw-pile-back').innerHTML = generateCardHTML(drawnCard);
-                document.getElementById('draw-pile-flipper').classList.add('flipped');
+                selectedCardSource = 'draw'; 
                 updateMobileUI();
             } else {
                 let btns = `<button class="btn" onclick="executeCard(0, 'draw')">Play</button>`;
                 if (myRes.length < 2) btns += `<button class="btn" onclick="reserveCard()">Reserve</button>`;
                 document.getElementById('decision-card-anchor').innerHTML = generateCardHTML(drawnCard);
                 animateFlight(document.getElementById('draw-pile-boundary'), document.getElementById('decision-card-anchor'), drawnCard, 'draw', () => showDecisionPanel("", btns, true));
-                updateDropZones();
             }
         }
 
@@ -873,10 +808,7 @@
             const reserveKey = myColor === 'white' ? 'playerWhiteReserve' : 'playerBlackReserve';
             
             if (isMobileMode) {
-                document.getElementById('draw-pile-flipper').classList.remove('flipped');
-                setTimeout(() => {
-                    localData[reserveKey].push(card); checkDeckResetOrEndTurn();
-                }, 800);
+                localData[reserveKey].push(card); checkDeckResetOrEndTurn();
             } else {
                 const targetIdx = localData[reserveKey].length;
                 animateFlight(document.getElementById('decision-card-anchor'), document.getElementById(`my-reserve-${targetIdx+1}`), card, 'reserve', () => {
@@ -892,7 +824,6 @@
             closeDecisionPanel();
             
             if (isMobileMode) {
-                document.getElementById('draw-pile-flipper').classList.remove('flipped');
                 startCardExecution(cardToPlay);
             } else {
                 animateFlight(document.getElementById('decision-card-anchor'), document.getElementById(`my-reserve-${reserveIndex+1}`), drawnCard, 'reserve', () => startCardExecution(cardToPlay));
@@ -908,9 +839,9 @@
             executingCardSource = source;
             executingCardIndex = index;
             isDrawingState = false; 
+            selectedCardSource = null;
             
             if (isMobileMode) {
-                document.getElementById('draw-pile-flipper').classList.remove('flipped');
                 startCardExecution(card);
                 updateMobileUI();
             } else {
@@ -1022,7 +953,7 @@
                 return;
             }
 
-            if (clickedColor === myColor && (!activeCardExecution || activeCardExecution.action === 'enhanced' || activeCardExecution.action === 'extra_move')) { 
+            if (clickedColor === myColor) { 
                 
                 if (!activeCardExecution && turnPhase !== 1) return;
                 
@@ -1053,8 +984,9 @@
                 } else {
                     const myRes = myColor === 'white' ? localData.playerWhiteReserve : localData.playerBlackReserve;
                     if (myRes.length === 0 && localData.deck.length > 0) {
-                        processDraw();
+                        processDraw(); 
                     } else if (isMobileMode) {
+                        selectedCardSource = null;
                         updateMobileUI();
                     }
                 }
@@ -1063,19 +995,11 @@
             }
         }
 
-        function createOffscreenDest() {
-            const dest = document.createElement('div');
-            dest.style.position = 'absolute'; dest.style.top = '1500px'; dest.style.left = '350px'; dest.style.width = CARD_W + 'px'; dest.style.height = CARD_H + 'px';
-            document.getElementById('scaler').appendChild(dest);
-            return dest;
-        }
-
         async function finalizeCardTurn() {
             const cardToDiscard = activeCardExecution; activeCardExecution = null;
             document.getElementById('active-card-container').innerHTML = '';
             
             if (isMobileMode) {
-                document.getElementById('draw-pile-flipper').classList.remove('flipped');
                 setTimeout(() => {
                     document.getElementById('active-card-panel').style.display = "none"; 
                     localData.discardPile.push(cardToDiscard);
@@ -1174,6 +1098,7 @@
                         activeCardExecution = null;
                         selectedPawn = null;
                         validMoves = [];
+                        selectedCardSource = null;
                         lastSeenTurn = data.currentTurn;
                         if (!isMobileMode) closeDecisionPanel();
                     }
@@ -1232,7 +1157,7 @@
                     }
                     
                     renderCardSlots(data); renderBoard(JSON.parse(data.boardState)); renderCaptures(data);
-                    if (isMobileMode) updateMobileUI();
+                    if (isMobileMode) updateMobileUI(); 
                 }
             }
         });
@@ -1260,7 +1185,6 @@
                 const discard = data.discardPile;
                 document.getElementById('discard-pile-boundary').innerHTML = discard && discard.length > 0 ? generateCardHTML(discard[discard.length-1]) : '<div style="font-size: 12px; color: rgba(232, 208, 168, 0.4);">EMPTY</div>';
             }
-            updateDropZones();
         }
 
         function renderBlockShield(shieldId, blockArray) {
