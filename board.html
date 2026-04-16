@@ -93,7 +93,7 @@
         .mobile-fixed-bar { display: none; }
 
         /* --- MOBILE CSS OVERRIDES --- */
-        body.mobile-mode { padding-top: 70px !important; padding-bottom: 130px !important; box-sizing: border-box !important; }
+        body.mobile-mode { padding-top: 70px !important; padding-bottom: 180px !important; box-sizing: border-box !important; }
         
         .mobile-mode .info-panel { display: none !important; }
         .mobile-mode #status-panel { display: none !important; }
@@ -111,20 +111,20 @@
 
         .mobile-mode .mobile-fixed-bar { display: flex; position: fixed; left: 0; width: 100vw; box-sizing: border-box; z-index: 1000; padding: 0 25px; align-items: center; justify-content: space-between; }
         .mobile-mode .top-bar { top: 0; height: 70px; background: linear-gradient(180deg, #1f1a15, #0b0b0b); border-bottom: 2px solid #8c7650; box-shadow: 0 4px 15px rgba(0,0,0,0.9); }
-        .mobile-mode .action-bar { bottom: 0; height: 130px; background: linear-gradient(0deg, #1f1a15, #0b0b0b); border-top: 2px solid #8c7650; box-shadow: 0 -4px 15px rgba(0,0,0,0.9); }
+        .mobile-mode .action-bar { bottom: 0; height: 180px; background: linear-gradient(0deg, #1f1a15, #0b0b0b); border-top: 2px solid #8c7650; box-shadow: 0 -4px 15px rgba(0,0,0,0.9); }
         .mobile-mode .back-btn { background: transparent; border: none; color: #e8d0a8; font-size: 20px; font-family: 'Cinzel', serif; font-weight: bold; cursor: pointer; padding: 10px 0; }
         .mobile-mode .game-code-display { font-size: 18px; font-weight: bold; color: #e8d0a8; letter-spacing: 2px; }
         .mobile-mode #top-game-code { color: #fff; }
         .mobile-mode .action-bar-btn { background: #d9534f; color: #fff; border: 1px solid #ff9999; padding: 14px 20px; border-radius: 4px; font-family: 'Cinzel', serif; font-weight: bold; font-size: 16px; box-shadow: 0 2px 6px rgba(0,0,0,0.5); cursor: pointer; flex-shrink: 0;}
 
-        /* Mobile Dynamic Slots */
+        /* Unscaled, uniform dynamic slots perfectly match the 224x154 resolution */
         .mobile-mode .dynamic-slot {
-            width: 140px !important; height: 96px !important; border: 2px dashed transparent; border-radius: 8px;
+            width: 224px !important; height: 154px !important; border: 2px dashed transparent; border-radius: 8px;
             display: flex; justify-content: center; align-items: center;
             color: transparent; text-align: center; position: relative; background: transparent;
             transition: all 0.2s;
         }
-        .mobile-mode .dynamic-slot .card-face { transform: scale(0.625); transform-origin: top left; left: 0; top: 0; }
+        .mobile-mode .dynamic-slot .card-face { transform: none !important; left: 0; top: 0; }
         .mobile-mode .dynamic-slot.active-drop-zone { border-color: #ffd700 !important; background: rgba(255, 215, 0, 0.15) !important; color: #e8d0a8 !important; box-shadow: inset 0 0 10px rgba(0,0,0,0.5) !important; cursor: pointer; }
         .mobile-mode .dynamic-slot .drop-text { display: none; font-family: 'Cinzel', serif; font-weight: bold; font-size: 14px; text-shadow: 0 2px 4px rgba(0,0,0,0.8); }
         .mobile-mode .dynamic-slot.active-drop-zone .drop-text { display: block; }
@@ -357,7 +357,7 @@
         function resizeApp() {
             const scaler = document.getElementById('scaler');
             if (isMobileMode) {
-                let scale = Math.min(window.innerWidth / 740, (window.innerHeight - 200) / 1200);
+                let scale = Math.min(window.innerWidth / 740, (window.innerHeight - 280) / 1200);
                 scaler.style.transform = `scale(${scale})`;
             } else {
                 const isPortrait = window.innerHeight > window.innerWidth;
@@ -570,12 +570,12 @@
             if (isDrawingState || activeCardExecution || !isMyTurn || turnPhase === 1) {
                 res1El.style.opacity = '0.4'; res2El.style.opacity = '0.4';
                 res1El.removeAttribute('onclick'); res2El.removeAttribute('onclick');
-                drawPile.removeAttribute('onclick');
+                if(drawPile) drawPile.removeAttribute('onclick');
             } else {
                 res1El.style.opacity = '1'; res2El.style.opacity = '1';
                 res1El.setAttribute('onclick', 'handleReserveClick(1)');
                 res2El.setAttribute('onclick', 'handleReserveClick(2)');
-                drawPile.setAttribute('onclick', 'processDraw()');
+                if(drawPile) drawPile.setAttribute('onclick', 'processDraw()');
             }
 
             const infoBtnHtml = `<button class="action-bar-btn" onclick="showInstructions()" style="border-radius: 50%; width: 42px; height: 42px; padding: 0; display: flex; justify-content: center; align-items: center; font-size: 18px; border: 2px solid #8c7650; background: #0b0b0b; color: #e8d0a8; flex-shrink: 0;">i</button>`;
@@ -722,7 +722,7 @@
                     const cardHtml = generateCardHTML(drawnCard, "mobile-block-card-display");
                     window.pendingBlockCard = drawnCard;
                     showModal("Block Card Drawn!", 
-                        `<div style="display:flex; justify-content:center; align-items:center; margin: 15px 0; height: 120px;">${cardHtml}</div>
+                        `<div style="display:flex; justify-content:center; align-items:center; margin: 15px 0; height: 160px;">${cardHtml}</div>
                          <div style="font-size:14px; font-weight:normal; margin-bottom: 15px; color:#ddd; line-height:1.4;">This card has been stored in your Shield.<br>It will automatically trigger if your opponent attempts a capture.</div>`,
                         `<button class="btn" onclick="confirmStoreBlock()">Store Block</button>`
                     );
