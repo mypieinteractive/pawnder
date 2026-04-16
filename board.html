@@ -188,7 +188,7 @@
             </div>
 
             <div class="center-column">
-                <div class="cards-row" style="transform: rotate(180deg);" id="opp-reserve-row">
+                <div class="cards-row" style="transform: rotate(180deg); opacity: 0.4;" id="opp-reserve-row">
                     <div class="card-slot horizontal-card dynamic-slot" id="opp-reserve-2"></div>
                     <div class="card-slot horizontal-card dynamic-slot" id="opp-reserve-1"></div>
                 </div>
@@ -312,9 +312,9 @@
                 <div style="display: flex; gap: 30px; margin: auto 0;" id="draw-discard-container">
                     <div style="display: flex; flex-direction: column; align-items: center; gap: 10px;" id="draw-pile-wrapper" class="card-container">
                         <div style="font-size: 16px; letter-spacing: 2px;" id="draw-label">DRAW</div>
-                        <div class="card-slot horizontal-card" onclick="!isMobileMode && handleDrawClick()" style="cursor: pointer; border: none; perspective: 1000px;" id="draw-pile-boundary">
+                        <div class="card-slot horizontal-card dynamic-slot" onclick="!isMobileMode && handleDrawClick()" style="cursor: pointer; border: none; perspective: 1000px;" id="draw-pile-boundary">
                             <div class="flipper" id="draw-pile-flipper" style="width: 100%; height: 100%; transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1); transform-style: preserve-3d;">
-                                <div class="front card-face face-down" id="draw-pile" style="position: absolute; width: 100%; height: 100%; backface-visibility: hidden;"></div>
+                                <div class="front card-face face-down" id="draw-pile" style="position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border: 2px solid #8c7650;"></div>
                                 <div class="back card-face" id="draw-pile-back" style="position: absolute; width: 100%; height: 100%; backface-visibility: hidden; transform: rotateY(180deg);"></div>
                             </div>
                         </div>
@@ -570,10 +570,12 @@
             if (isDrawingState || activeCardExecution || !isMyTurn || turnPhase === 1) {
                 res1El.style.opacity = '0.4'; res2El.style.opacity = '0.4';
                 res1El.removeAttribute('onclick'); res2El.removeAttribute('onclick');
+                drawPile.removeAttribute('onclick');
             } else {
                 res1El.style.opacity = '1'; res2El.style.opacity = '1';
                 res1El.setAttribute('onclick', 'handleReserveClick(1)');
                 res2El.setAttribute('onclick', 'handleReserveClick(2)');
+                drawPile.setAttribute('onclick', 'processDraw()');
             }
 
             const infoBtnHtml = `<button class="action-bar-btn" onclick="showInstructions()" style="border-radius: 50%; width: 42px; height: 42px; padding: 0; display: flex; justify-content: center; align-items: center; font-size: 18px; border: 2px solid #8c7650; background: #0b0b0b; color: #e8d0a8; flex-shrink: 0;">i</button>`;
@@ -617,19 +619,11 @@
 
                 bar.innerHTML = `
                     ${infoBtnHtml}
-                    <div style="display:flex; gap: 20px;">
-                        <div id="mobile-draw-container" style="width:140px; height:96px; display:flex; justify-content:center; align-items:center;"></div>
-                        <div id="active-move-slot" class="dynamic-slot" style="border-color: #8c7650;">
-                            ${window._hideActiveCardForAnim ? '' : generateCardHTML(activeCardExecution, 'mobile-block-card-display')}
-                        </div>
+                    <div id="active-move-slot" class="dynamic-slot" style="border-color: #8c7650; margin: 0 auto;">
+                        ${window._hideActiveCardForAnim ? '' : generateCardHTML(activeCardExecution, 'mobile-block-card-display')}
                     </div>
                     <div style="width:42px; flex-shrink:0;"></div>
                 `;
-                if(drawPile) {
-                    drawPile.style.transform = 'scale(0.625)';
-                    drawPile.style.transformOrigin = 'top left';
-                    document.getElementById('mobile-draw-container').appendChild(drawPile);
-                }
                 return;
             } 
             
@@ -642,21 +636,11 @@
             } else if (turnPhase === 2) {
                 bar.innerHTML = `
                     ${infoBtnHtml}
-                    <div style="display:flex; gap: 20px;">
-                        <div id="mobile-draw-container" style="width:140px; height:96px; display:flex; justify-content:center; align-items:center;"></div>
-                        <div id="active-move-slot" class="dynamic-slot">
-                            <span class="drop-text" style="color: #8c7650;">Active<br>Move</span>
-                        </div>
+                    <div id="active-move-slot" class="dynamic-slot" style="margin: 0 auto;">
+                        <span class="drop-text" style="color: #8c7650;">Active<br>Move</span>
                     </div>
                     <div style="width:42px; flex-shrink:0;"></div>
                 `;
-                
-                if(drawPile) {
-                    drawPile.style.transform = 'scale(0.625)';
-                    drawPile.style.transformOrigin = 'top left';
-                    document.getElementById('mobile-draw-container').appendChild(drawPile);
-                    drawPile.onclick = window.processDraw;
-                }
                 
                 const myRes = myColor === 'white' ? localData.playerWhiteReserve : localData.playerBlackReserve;
                 if (myRes[0]) {
@@ -679,7 +663,8 @@
             if(!isMyTurn || activeCardExecution || gamePhase !== "playing") return;
             const myRes = myColor === 'white' ? localData.playerWhiteReserve : localData.playerBlackReserve;
             const idx = slotNum - 1;
-            
+            if(!myRes[idx]) return;
+
             if (isMobileMode) {
                 if (turnPhase === 2 && myRes[idx]) {
                     const card = myRes.splice(idx, 1)[0];
@@ -755,7 +740,7 @@
                 executingCardSource = 'draw';
                 activeCardExecution = drawnCard;
                 
-                const startEl = document.getElementById('mobile-draw-container');
+                const startEl = document.getElementById('draw-pile-boundary');
                 const endEl = document.getElementById('active-move-slot');
                 
                 window._hideActiveCardForAnim = true;
@@ -1004,26 +989,29 @@
                 return;
             }
 
-            let canSelect = false;
-            if (activeCardExecution) {
-                if (activeCardExecution.action === 'reposition') {
-                    canSelect = clickedColor === activeCardExecution.colorTarget && isInFieldOfPlay(row);
-                } else if (activeCardExecution.action === 'transport_in') {
-                    const isX = (row===4 && col===2) || (row===3 && col===5) || (row===2 && col===3) || (row===5 && col===4);
-                    canSelect = clickedColor === myColor && isX;
-                } else if (activeCardExecution.action === 'transport_out') {
-                    canSelect = clickedColor === myColor && !isInFieldOfPlay(row);
+            if (clickedColor === myColor) { 
+                
+                let canSelect = false;
+                if (activeCardExecution) {
+                    if (activeCardExecution.action === 'reposition') {
+                        canSelect = clickedColor === activeCardExecution.colorTarget && isInFieldOfPlay(row);
+                    } else if (activeCardExecution.action === 'transport_in') {
+                        const isX = (row===4 && col===2) || (row===3 && col===5) || (row===2 && col===3) || (row===5 && col===4);
+                        canSelect = clickedColor === myColor && isX;
+                    } else if (activeCardExecution.action === 'transport_out') {
+                        canSelect = clickedColor === myColor && !isInFieldOfPlay(row);
+                    } else {
+                        canSelect = true;
+                    }
                 } else {
-                    canSelect = clickedColor === myColor;
+                    canSelect = true;
                 }
-            } else {
-                canSelect = clickedColor === myColor;
-            }
 
-            if (canSelect) { 
-                selectedPawn = { r: row, c: col }; 
-                validMoves = activeCardExecution ? calculateCardMoves(row, col, myColor, activeCardExecution, state) : calculateStandardMoves(row, col, myColor, state); 
-                renderBoard(state); 
+                if (canSelect) { 
+                    selectedPawn = { r: row, c: col }; 
+                    validMoves = activeCardExecution ? calculateCardMoves(row, col, myColor, activeCardExecution, state) : calculateStandardMoves(row, col, myColor, state); 
+                    renderBoard(state); 
+                }
             }
         };
 
