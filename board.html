@@ -65,7 +65,8 @@
         .horizontal-card { width: 160px; height: 110px; }
         .card-slot.active-drop-zone { border-color: rgba(232, 208, 168, 0.6); background: rgba(0,0,0,0.3); color: rgba(232, 208, 168, 0.5); }
 
-        .card-face { width: 160px; height: 110px; box-shadow: 2px 4px 8px rgba(0,0,0,0.8); box-sizing: border-box; border-radius: 8px; position: absolute; pointer-events: none;}
+        .card-face { background-color: #ffffff; width: 160px; height: 110px; box-shadow: 2px 4px 8px rgba(0,0,0,0.8); box-sizing: border-box; border-radius: 8px; position: absolute; pointer-events: none;}
+        .face-down { background-color: #0b0b0b !important; background-image: url('logo.png') !important; background-size: 80%; background-repeat: no-repeat; background-position: center; pointer-events: none; border: 2px solid #8c7650;}
 
         .block-shield { position: absolute; display: none; font-size: 40px; filter: drop-shadow(0 4px 6px #000); z-index: 20;}
         .shield-badge { position: absolute; top: -5px; right: -5px; background: #d9534f; color: white; border-radius: 50%; width: 22px; height: 22px; font-size: 13px; font-family: sans-serif; display: flex; justify-content: center; align-items: center; font-weight: bold; border: 2px solid #fff; }
@@ -77,6 +78,12 @@
         #modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.8); z-index: 200; display: none; justify-content: center; align-items: center; }
         .modal-box { background: linear-gradient(135deg, #1f1a15, #110e0a); border: 2px solid #8c7650; padding: 30px; border-radius: 6px; text-align: center; display: flex; flex-direction: column; gap: 20px; color: #fff;}
         
+        #anim-container { position: absolute; z-index: 9999; pointer-events: none; display: none; perspective: 1000px; width: 160px; height: 110px; transform-origin: center center; }
+        .flipper { position: relative; width: 100%; height: 100%; transition: transform 0.6s; transform-style: preserve-3d; }
+        .flipper.flipped { transform: rotateY(180deg); }
+        .flipper .front, .flipper .back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 8px;}
+        .flipper .back { transform: rotateY(180deg); }
+
         .under-card-btn-row { display: none; }
         .mobile-fixed-bar { display: none; }
 
@@ -282,6 +289,9 @@
                         <div class="dynamic-slot" id="my-reserve-2"></div>
                     </div>
                     </div>
+                
+                <div id="mobile-action-bar" style="display: none;"></div>
+                
             </div>
 
             <div class="right-column">
@@ -294,13 +304,13 @@
                 <div style="display: flex; gap: 30px; margin: auto 0;" id="draw-discard-container">
                     <div style="display: flex; flex-direction: column; align-items: center; gap: 10px;" id="draw-pile-wrapper" class="card-container">
                         <div style="font-size: 16px; letter-spacing: 2px;" id="draw-label">DRAW</div>
-                        <div class="dynamic-slot" onclick="!isMobileMode && processDraw()" style="cursor: pointer; background-color: #0b0b0b; background-image: url('logo.png'); background-size: contain; background-repeat: no-repeat; background-position: center; border: 2px solid #8c7650; border-radius: 8px;" id="draw-pile-boundary">
+                        <div class="dynamic-slot face-down" onclick="!isMobileMode && processDraw()" id="draw-pile-boundary" style="cursor: pointer;">
                         </div>
                         <div id="draw-count" style="font-size: 10px; color:#aaa; letter-spacing:1px; margin-top:5px;"></div>
                     </div>
                     <div style="display: flex; flex-direction: column; align-items: center; gap: 10px;" id="discard-pile-wrapper">
                         <div style="font-size: 16px; letter-spacing: 2px;">DISCARD</div>
-                        <div class="dynamic-slot" style="border: 2px dashed rgba(232, 208, 168, 0.6);" id="discard-pile-boundary">
+                        <div class="card-slot horizontal-card" style="border: none;" id="discard-pile-boundary">
                             <div style="font-size: 12px; color: rgba(232, 208, 168, 0.4);">EMPTY</div>
                         </div>
                     </div>
@@ -351,10 +361,11 @@
             document.getElementById('mobile-top-bar').style.display = 'flex';
             
             const reserveRow = document.getElementById('my-reserve-row');
+            const drawPileWrapper = document.getElementById('draw-pile-wrapper');
             
             document.getElementById('draw-label').style.display = 'none';
             document.getElementById('draw-count').style.display = 'none';
-            reserveRow.appendChild(document.getElementById('draw-pile-wrapper'));
+            reserveRow.appendChild(drawPileWrapper);
             
             document.querySelector('.left-column').style.display = 'none';
             document.querySelector('.right-column').style.display = 'none';
@@ -407,7 +418,6 @@
         window.closeInstructions = function() { document.getElementById('instructions-modal').style.display = 'none'; };
 
         let localData = null, isMyTurn = false, gamePhase = "playing", turnPhase = 1, selectedPawn = null, validMoves = [], activeCardExecution = null, pendingInterruptInterval = null;
-        let isDrawingState = false; 
         let executingCardSource = null;
         let executingCardIndex = null;
         let lastSeenTurn = null; 
@@ -450,17 +460,13 @@
             localData[activeKey] = null;
             
             if (executingCardSource === 'draw') {
-                isDrawingState = false;
                 await checkDeckResetOrEndTurn();
             } else {
-                isDrawingState = false;
                 executingCardSource = null;
-                
                 await updateDoc(doc(db, "games", gameCode), {
                     [resKey]: localData[resKey],
                     [activeKey]: null
                 });
-                
                 renderCardSlots(localData);
                 updateMobileUI();
             }
@@ -478,7 +484,7 @@
             res2El.classList.remove('active-drop-zone');
             res1El.innerHTML = ""; res2El.innerHTML = "";
 
-            if (isDrawingState || activeCardExecution || !isMyTurn || turnPhase === 1) {
+            if (activeCardExecution || !isMyTurn || turnPhase === 1) {
                 res1El.style.opacity = '0.4'; res2El.style.opacity = '0.4'; drawPile.style.opacity = '0.4';
                 res1El.removeAttribute('onclick'); res2El.removeAttribute('onclick');
                 if(drawPile) drawPile.removeAttribute('onclick');
@@ -563,6 +569,13 @@
             }
         }
 
+        window.handleDrawClick = async function() {
+            if (isMobileMode) return; 
+            if(!isMyTurn || activeCardExecution || gamePhase !== "playing") return;
+            if(turnPhase === 1) { showDecisionPanel("Skip pawn move and draw?", `<button class="btn" onclick="closeDecisionPanel()">Cancel</button><button class="btn" onclick="confirmSkip('draw')">Yes</button>`); return; }
+            processDraw();
+        };
+
         window.handleReserveClick = async function(slotNum) {
             if(!isMyTurn || activeCardExecution || gamePhase !== "playing") return;
             const myRes = myColor === 'white' ? localData.playerWhiteReserve : localData.playerBlackReserve;
@@ -620,7 +633,6 @@
         window.processDraw = async function() {
             if(localData.deck.length === 0) return;
             closeDecisionPanel();
-            isDrawingState = true;
             const drawnCard = localData.deck[0]; 
             const myRes = myColor === 'white' ? localData.playerWhiteReserve : localData.playerBlackReserve;
 
@@ -669,7 +681,6 @@
         }
 
         window.takeBlockCard = async function(preDrawnCard = null) {
-            isDrawingState = false;
             const card = preDrawnCard || localData.deck.shift(); 
             closeDecisionPanel();
             const blockKey = myColor === 'white' ? 'playerWhiteBlocks' : 'playerBlackBlocks';
@@ -684,7 +695,6 @@
             const blockKey = myColor === 'white' ? 'playerWhiteBlocks' : 'playerBlackBlocks';
             localData[blockKey].push(window.pendingBlockCard); 
             window.pendingBlockCard = null;
-            isDrawingState = false;
             checkDeckResetOrEndTurn(); 
         };
 
@@ -703,7 +713,6 @@
         }
 
         window.reserveCard = async function() {
-            isDrawingState = false;
             const card = localData.deck.shift(); closeDecisionPanel();
             const reserveKey = myColor === 'white' ? 'playerWhiteReserve' : 'playerBlackReserve';
             
@@ -725,7 +734,6 @@
             
             executingCardSource = source;
             executingCardIndex = index;
-            isDrawingState = false; 
             
             startCardExecution(card);
         };
