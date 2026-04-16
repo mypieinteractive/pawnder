@@ -66,7 +66,7 @@
         .card-slot.active-drop-zone { border-color: rgba(232, 208, 168, 0.6); background: rgba(0,0,0,0.3); color: rgba(232, 208, 168, 0.5); }
 
         .card-face { background-color: #ffffff; width: 160px; height: 110px; box-shadow: 2px 4px 8px rgba(0,0,0,0.8); box-sizing: border-box; border-radius: 8px; position: absolute; pointer-events: none;}
-        .face-down { background-color: #0b0b0b !important; background-image: url('logo.png') !important; background-size: 80%; background-repeat: no-repeat; background-position: center; pointer-events: none; border: 2px solid #8c7650;}
+        .face-down { background-color: #0b0b0b !important; background-image: url('logo.png') !important; background-size: 80%; background-repeat: no-repeat; background-position: center; border: 2px solid #8c7650;}
 
         .block-shield { position: absolute; display: none; font-size: 40px; filter: drop-shadow(0 4px 6px #000); z-index: 20;}
         .shield-badge { position: absolute; top: -5px; right: -5px; background: #d9534f; color: white; border-radius: 50%; width: 22px; height: 22px; font-size: 13px; font-family: sans-serif; display: flex; justify-content: center; align-items: center; font-weight: bold; border: 2px solid #fff; }
@@ -104,10 +104,8 @@
         .mobile-mode #top-game-code { color: #fff; }
         .mobile-mode .action-bar-btn { background: #d9534f; color: #fff; border: 1px solid #ff9999; padding: 14px 20px; border-radius: 4px; font-family: 'Cinzel', serif; font-weight: bold; font-size: 16px; box-shadow: 0 2px 6px rgba(0,0,0,0.5); cursor: pointer; flex-shrink: 0;}
 
-        /* Mobile Action Bar Integrated layout */
         .mobile-mode #mobile-action-bar { position: relative !important; width: 100%; height: 110px; display: flex; justify-content: center; align-items: center; gap: 20px; border: none; background: transparent; box-shadow: none; margin-top: 10px;}
 
-        /* Unified 160x110 Card Sizes across all rows! */
         .dynamic-slot {
             width: 160px !important; height: 110px !important; border: 2px dashed transparent; border-radius: 8px;
             display: flex; justify-content: center; align-items: center;
@@ -288,7 +286,7 @@
                     <div class="card-container">
                         <div class="dynamic-slot" id="my-reserve-2"></div>
                     </div>
-                    </div>
+                </div>
                 
                 <div id="mobile-action-bar" style="display: none;"></div>
                 
@@ -345,7 +343,6 @@
         function resizeApp() {
             const scaler = document.getElementById('scaler');
             if (isMobileMode) {
-                // Safely calculates available vertical area exactly between the top bar, maintaining perfect 1:1 scale ratios for all UI
                 let scale = Math.min(window.innerWidth / 740, (window.innerHeight - 80) / 1145);
                 scaler.style.transform = `scale(${scale})`;
             } else {
@@ -418,16 +415,19 @@
         window.closeInstructions = function() { document.getElementById('instructions-modal').style.display = 'none'; };
 
         let localData = null, isMyTurn = false, gamePhase = "playing", turnPhase = 1, selectedPawn = null, validMoves = [], activeCardExecution = null, pendingInterruptInterval = null;
+        let isDrawingState = false; 
         let executingCardSource = null;
         let executingCardIndex = null;
         let lastSeenTurn = null; 
+        
+        window._hideActiveCardForAnim = false;
 
         const isInFieldOfPlay = (r) => r >= 2 && r <= 5;
         const CARD_W = 160;
         const CARD_H = 110;
 
         function generateCardHTML(card, extraClass="") {
-            if(!card) return '';
+            if(!card || card === 'empty') return '';
             return `<div class="card-face ${extraClass}" style="background-image: url('${card.image}'); background-size: cover; background-position: center; border: 2px solid #8c7650; border-radius: 8px;"></div>`;
         }
 
@@ -445,6 +445,73 @@
         }
         window.closeDecisionPanel = function() { document.getElementById('decision-panel').style.display = "none"; }
 
+        function getOffset(el) {
+            let x = 0, y = 0; let current = el;
+            while (current && !current.classList.contains('scale-wrapper')) { x += current.offsetLeft; y += current.offsetTop; current = current.offsetParent; }
+            return { x, y, w: el.offsetWidth, h: el.offsetHeight };
+        }
+
+        function animateFlight(startEl, endEl, cardData, animType, onComplete) {
+            if (!startEl || !endEl) { if(onComplete) onComplete(); return; }
+            
+            const startRect = startEl.getBoundingClientRect();
+            const endRect = endEl.getBoundingClientRect();
+            
+            const ghost = document.createElement('div');
+            ghost.style.position = 'fixed';
+            ghost.style.zIndex = '99999';
+            ghost.style.pointerEvents = 'none';
+            ghost.style.left = startRect.left + 'px';
+            ghost.style.top = startRect.top + 'px';
+            ghost.style.width = startRect.width + 'px';
+            ghost.style.height = startRect.height + 'px';
+            ghost.style.transition = 'all 0.5s cubic-bezier(0.25, 1, 0.5, 1)';
+            ghost.style.transformStyle = 'preserve-3d';
+            
+            const flipper = document.createElement('div');
+            flipper.style.width = '100%';
+            flipper.style.height = '100%';
+            flipper.style.position = 'relative';
+            flipper.style.transition = 'transform 0.5s';
+            flipper.style.transformStyle = 'preserve-3d';
+            
+            const front = document.createElement('div');
+            front.className = 'card-face face-down';
+            front.style.width = '100%'; front.style.height = '100%';
+            front.style.position = 'absolute'; front.style.backfaceVisibility = 'hidden';
+            front.style.transform = 'none';
+            
+            const backContainer = document.createElement('div');
+            backContainer.innerHTML = generateCardHTML(cardData);
+            const innerFace = backContainer.firstElementChild;
+            if(innerFace) {
+                innerFace.style.width = '100%'; innerFace.style.height = '100%';
+                innerFace.style.position = 'absolute'; innerFace.style.backfaceVisibility = 'hidden';
+                innerFace.style.transform = 'rotateY(180deg)';
+                flipper.appendChild(innerFace);
+            }
+            
+            flipper.appendChild(front);
+            ghost.appendChild(flipper);
+            document.body.appendChild(ghost);
+            
+            if (animType !== 'draw') flipper.style.transform = 'rotateY(180deg)';
+            
+            void ghost.offsetWidth; 
+            
+            ghost.style.left = endRect.left + 'px';
+            ghost.style.top = endRect.top + 'px';
+            ghost.style.width = endRect.width + 'px';
+            ghost.style.height = endRect.height + 'px';
+            
+            if (animType === 'draw') flipper.style.transform = 'rotateY(180deg)';
+            
+            setTimeout(() => {
+                ghost.remove();
+                if(onComplete) onComplete();
+            }, 500);
+        }
+
         window.stashActiveCard = async function(idx) {
             const card = activeCardExecution;
             activeCardExecution = null;
@@ -460,13 +527,17 @@
             localData[activeKey] = null;
             
             if (executingCardSource === 'draw') {
+                isDrawingState = false;
                 await checkDeckResetOrEndTurn();
             } else {
+                isDrawingState = false;
                 executingCardSource = null;
+                
                 await updateDoc(doc(db, "games", gameCode), {
                     [resKey]: localData[resKey],
                     [activeKey]: null
                 });
+                
                 renderCardSlots(localData);
                 updateMobileUI();
             }
@@ -484,12 +555,16 @@
             res2El.classList.remove('active-drop-zone');
             res1El.innerHTML = ""; res2El.innerHTML = "";
 
-            if (activeCardExecution || !isMyTurn || turnPhase === 1) {
-                res1El.style.opacity = '0.4'; res2El.style.opacity = '0.4'; drawPile.style.opacity = '0.4';
+            if (isDrawingState || activeCardExecution || !isMyTurn || turnPhase === 1) {
+                res1El.style.opacity = '0.4'; res2El.style.opacity = '0.4'; 
+                if(drawPile) drawPile.style.opacity = '0.4';
+                
                 res1El.removeAttribute('onclick'); res2El.removeAttribute('onclick');
                 if(drawPile) drawPile.removeAttribute('onclick');
             } else {
-                res1El.style.opacity = '1'; res2El.style.opacity = '1'; drawPile.style.opacity = '1';
+                res1El.style.opacity = '1'; res2El.style.opacity = '1'; 
+                if(drawPile) drawPile.style.opacity = '1';
+                
                 res1El.setAttribute('onclick', 'handleReserveClick(1)');
                 res2El.setAttribute('onclick', 'handleReserveClick(2)');
                 if(drawPile) drawPile.setAttribute('onclick', 'processDraw()');
@@ -507,26 +582,26 @@
                 const myRes = myColor === 'white' ? localData.playerWhiteReserve : localData.playerBlackReserve;
                 
                 if (executingCardSource === 'draw') {
-                    if (!myRes[0]) {
+                    if (!myRes[0] || myRes[0] === 'empty') {
                         res1El.style.opacity = '1';
                         res1El.innerHTML = "<span class='drop-text' style='color:#8c7650;'>Store in<br>Reserve 1</span>";
                         res1El.classList.add('active-drop-zone');
                         res1El.setAttribute('onclick', "stashActiveCard(0)");
                     }
-                    if (!myRes[1]) {
+                    if (!myRes[1] || myRes[1] === 'empty') {
                         res2El.style.opacity = '1';
                         res2El.innerHTML = "<span class='drop-text' style='color:#8c7650;'>Store in<br>Reserve 2</span>";
                         res2El.classList.add('active-drop-zone');
                         res2El.setAttribute('onclick', "stashActiveCard(1)");
                     }
                 } else {
-                    if (!myRes[0]) {
+                    if (!myRes[0] || myRes[0] === 'empty') {
                         res1El.style.opacity = '1';
                         res1El.innerHTML = "<span class='drop-text' style='color:#8c7650;'>Return to<br>Reserve 1</span>";
                         res1El.classList.add('active-drop-zone');
                         res1El.setAttribute('onclick', "stashActiveCard(0)");
                     }
-                    if (!myRes[1]) {
+                    if (!myRes[1] || myRes[1] === 'empty') {
                         res2El.style.opacity = '1';
                         res2El.innerHTML = "<span class='drop-text' style='color:#8c7650;'>Return to<br>Reserve 2</span>";
                         res2El.classList.add('active-drop-zone');
@@ -537,7 +612,7 @@
                 bar.innerHTML = `
                     ${infoBtnHtml}
                     <div id="active-move-slot" class="dynamic-slot" style="border-color: #8c7650; margin: 0 auto;">
-                        ${generateCardHTML(activeCardExecution, 'mobile-block-card-display')}
+                        ${window._hideActiveCardForAnim ? '' : generateCardHTML(activeCardExecution, 'mobile-block-card-display')}
                     </div>
                     <div style="width:60px; flex-shrink:0;"></div>
                 `;
@@ -560,10 +635,10 @@
                 `;
                 
                 const myRes = myColor === 'white' ? localData.playerWhiteReserve : localData.playerBlackReserve;
-                if (myRes[0]) {
+                if (myRes[0] && myRes[0] !== 'empty') {
                     res1El.innerHTML = generateCardHTML(myRes[0]);
                 } 
-                if (myRes[1]) {
+                if (myRes[1] && myRes[1] !== 'empty') {
                     res2El.innerHTML = generateCardHTML(myRes[1]);
                 } 
             }
@@ -583,12 +658,12 @@
             const activeKey = myColor === 'white' ? 'activeCardWhite' : 'activeCardBlack';
             const idx = slotNum - 1;
             
-            if(!myRes[idx]) return;
+            if(!myRes[idx] || myRes[idx] === 'empty') return;
 
             if (isMobileMode) {
-                if (turnPhase === 2 && myRes[idx]) {
+                if (turnPhase === 2) {
                     const card = myRes[idx];
-                    myRes[idx] = null; 
+                    myRes[idx] = 'empty'; 
                     
                     executingCardSource = 'reserve';
                     executingCardIndex = idx;
@@ -614,7 +689,7 @@
             selectedPawn = null; validMoves = []; renderBoard(JSON.parse(localData.boardState));
             
             const myRes = myColor === 'white' ? localData.playerWhiteReserve : localData.playerBlackReserve;
-            const resCount = myRes.filter(c => c !== null).length;
+            const resCount = myRes.filter(c => c && c !== 'empty').length;
             
             if (isMobileMode) {
                 if (resCount === 0 && localData.deck.length > 0) {
@@ -633,6 +708,7 @@
         window.processDraw = async function() {
             if(localData.deck.length === 0) return;
             closeDecisionPanel();
+            isDrawingState = true;
             const drawnCard = localData.deck[0]; 
             const myRes = myColor === 'white' ? localData.playerWhiteReserve : localData.playerBlackReserve;
 
@@ -651,7 +727,8 @@
                 } else {
                     let btns = `<button class="btn" onclick="takeBlockCard()">Store Block</button>`;
                     document.getElementById('decision-card-anchor').innerHTML = generateCardHTML(drawnCard);
-                    showDecisionPanel("Store this Block card to use against future attacks.", btns, true);
+                    const subText = "Store this Block card to use against future attacks.";
+                    showDecisionPanel(subText, btns, true);
                 }
                 return;
             }
@@ -673,7 +750,7 @@
                 updateMobileUI(); 
             } else {
                 let btns = `<button class="btn" onclick="executeCard(0, 'draw')">Play</button>`;
-                const resCount = myRes.filter(c => c !== null).length;
+                const resCount = myRes.filter(c => c && c !== 'empty').length;
                 if (resCount < 2) btns += `<button class="btn" onclick="reserveCard()">Reserve</button>`;
                 document.getElementById('decision-card-anchor').innerHTML = generateCardHTML(drawnCard);
                 showDecisionPanel("", btns, true);
@@ -681,6 +758,7 @@
         }
 
         window.takeBlockCard = async function(preDrawnCard = null) {
+            isDrawingState = false;
             const card = preDrawnCard || localData.deck.shift(); 
             closeDecisionPanel();
             const blockKey = myColor === 'white' ? 'playerWhiteBlocks' : 'playerBlackBlocks';
@@ -695,6 +773,7 @@
             const blockKey = myColor === 'white' ? 'playerWhiteBlocks' : 'playerBlackBlocks';
             localData[blockKey].push(window.pendingBlockCard); 
             window.pendingBlockCard = null;
+            isDrawingState = false;
             checkDeckResetOrEndTurn(); 
         };
 
@@ -713,10 +792,11 @@
         }
 
         window.reserveCard = async function() {
+            isDrawingState = false;
             const card = localData.deck.shift(); closeDecisionPanel();
             const reserveKey = myColor === 'white' ? 'playerWhiteReserve' : 'playerBlackReserve';
             
-            const targetIdx = localData[reserveKey].indexOf(null);
+            const targetIdx = localData[reserveKey].indexOf('empty');
             if (targetIdx === -1) return;
             
             localData[reserveKey][targetIdx] = card; checkDeckResetOrEndTurn();
@@ -729,11 +809,12 @@
             else { 
                 const resKey = myColor === 'white' ? 'playerWhiteReserve' : 'playerBlackReserve';
                 card = localData[resKey][index]; 
-                localData[resKey][index] = null;
+                localData[resKey][index] = 'empty';
             }
             
             executingCardSource = source;
             executingCardIndex = index;
+            isDrawingState = false; 
             
             startCardExecution(card);
         };
@@ -952,7 +1033,7 @@
                     if (isMobileMode) updateMobileUI();
                 } else {
                     const myRes = myColor === 'white' ? localData.playerWhiteReserve : localData.playerBlackReserve;
-                    const resCount = myRes.filter(c => c !== null).length;
+                    const resCount = myRes.filter(c => c && c !== 'empty').length;
                     
                     if (resCount === 0 && localData.deck.length > 0) {
                         processDraw(); 
@@ -982,9 +1063,9 @@
 
         async function checkDeckResetOrEndTurn() {
             if(localData.deck.length === 0) {
-                const allCards = [...localData.discardPile, ...localData.playerWhiteReserve.filter(c=>c!==null), ...localData.playerBlackReserve.filter(c=>c!==null), ...localData.playerWhiteBlocks, ...localData.playerBlackBlocks];
+                const allCards = [...localData.discardPile, ...localData.playerWhiteReserve.filter(c=> c && c !== 'empty'), ...localData.playerBlackReserve.filter(c=> c && c !== 'empty'), ...localData.playerWhiteBlocks, ...localData.playerBlackBlocks];
                 localData.deck = shuffle(allCards);
-                localData.discardPile = []; localData.playerWhiteReserve = [null, null]; localData.playerBlackReserve = [null, null]; localData.playerWhiteBlocks = []; localData.playerBlackBlocks = [];
+                localData.discardPile = []; localData.playerWhiteReserve = ['empty', 'empty']; localData.playerBlackReserve = ['empty', 'empty']; localData.playerWhiteBlocks = []; localData.playerBlackBlocks = [];
                 let emptyBoard = Array(8).fill(null).map(() => Array(8).fill(null));
                 localData.boardState = JSON.stringify(emptyBoard);
                 localData.placementWhite = 16 - localData.capturedWhite; localData.placementBlack = 16 - localData.capturedBlack;
@@ -1083,7 +1164,7 @@
                     let initialBoard = Array(8).fill(null).map(() => Array(8).fill(null));
                     for(let r=0; r<8; r++) for(let c=0; c<8; c++) { if(r<2) initialBoard[r][c]='black'; if(r>5) initialBoard[r][c]='white'; }
                     let shuffledDeck = shuffle([...masterDeck]);
-                    updateDoc(doc(db, "games", gameCode), { boardState: JSON.stringify(initialBoard), deck: shuffledDeck, discardPile: [], playerWhiteReserve: [null, null], playerBlackReserve: [null, null], playerWhiteBlocks: [], playerBlackBlocks: [], capturedWhite: 0, capturedBlack: 0, gamePhase: 'playing', gameMode: data.gameMode || 'remote', skippedPlayer: null, activeCardWhite: null, activeCardBlack: null, isInitialized: true });
+                    updateDoc(doc(db, "games", gameCode), { boardState: JSON.stringify(initialBoard), deck: shuffledDeck, discardPile: [], playerWhiteReserve: ['empty', 'empty'], playerBlackReserve: ['empty', 'empty'], playerWhiteBlocks: [], playerBlackBlocks: [], capturedWhite: 0, capturedBlack: 0, gamePhase: 'playing', gameMode: data.gameMode || 'remote', skippedPlayer: null, activeCardWhite: null, activeCardBlack: null, isInitialized: true });
                     return;
                 }
                 if(data.isInitialized) {
@@ -1108,7 +1189,7 @@
                     document.getElementById('game-area').classList.toggle('rotate-180', myColor === 'black');
                     document.getElementById('board-decorations').setAttribute('transform', myColor === 'black' ? 'rotate(180 500 550)' : 'rotate(0 500 550)');
 
-                    data.playerWhiteReserve = data.playerWhiteReserve || [null, null]; data.playerBlackReserve = data.playerBlackReserve || [null, null];
+                    data.playerWhiteReserve = data.playerWhiteReserve || ['empty', 'empty']; data.playerBlackReserve = data.playerBlackReserve || ['empty', 'empty'];
                     data.playerWhiteBlocks = data.playerWhiteBlocks || []; data.playerBlackBlocks = data.playerBlackBlocks || [];
                     data.capturedWhite = data.capturedWhite || 0; data.capturedBlack = data.capturedBlack || 0;
                     data.gamePhase = data.gamePhase || "playing";
@@ -1176,10 +1257,10 @@
             const myRes = myColor === 'white' ? data.playerWhiteReserve : data.playerBlackReserve;
             const oppRes = myColor === 'white' ? data.playerBlackReserve : data.playerWhiteReserve;
             
-            document.getElementById('my-reserve-1').innerHTML = myRes[0] ? generateCardHTML(myRes[0]) : "";
-            document.getElementById('my-reserve-2').innerHTML = myRes[1] ? generateCardHTML(myRes[1]) : "";
-            document.getElementById('opp-reserve-1').innerHTML = oppRes[0] ? generateCardHTML(oppRes[0]) : "";
-            document.getElementById('opp-reserve-2').innerHTML = oppRes[1] ? generateCardHTML(oppRes[1]) : "";
+            document.getElementById('my-reserve-1').innerHTML = (myRes[0] && myRes[0] !== 'empty') ? generateCardHTML(myRes[0]) : "";
+            document.getElementById('my-reserve-2').innerHTML = (myRes[1] && myRes[1] !== 'empty') ? generateCardHTML(myRes[1]) : "";
+            document.getElementById('opp-reserve-1').innerHTML = (oppRes[0] && oppRes[0] !== 'empty') ? generateCardHTML(oppRes[0]) : "";
+            document.getElementById('opp-reserve-2').innerHTML = (oppRes[1] && oppRes[1] !== 'empty') ? generateCardHTML(oppRes[1]) : "";
 
             const myBlocks = myColor === 'white' ? data.playerWhiteBlocks : data.playerBlackBlocks;
             const oppBlocks = myColor === 'white' ? data.playerBlackBlocks : data.playerWhiteBlocks;
