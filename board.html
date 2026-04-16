@@ -65,13 +65,15 @@
         .horizontal-card { width: 160px; height: 110px; }
         .card-slot.active-drop-zone { border-color: rgba(232, 208, 168, 0.6); background: rgba(0,0,0,0.3); color: rgba(232, 208, 168, 0.5); }
 
-        .card-face { background: #ffffff; color: #111111; width: 160px; height: 110px; border: 2px solid #8c7650; display: flex; flex-direction: column; font-family: 'Cinzel', serif; box-shadow: 2px 4px 8px rgba(0,0,0,0.8); box-sizing: border-box; border-radius: 8px; overflow: hidden; position: absolute; pointer-events: none; padding: 8px;}
-        .card-header { display: flex; flex-direction: row; align-items: center; gap: 8px; margin-bottom: 6px; height: 30px; flex-shrink: 0; }
-        .card-icon { font-size: 24px; color: #555; line-height: 1; }
-        .card-title { font-size: 14px; font-weight: bold; color: #8c7650; margin: 0; font-family: 'Cinzel', serif; letter-spacing: 1px; line-height: 1.1; text-align: left; }
-        .card-text { font-size: 16px; font-weight: bold; color: #222; line-height: 1.2; font-family: sans-serif; text-align: left; margin: 0; overflow-y: auto; flex-grow: 1; }
-        
-        .face-down { background-color: #0b0b0b; background-image: url('logo.png'); background-size: 80%; background-repeat: no-repeat; background-position: center; pointer-events: none; border: 2px solid #8c7650;}
+        /* Card Image Face Configuration */
+        .card-face { 
+            background-color: #ffffff; /* Explicitly color to preserve image backgrounds! */
+            width: 160px; height: 110px; 
+            box-shadow: 2px 4px 8px rgba(0,0,0,0.8); 
+            box-sizing: border-box; border-radius: 8px; 
+            position: absolute; pointer-events: none;
+        }
+        .face-down { background-color: #0b0b0b !important; background-image: url('logo.png') !important; background-size: 80%; background-repeat: no-repeat; background-position: center; pointer-events: none; border: 2px solid #8c7650;}
 
         .block-shield { position: absolute; display: none; font-size: 40px; filter: drop-shadow(0 4px 6px #000); z-index: 20;}
         .shield-badge { position: absolute; top: -5px; right: -5px; background: #d9534f; color: white; border-radius: 50%; width: 22px; height: 22px; font-size: 13px; font-family: sans-serif; display: flex; justify-content: center; align-items: center; font-weight: bold; border: 2px solid #fff; }
@@ -96,15 +98,7 @@
         body.mobile-mode { padding-top: 70px !important; padding-bottom: 180px !important; box-sizing: border-box !important; }
         
         .mobile-mode .info-panel { display: none !important; }
-        .mobile-mode #status-panel { display: none !important; }
         .mobile-mode .center-column { width: 740px !important; margin: 0 auto; }
-        
-        .mobile-mode .horizontal-card, .mobile-mode .card-face, .mobile-mode #anim-container { width: 224px !important; height: 154px !important; }
-        .mobile-mode .card-face { padding: 12px !important; }
-        .mobile-mode .card-header { gap: 12px !important; margin-bottom: 10px !important; height: 40px !important;}
-        .mobile-mode .card-icon { font-size: 36px !important; }
-        .mobile-mode .card-title { font-size: 18px !important; }
-        .mobile-mode .card-text { font-size: 22px !important; line-height: 1.25 !important; }
         
         .mobile-mode .cards-row { width: 720px !important; gap: 10px !important; flex-wrap: nowrap !important; justify-content: center !important; }
         .mobile-mode .card-container { display: flex; flex-direction: column; align-items: center; flex-shrink: 0; }
@@ -117,14 +111,13 @@
         .mobile-mode #top-game-code { color: #fff; }
         .mobile-mode .action-bar-btn { background: #d9534f; color: #fff; border: 1px solid #ff9999; padding: 14px 20px; border-radius: 4px; font-family: 'Cinzel', serif; font-weight: bold; font-size: 16px; box-shadow: 0 2px 6px rgba(0,0,0,0.5); cursor: pointer; flex-shrink: 0;}
 
-        /* Unscaled, uniform dynamic slots perfectly match the 224x154 resolution */
+        /* Unified slot dimensions: 160x110 strictly scales with container */
         .mobile-mode .dynamic-slot {
-            width: 224px !important; height: 154px !important; border: 2px dashed transparent; border-radius: 8px;
+            width: 160px; height: 110px; border: 2px dashed transparent; border-radius: 8px;
             display: flex; justify-content: center; align-items: center;
             color: transparent; text-align: center; position: relative; background: transparent;
             transition: all 0.2s;
         }
-        .mobile-mode .dynamic-slot .card-face { transform: none !important; left: 0; top: 0; }
         .mobile-mode .dynamic-slot.active-drop-zone { border-color: #ffd700 !important; background: rgba(255, 215, 0, 0.15) !important; color: #e8d0a8 !important; box-shadow: inset 0 0 10px rgba(0,0,0,0.5) !important; cursor: pointer; }
         .mobile-mode .dynamic-slot .drop-text { display: none; font-family: 'Cinzel', serif; font-weight: bold; font-size: 14px; text-shadow: 0 2px 4px rgba(0,0,0,0.8); }
         .mobile-mode .dynamic-slot.active-drop-zone .drop-text { display: block; }
@@ -357,7 +350,8 @@
         function resizeApp() {
             const scaler = document.getElementById('scaler');
             if (isMobileMode) {
-                let scale = Math.min(window.innerWidth / 740, (window.innerHeight - 280) / 1200);
+                // Generously calculates scale based on 160x110 core card sizes to fit Action Bar perfectly
+                let scale = Math.min(window.innerWidth / 740, window.innerHeight / 1200);
                 scaler.style.transform = `scale(${scale})`;
             } else {
                 const isPortrait = window.innerHeight > window.innerWidth;
@@ -434,8 +428,8 @@
         window._hideActiveCardForAnim = false;
 
         const isInFieldOfPlay = (r) => r >= 2 && r <= 5;
-        const CARD_W = isMobileMode ? 224 : 160;
-        const CARD_H = isMobileMode ? 154 : 110;
+        const CARD_W = isMobileMode ? 160 : 160;
+        const CARD_H = isMobileMode ? 110 : 110;
 
         function generateCardHTML(card, extraClass="") {
             if(!card) return '';
@@ -530,7 +524,8 @@
             
             renderBoard(JSON.parse(localData.boardState)); 
             
-            const reserveKey = myColor === 'white' ? 'playerWhiteReserve' : 'playerBlackReserve';
+            const resKey = myColor === 'white' ? 'playerWhiteReserve' : 'playerBlackReserve';
+            const activeKey = myColor === 'white' ? 'activeCardWhite' : 'activeCardBlack';
             
             const startEl = document.getElementById('active-move-slot');
             const endEl = document.getElementById(`my-reserve-${idx+1}`);
@@ -538,17 +533,24 @@
             window._hideActiveCardForAnim = true;
             updateMobileUI();
             
-            animateFlight(startEl, endEl, card, 'reserve', () => {
+            animateFlight(startEl, endEl, card, 'reserve', async () => {
                 window._hideActiveCardForAnim = false;
                 
-                localData[reserveKey].splice(idx, 0, card);
+                localData[resKey][idx] = card;
+                localData[activeKey] = null;
                 
                 if (executingCardSource === 'draw') {
                     isDrawingState = false;
-                    checkDeckResetOrEndTurn();
+                    await checkDeckResetOrEndTurn();
                 } else {
                     isDrawingState = false;
                     executingCardSource = null;
+                    
+                    await updateDoc(doc(db, "games", gameCode), {
+                        [resKey]: localData[resKey],
+                        [activeKey]: null
+                    });
+                    
                     renderCardSlots(localData);
                     updateMobileUI();
                 }
@@ -662,19 +664,31 @@
         window.handleReserveClick = async function(slotNum) {
             if(!isMyTurn || activeCardExecution || gamePhase !== "playing") return;
             const myRes = myColor === 'white' ? localData.playerWhiteReserve : localData.playerBlackReserve;
+            const resKey = myColor === 'white' ? 'playerWhiteReserve' : 'playerBlackReserve';
+            const activeKey = myColor === 'white' ? 'activeCardWhite' : 'activeCardBlack';
             const idx = slotNum - 1;
+            
             if(!myRes[idx]) return;
 
             if (isMobileMode) {
                 if (turnPhase === 2 && myRes[idx]) {
-                    const card = myRes.splice(idx, 1)[0];
+                    const card = myRes[idx];
+                    myRes[idx] = null; // Instantly lock out of reserve
+                    
                     executingCardSource = 'reserve';
                     executingCardIndex = idx;
+                    activeCardExecution = card;
+                    localData[activeKey] = card;
+                    
+                    // Instant Database Sync!
+                    await updateDoc(doc(db, "games", gameCode), {
+                        [resKey]: myRes,
+                        [activeKey]: card
+                    });
                     
                     const startEl = document.getElementById(`my-reserve-${slotNum}`);
                     const endEl = document.getElementById('active-move-slot');
                     
-                    activeCardExecution = card;
                     window._hideActiveCardForAnim = true;
                     updateMobileUI();
                     
@@ -685,7 +699,6 @@
                     });
                 }
             } else {
-                if(idx >= myRes.length) return; 
                 if(turnPhase === 1) { showDecisionPanel("Skip pawn move and play card?", `<button class="btn" onclick="closeDecisionPanel()">Cancel</button><button class="btn" onclick="confirmSkip('reserve', ${idx})">Yes</button>`); return; }
                 processReserve(idx);
             }
@@ -693,10 +706,13 @@
 
         window.confirmSkip = function(type, idx) { 
             turnPhase = 2; updateInstructionHighlight(); 
+            selectedPawn = null; validMoves = []; renderBoard(JSON.parse(localData.boardState));
+            
             const myRes = myColor === 'white' ? localData.playerWhiteReserve : localData.playerBlackReserve;
+            const resCount = myRes.filter(c => c !== null).length;
             
             if (isMobileMode) {
-                if (myRes.length === 0 && localData.deck.length > 0) {
+                if (resCount === 0 && localData.deck.length > 0) {
                     processDraw();
                 } else {
                     updateMobileUI(); 
@@ -706,10 +722,10 @@
             
             if (type === 'draw') processDraw(); 
             else if (type === 'reserve') processReserve(idx); 
-            else if (myRes.length === 0 && localData.deck.length > 0) processDraw();
+            else if (resCount === 0 && localData.deck.length > 0) processDraw();
         };
 
-        window.processDraw = function() {
+        window.processDraw = async function() {
             if(localData.deck.length === 0) return;
             closeDecisionPanel();
             isDrawingState = true;
@@ -718,6 +734,8 @@
 
             if (drawnCard.action === 'block') {
                 localData.deck.shift(); 
+                await updateDoc(doc(db, "games", gameCode), { deck: localData.deck });
+                
                 if (isMobileMode) {
                     const cardHtml = generateCardHTML(drawnCard, "mobile-block-card-display");
                     window.pendingBlockCard = drawnCard;
@@ -740,6 +758,15 @@
                 executingCardSource = 'draw';
                 activeCardExecution = drawnCard;
                 
+                const activeKey = myColor === 'white' ? 'activeCardWhite' : 'activeCardBlack';
+                localData[activeKey] = drawnCard;
+                
+                // Instant Database Sync!
+                await updateDoc(doc(db, "games", gameCode), {
+                    deck: localData.deck,
+                    [activeKey]: drawnCard
+                });
+                
                 const startEl = document.getElementById('draw-pile-boundary');
                 const endEl = document.getElementById('active-move-slot');
                 
@@ -753,7 +780,8 @@
                 });
             } else {
                 let btns = `<button class="btn" onclick="executeCard(0, 'draw')">Play</button>`;
-                if (myRes.length < 2) btns += `<button class="btn" onclick="reserveCard()">Reserve</button>`;
+                const resCount = myRes.filter(c => c !== null).length;
+                if (resCount < 2) btns += `<button class="btn" onclick="reserveCard()">Reserve</button>`;
                 document.getElementById('decision-card-anchor').innerHTML = generateCardHTML(drawnCard);
                 animateFlight(document.getElementById('draw-pile-boundary'), document.getElementById('decision-card-anchor'), drawnCard, 'draw', () => showDecisionPanel("", btns, true));
             }
@@ -801,9 +829,11 @@
             const card = localData.deck.shift(); closeDecisionPanel();
             const reserveKey = myColor === 'white' ? 'playerWhiteReserve' : 'playerBlackReserve';
             
-            const targetIdx = localData[reserveKey].length;
+            const targetIdx = localData[reserveKey].indexOf(null);
+            if (targetIdx === -1) return;
+            
             animateFlight(document.getElementById('decision-card-anchor'), document.getElementById(`my-reserve-${targetIdx+1}`), card, 'reserve', () => {
-                localData[reserveKey].push(card); checkDeckResetOrEndTurn();
+                localData[reserveKey][targetIdx] = card; checkDeckResetOrEndTurn();
             });
         };
 
@@ -811,7 +841,11 @@
             closeDecisionPanel();
             let card;
             if (source === 'draw') { card = localData.deck.shift(); } 
-            else { card = (myColor === 'white' ? localData.playerWhiteReserve : localData.playerBlackReserve).splice(index, 1)[0]; }
+            else { 
+                const resKey = myColor === 'white' ? 'playerWhiteReserve' : 'playerBlackReserve';
+                card = localData[resKey][index]; 
+                localData[resKey][index] = null;
+            }
             
             executingCardSource = source;
             executingCardIndex = index;
@@ -990,7 +1024,6 @@
             }
 
             if (clickedColor === myColor) { 
-                
                 let canSelect = false;
                 if (activeCardExecution) {
                     if (activeCardExecution.action === 'reposition') {
@@ -1035,7 +1068,9 @@
                     if (isMobileMode) updateMobileUI();
                 } else {
                     const myRes = myColor === 'white' ? localData.playerWhiteReserve : localData.playerBlackReserve;
-                    if (myRes.length === 0 && localData.deck.length > 0) {
+                    const resCount = myRes.filter(c => c !== null).length;
+                    
+                    if (resCount === 0 && localData.deck.length > 0) {
                         processDraw(); 
                     } else if (isMobileMode) {
                         updateMobileUI();
@@ -1075,9 +1110,9 @@
 
         async function checkDeckResetOrEndTurn() {
             if(localData.deck.length === 0) {
-                const allCards = [...localData.discardPile, ...localData.playerWhiteReserve, ...localData.playerBlackReserve, ...localData.playerWhiteBlocks, ...localData.playerBlackBlocks];
+                const allCards = [...localData.discardPile, ...localData.playerWhiteReserve.filter(c=>c!==null), ...localData.playerBlackReserve.filter(c=>c!==null), ...localData.playerWhiteBlocks, ...localData.playerBlackBlocks];
                 localData.deck = shuffle(allCards);
-                localData.discardPile = []; localData.playerWhiteReserve = []; localData.playerBlackReserve = []; localData.playerWhiteBlocks = []; localData.playerBlackBlocks = [];
+                localData.discardPile = []; localData.playerWhiteReserve = [null, null]; localData.playerBlackReserve = [null, null]; localData.playerWhiteBlocks = []; localData.playerBlackBlocks = [];
                 let emptyBoard = Array(8).fill(null).map(() => Array(8).fill(null));
                 localData.boardState = JSON.stringify(emptyBoard);
                 localData.placementWhite = 16 - localData.capturedWhite; localData.placementBlack = 16 - localData.capturedBlack;
@@ -1091,7 +1126,15 @@
                     localData.skippedPlayer = null; 
                 }
                 
-                await updateDoc(doc(db, "games", gameCode), { boardState: localData.boardState, deck: localData.deck, discardPile: localData.discardPile, playerWhiteReserve: localData.playerWhiteReserve, playerBlackReserve: localData.playerBlackReserve, playerWhiteBlocks: localData.playerWhiteBlocks, playerBlackBlocks: localData.playerBlackBlocks, capturedWhite: localData.capturedWhite, capturedBlack: localData.capturedBlack, placementWhite: localData.placementWhite || 0, placementBlack: localData.placementBlack || 0, gamePhase: localData.gamePhase, skippedPlayer: localData.skippedPlayer || null, currentTurn: nextTurn });
+                await updateDoc(doc(db, "games", gameCode), { 
+                    boardState: localData.boardState, deck: localData.deck, discardPile: localData.discardPile, 
+                    playerWhiteReserve: localData.playerWhiteReserve, playerBlackReserve: localData.playerBlackReserve, 
+                    playerWhiteBlocks: localData.playerWhiteBlocks, playerBlackBlocks: localData.playerBlackBlocks, 
+                    capturedWhite: localData.capturedWhite, capturedBlack: localData.capturedBlack, 
+                    placementWhite: localData.placementWhite || 0, placementBlack: localData.placementBlack || 0, 
+                    gamePhase: localData.gamePhase, skippedPlayer: localData.skippedPlayer || null, 
+                    currentTurn: nextTurn, activeCardWhite: null, activeCardBlack: null 
+                });
             } else {
                 await updateDoc(doc(db, "games", gameCode), { boardState: localData.boardState, gamePhase: localData.gamePhase });
             }
@@ -1168,7 +1211,7 @@
                     let initialBoard = Array(8).fill(null).map(() => Array(8).fill(null));
                     for(let r=0; r<8; r++) for(let c=0; c<8; c++) { if(r<2) initialBoard[r][c]='black'; if(r>5) initialBoard[r][c]='white'; }
                     let shuffledDeck = shuffle([...masterDeck]);
-                    updateDoc(doc(db, "games", gameCode), { boardState: JSON.stringify(initialBoard), deck: shuffledDeck, discardPile: [], playerWhiteReserve: [], playerBlackReserve: [], playerWhiteBlocks: [], playerBlackBlocks: [], capturedWhite: 0, capturedBlack: 0, gamePhase: 'playing', gameMode: data.gameMode || 'remote', skippedPlayer: null, isInitialized: true });
+                    updateDoc(doc(db, "games", gameCode), { boardState: JSON.stringify(initialBoard), deck: shuffledDeck, discardPile: [], playerWhiteReserve: [null, null], playerBlackReserve: [null, null], playerWhiteBlocks: [], playerBlackBlocks: [], capturedWhite: 0, capturedBlack: 0, gamePhase: 'playing', gameMode: data.gameMode || 'remote', skippedPlayer: null, activeCardWhite: null, activeCardBlack: null, isInitialized: true });
                     return;
                 }
                 if(data.isInitialized) {
@@ -1193,10 +1236,18 @@
                     document.getElementById('game-area').classList.toggle('rotate-180', myColor === 'black');
                     document.getElementById('board-decorations').setAttribute('transform', myColor === 'black' ? 'rotate(180 500 550)' : 'rotate(0 500 550)');
 
-                    data.playerWhiteReserve = data.playerWhiteReserve || []; data.playerBlackReserve = data.playerBlackReserve || [];
+                    data.playerWhiteReserve = data.playerWhiteReserve || [null, null]; data.playerBlackReserve = data.playerBlackReserve || [null, null];
                     data.playerWhiteBlocks = data.playerWhiteBlocks || []; data.playerBlackBlocks = data.playerBlackBlocks || [];
                     data.capturedWhite = data.capturedWhite || 0; data.capturedBlack = data.capturedBlack || 0;
                     data.gamePhase = data.gamePhase || "playing";
+                    
+                    if (data.activeCardWhite !== undefined || data.activeCardBlack !== undefined) {
+                        const myActive = myColor === 'white' ? data.activeCardWhite : data.activeCardBlack;
+                        if (!window._hideActiveCardForAnim) {
+                            activeCardExecution = myActive || null;
+                        }
+                    }
+                    
                     localData = data; gamePhase = data.gamePhase; isMyTurn = (data.currentTurn === myColor);
 
                     if(data.activeInterrupt && data.activeInterrupt.active) {
