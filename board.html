@@ -65,8 +65,7 @@
         .horizontal-card { width: 160px; height: 110px; }
         .card-slot.active-drop-zone { border-color: rgba(232, 208, 168, 0.6); background: rgba(0,0,0,0.3); color: rgba(232, 208, 168, 0.5); }
 
-        .card-face { background-color: #ffffff; width: 160px; height: 110px; box-shadow: 2px 4px 8px rgba(0,0,0,0.8); box-sizing: border-box; border-radius: 8px; position: absolute; pointer-events: none;}
-        .face-down { background-color: #0b0b0b !important; background-image: url('logo.png') !important; background-size: 80%; background-repeat: no-repeat; background-position: center; pointer-events: none; border: 2px solid #8c7650;}
+        .card-face { width: 160px; height: 110px; box-shadow: 2px 4px 8px rgba(0,0,0,0.8); box-sizing: border-box; border-radius: 8px; position: absolute; pointer-events: none;}
 
         .block-shield { position: absolute; display: none; font-size: 40px; filter: drop-shadow(0 4px 6px #000); z-index: 20;}
         .shield-badge { position: absolute; top: -5px; right: -5px; background: #d9534f; color: white; border-radius: 50%; width: 22px; height: 22px; font-size: 13px; font-family: sans-serif; display: flex; justify-content: center; align-items: center; font-weight: bold; border: 2px solid #fff; }
@@ -78,12 +77,6 @@
         #modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.8); z-index: 200; display: none; justify-content: center; align-items: center; }
         .modal-box { background: linear-gradient(135deg, #1f1a15, #110e0a); border: 2px solid #8c7650; padding: 30px; border-radius: 6px; text-align: center; display: flex; flex-direction: column; gap: 20px; color: #fff;}
         
-        #anim-container { position: absolute; z-index: 9999; pointer-events: none; display: none; perspective: 1000px; width: 160px; height: 110px; transform-origin: center center; }
-        .flipper { position: relative; width: 100%; height: 100%; transition: transform 0.6s; transform-style: preserve-3d; }
-        .flipper.flipped { transform: rotateY(180deg); }
-        .flipper .front, .flipper .back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 8px;}
-        .flipper .back { transform: rotateY(180deg); }
-
         .under-card-btn-row { display: none; }
         .mobile-fixed-bar { display: none; }
 
@@ -93,37 +86,32 @@
         .mobile-mode .info-panel { display: none !important; }
         .mobile-mode .center-column { width: 740px !important; margin: 0 auto; gap: 15px !important; }
         
-        /* Unified 160x110 Card Sizes across all rows! */
-        .mobile-mode .horizontal-card, .mobile-mode .card-face, .mobile-mode #anim-container { width: 160px !important; height: 110px !important; }
-        
         .mobile-mode .cards-row { width: 720px !important; gap: 10px !important; flex-wrap: nowrap !important; justify-content: center !important; height: 110px !important; }
         .mobile-mode .card-container { display: flex; flex-direction: column; align-items: center; flex-shrink: 0; }
 
         .mobile-mode .mobile-fixed-bar { display: flex; position: fixed; left: 0; width: 100vw; box-sizing: border-box; z-index: 1000; padding: 0 25px; align-items: center; justify-content: space-between; }
         .mobile-mode .top-bar { top: 0; height: 70px; background: linear-gradient(180deg, #1f1a15, #0b0b0b); border-bottom: 2px solid #8c7650; box-shadow: 0 4px 15px rgba(0,0,0,0.9); }
-        
-        /* Action Bar is now natively included in the scaler flow, not fixed! */
-        .mobile-mode #mobile-action-bar { position: relative !important; width: 100%; height: 110px; display: flex; justify-content: center; align-items: center; gap: 20px; border: none; background: transparent; box-shadow: none; margin-top: 10px;}
-        
+        .mobile-mode .action-bar { bottom: 0; height: 180px; background: linear-gradient(0deg, #1f1a15, #0b0b0b); border-top: 2px solid #8c7650; box-shadow: 0 -4px 15px rgba(0,0,0,0.9); }
         .mobile-mode .back-btn { background: transparent; border: none; color: #e8d0a8; font-size: 20px; font-family: 'Cinzel', serif; font-weight: bold; cursor: pointer; padding: 10px 0; }
         .mobile-mode .game-code-display { font-size: 18px; font-weight: bold; color: #e8d0a8; letter-spacing: 2px; }
         .mobile-mode #top-game-code { color: #fff; }
-        .mobile-mode .action-bar-btn { background: #d9534f; color: #fff; border: 1px solid #ff9999; padding: 20px 30px; border-radius: 8px; font-family: 'Cinzel', serif; font-weight: bold; font-size: 24px; box-shadow: 0 2px 6px rgba(0,0,0,0.5); cursor: pointer; flex-shrink: 0;}
+        .mobile-mode .action-bar-btn { background: #d9534f; color: #fff; border: 1px solid #ff9999; padding: 14px 20px; border-radius: 4px; font-family: 'Cinzel', serif; font-weight: bold; font-size: 16px; box-shadow: 0 2px 6px rgba(0,0,0,0.5); cursor: pointer; flex-shrink: 0;}
 
-        .mobile-mode .dynamic-slot {
+        /* Mobile Action Bar Integrated layout */
+        .mobile-mode #mobile-action-bar { position: relative !important; width: 100%; height: 110px; display: flex; justify-content: center; align-items: center; gap: 20px; border: none; background: transparent; box-shadow: none; margin-top: 10px;}
+
+        /* Unified 160x110 Card Sizes across all rows! */
+        .dynamic-slot {
             width: 160px !important; height: 110px !important; border: 2px dashed transparent; border-radius: 8px;
             display: flex; justify-content: center; align-items: center;
             color: transparent; text-align: center; position: relative; background: transparent;
             transition: all 0.2s;
         }
-        .mobile-mode .dynamic-slot .card-face { transform: none !important; left: 0; top: 0; }
-        .mobile-mode .dynamic-slot.active-drop-zone { border-color: #ffd700 !important; background: rgba(255, 215, 0, 0.15) !important; color: #e8d0a8 !important; box-shadow: inset 0 0 10px rgba(0,0,0,0.5) !important; cursor: pointer; }
-        .mobile-mode .dynamic-slot .drop-text { display: none; font-family: 'Cinzel', serif; font-weight: bold; font-size: 18px; text-shadow: 0 2px 4px rgba(0,0,0,0.8); line-height: 1.3;}
-        .mobile-mode .dynamic-slot.active-drop-zone .drop-text { display: block; }
+        .dynamic-slot .card-face { transform: none !important; left: 0; top: 0; }
+        .dynamic-slot.active-drop-zone { border-color: #ffd700 !important; background: rgba(255, 215, 0, 0.15) !important; color: #e8d0a8 !important; box-shadow: inset 0 0 10px rgba(0,0,0,0.5) !important; cursor: pointer; }
+        .dynamic-slot .drop-text { display: none; font-family: 'Cinzel', serif; font-weight: bold; font-size: 18px; text-shadow: 0 2px 4px rgba(0,0,0,0.8); line-height: 1.3;}
+        .dynamic-slot.active-drop-zone .drop-text { display: block; }
         
-        .mobile-mode .selected-card-glow { box-shadow: 0 0 15px 5px #ffd700 !important; border: 2px solid #ffd700 !important; border-radius: 8px; transform: scale(1.05); z-index: 20; transition: all 0.2s; cursor: pointer;}
-        .mobile-mode .selected-card-glow .card-face { border: none !important; }
-
         .mobile-block-card-display { position: relative !important; top: 0 !important; left: 0 !important; transform: none !important; margin: 0 auto; }
 
     </style>
@@ -150,9 +138,10 @@
         <button onclick="leaveGame()" class="back-btn">&#8592; Back</button>
         <div class="game-code-display">GAME: <span id="top-game-code"></span></div>
     </div>
+    
+    <div id="mobile-action-bar" class="mobile-fixed-bar action-bar"></div>
 
     <div class="scale-wrapper" id="scaler">
-        <div id="anim-container"><div class="flipper" id="anim-flipper"><div class="front card-face face-down"></div><div class="back" id="anim-back"></div></div></div>
 
         <div class="app-container" id="main-app">
             <div class="left-column">
@@ -182,8 +171,8 @@
 
             <div class="center-column">
                 <div class="cards-row" style="transform: rotate(180deg); opacity: 0.4;" id="opp-reserve-row">
-                    <div class="card-slot horizontal-card dynamic-slot" id="opp-reserve-2"></div>
-                    <div class="card-slot horizontal-card dynamic-slot" id="opp-reserve-1"></div>
+                    <div class="dynamic-slot" id="opp-reserve-2"></div>
+                    <div class="dynamic-slot" id="opp-reserve-1"></div>
                 </div>
 
                 <div id="game-area">
@@ -287,15 +276,12 @@
 
                 <div class="cards-row" id="my-reserve-row">
                     <div class="card-container">
-                        <div class="card-slot horizontal-card dynamic-slot" id="my-reserve-1"></div>
+                        <div class="dynamic-slot" id="my-reserve-1"></div>
                     </div>
                     <div class="card-container">
-                        <div class="card-slot horizontal-card dynamic-slot" id="my-reserve-2"></div>
+                        <div class="dynamic-slot" id="my-reserve-2"></div>
                     </div>
-                </div>
-                
-                <div id="mobile-action-bar" style="display: none;"></div>
-                
+                    </div>
             </div>
 
             <div class="right-column">
@@ -308,17 +294,13 @@
                 <div style="display: flex; gap: 30px; margin: auto 0;" id="draw-discard-container">
                     <div style="display: flex; flex-direction: column; align-items: center; gap: 10px;" id="draw-pile-wrapper" class="card-container">
                         <div style="font-size: 16px; letter-spacing: 2px;" id="draw-label">DRAW</div>
-                        <div class="card-slot horizontal-card dynamic-slot" onclick="!isMobileMode && handleDrawClick()" style="cursor: pointer; border: none; perspective: 1000px;" id="draw-pile-boundary">
-                            <div class="flipper" id="draw-pile-flipper" style="width: 100%; height: 100%; transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1); transform-style: preserve-3d;">
-                                <div class="front card-face face-down" id="draw-pile" style="position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border: 2px solid #8c7650;"></div>
-                                <div class="back card-face" id="draw-pile-back" style="position: absolute; width: 100%; height: 100%; backface-visibility: hidden; transform: rotateY(180deg);"></div>
-                            </div>
+                        <div class="dynamic-slot" onclick="!isMobileMode && processDraw()" style="cursor: pointer; background-color: #0b0b0b; background-image: url('logo.png'); background-size: contain; background-repeat: no-repeat; background-position: center; border: 2px solid #8c7650; border-radius: 8px;" id="draw-pile-boundary">
                         </div>
                         <div id="draw-count" style="font-size: 10px; color:#aaa; letter-spacing:1px; margin-top:5px;"></div>
                     </div>
                     <div style="display: flex; flex-direction: column; align-items: center; gap: 10px;" id="discard-pile-wrapper">
                         <div style="font-size: 16px; letter-spacing: 2px;">DISCARD</div>
-                        <div class="card-slot horizontal-card" style="border: none;" id="discard-pile-boundary">
+                        <div class="dynamic-slot" style="border: 2px dashed rgba(232, 208, 168, 0.6);" id="discard-pile-boundary">
                             <div style="font-size: 12px; color: rgba(232, 208, 168, 0.4);">EMPTY</div>
                         </div>
                     </div>
@@ -353,8 +335,7 @@
         function resizeApp() {
             const scaler = document.getElementById('scaler');
             if (isMobileMode) {
-                // Mathematically exact sizing: Top Bar(70px) + minimal bottom padding. 
-                // Divides the remaining perfectly across 3 identical rows (Opp Reserve, Player Reserve, Action Bar) and Game Board.
+                // Safely calculates available vertical area exactly between the top bar, maintaining perfect 1:1 scale ratios for all UI
                 let scale = Math.min(window.innerWidth / 740, (window.innerHeight - 80) / 1145);
                 scaler.style.transform = `scale(${scale})`;
             } else {
@@ -370,11 +351,10 @@
             document.getElementById('mobile-top-bar').style.display = 'flex';
             
             const reserveRow = document.getElementById('my-reserve-row');
-            const drawPileWrapper = document.getElementById('draw-pile-wrapper');
             
             document.getElementById('draw-label').style.display = 'none';
             document.getElementById('draw-count').style.display = 'none';
-            reserveRow.appendChild(drawPileWrapper);
+            reserveRow.appendChild(document.getElementById('draw-pile-wrapper'));
             
             document.querySelector('.left-column').style.display = 'none';
             document.querySelector('.right-column').style.display = 'none';
@@ -431,8 +411,6 @@
         let executingCardSource = null;
         let executingCardIndex = null;
         let lastSeenTurn = null; 
-        
-        window._hideActiveCardForAnim = false;
 
         const isInFieldOfPlay = (r) => r >= 2 && r <= 5;
         const CARD_W = 160;
@@ -457,73 +435,7 @@
         }
         window.closeDecisionPanel = function() { document.getElementById('decision-panel').style.display = "none"; }
 
-        function getOffset(el) {
-            let x = 0, y = 0; let current = el;
-            while (current && !current.classList.contains('scale-wrapper')) { x += current.offsetLeft; y += current.offsetTop; current = current.offsetParent; }
-            return { x, y, w: el.offsetWidth, h: el.offsetHeight };
-        }
-
-        function animateFlight(startEl, endEl, cardData, animType, onComplete) {
-            if (!startEl || !endEl) { if(onComplete) onComplete(); return; }
-            
-            const startRect = startEl.getBoundingClientRect();
-            const endRect = endEl.getBoundingClientRect();
-            
-            const ghost = document.createElement('div');
-            ghost.style.position = 'fixed';
-            ghost.style.zIndex = '99999';
-            ghost.style.left = startRect.left + 'px';
-            ghost.style.top = startRect.top + 'px';
-            ghost.style.width = startRect.width + 'px';
-            ghost.style.height = startRect.height + 'px';
-            ghost.style.transition = 'all 0.5s cubic-bezier(0.25, 1, 0.5, 1)';
-            ghost.style.transformStyle = 'preserve-3d';
-            
-            const flipper = document.createElement('div');
-            flipper.style.width = '100%';
-            flipper.style.height = '100%';
-            flipper.style.position = 'relative';
-            flipper.style.transition = 'transform 0.5s';
-            flipper.style.transformStyle = 'preserve-3d';
-            
-            const front = document.createElement('div');
-            front.className = 'card-face face-down';
-            front.style.width = '100%'; front.style.height = '100%';
-            front.style.position = 'absolute'; front.style.backfaceVisibility = 'hidden';
-            front.style.transform = 'none';
-            
-            const backContainer = document.createElement('div');
-            backContainer.innerHTML = generateCardHTML(cardData);
-            const innerFace = backContainer.firstElementChild;
-            if(innerFace) {
-                innerFace.style.width = '100%'; innerFace.style.height = '100%';
-                innerFace.style.position = 'absolute'; innerFace.style.backfaceVisibility = 'hidden';
-                innerFace.style.transform = 'rotateY(180deg)';
-                flipper.appendChild(innerFace);
-            }
-            
-            flipper.appendChild(front);
-            ghost.appendChild(flipper);
-            document.body.appendChild(ghost);
-            
-            if (animType !== 'draw') flipper.style.transform = 'rotateY(180deg)';
-            
-            void ghost.offsetWidth; 
-            
-            ghost.style.left = endRect.left + 'px';
-            ghost.style.top = endRect.top + 'px';
-            ghost.style.width = endRect.width + 'px';
-            ghost.style.height = endRect.height + 'px';
-            
-            if (animType === 'draw') flipper.style.transform = 'rotateY(180deg)';
-            
-            setTimeout(() => {
-                ghost.remove();
-                if(onComplete) onComplete();
-            }, 500);
-        }
-
-        window.stashActiveCard = function(idx) {
+        window.stashActiveCard = async function(idx) {
             const card = activeCardExecution;
             activeCardExecution = null;
             selectedPawn = null;
@@ -534,34 +446,24 @@
             const resKey = myColor === 'white' ? 'playerWhiteReserve' : 'playerBlackReserve';
             const activeKey = myColor === 'white' ? 'activeCardWhite' : 'activeCardBlack';
             
-            const startEl = document.getElementById('active-move-slot');
-            const endEl = document.getElementById(`my-reserve-${idx+1}`);
+            localData[resKey][idx] = card;
+            localData[activeKey] = null;
             
-            window._hideActiveCardForAnim = true;
-            updateMobileUI();
-            
-            animateFlight(startEl, endEl, card, 'reserve', async () => {
-                window._hideActiveCardForAnim = false;
+            if (executingCardSource === 'draw') {
+                isDrawingState = false;
+                await checkDeckResetOrEndTurn();
+            } else {
+                isDrawingState = false;
+                executingCardSource = null;
                 
-                localData[resKey][idx] = card;
-                localData[activeKey] = null;
+                await updateDoc(doc(db, "games", gameCode), {
+                    [resKey]: localData[resKey],
+                    [activeKey]: null
+                });
                 
-                if (executingCardSource === 'draw') {
-                    isDrawingState = false;
-                    await checkDeckResetOrEndTurn();
-                } else {
-                    isDrawingState = false;
-                    executingCardSource = null;
-                    
-                    await updateDoc(doc(db, "games", gameCode), {
-                        [resKey]: localData[resKey],
-                        [activeKey]: null
-                    });
-                    
-                    renderCardSlots(localData);
-                    updateMobileUI();
-                }
-            });
+                renderCardSlots(localData);
+                updateMobileUI();
+            }
         };
 
         function updateMobileUI() {
@@ -629,7 +531,7 @@
                 bar.innerHTML = `
                     ${infoBtnHtml}
                     <div id="active-move-slot" class="dynamic-slot" style="border-color: #8c7650; margin: 0 auto;">
-                        ${window._hideActiveCardForAnim ? '' : generateCardHTML(activeCardExecution, 'mobile-block-card-display')}
+                        ${generateCardHTML(activeCardExecution, 'mobile-block-card-display')}
                     </div>
                     <div style="width:60px; flex-shrink:0;"></div>
                 `;
@@ -661,66 +563,6 @@
             }
         }
 
-        window.cancelExecution = function() {
-            const cardToReturn = activeCardExecution;
-            activeCardExecution = null; selectedPawn = null; validMoves = [];
-            renderBoard(JSON.parse(localData.boardState));
-            
-            if (isMobileMode) {
-                let endEl;
-                if (executingCardSource === 'draw') {
-                    endEl = document.getElementById('draw-pile-boundary');
-                } else {
-                    const idx = executingCardIndex;
-                    endEl = document.getElementById(`my-reserve-${idx+1}`);
-                }
-                
-                window._hideActiveCardForAnim = true;
-                updateMobileUI();
-                
-                animateFlight(document.getElementById('active-move-slot'), endEl, cardToReturn, 'cancel', async () => {
-                    window._hideActiveCardForAnim = false;
-                    
-                    const activeKey = myColor === 'white' ? 'activeCardWhite' : 'activeCardBlack';
-                    
-                    if (executingCardSource === 'draw') {
-                        localData.deck.unshift(cardToReturn);
-                        await updateDoc(doc(db, "games", gameCode), {
-                            deck: localData.deck,
-                            [activeKey]: null
-                        });
-                    } else {
-                        const resKey = myColor === 'white' ? 'playerWhiteReserve' : 'playerBlackReserve';
-                        localData[resKey][executingCardIndex] = cardToReturn; // Strictly assigns to index 0 or 1, crushing the splice array bug!
-                        await updateDoc(doc(db, "games", gameCode), {
-                            [resKey]: localData[resKey],
-                            [activeKey]: null
-                        });
-                    }
-                    
-                    renderCardSlots(localData); 
-                    updateMobileUI(); 
-                });
-            } else {
-                if (executingCardSource === 'draw') {
-                    localData.deck.unshift(cardToReturn);
-                    isDrawingState = true;
-                } else {
-                    const resKey = myColor === 'white' ? 'playerWhiteReserve' : 'playerBlackReserve';
-                    localData[resKey][executingCardIndex] = cardToReturn;
-                    isDrawingState = false;
-                }
-                renderCardSlots(localData);
-            }
-        }
-
-        window.handleDrawClick = async function() {
-            if (isMobileMode) return; 
-            if(!isMyTurn || activeCardExecution || gamePhase !== "playing") return;
-            if(turnPhase === 1) { showDecisionPanel("Skip pawn move and draw?", `<button class="btn" onclick="closeDecisionPanel()">Cancel</button><button class="btn" onclick="confirmSkip('draw')">Yes</button>`); return; }
-            processDraw();
-        };
-
         window.handleReserveClick = async function(slotNum) {
             if(!isMyTurn || activeCardExecution || gamePhase !== "playing") return;
             const myRes = myColor === 'white' ? localData.playerWhiteReserve : localData.playerBlackReserve;
@@ -745,17 +587,8 @@
                         [activeKey]: card
                     });
                     
-                    const startEl = document.getElementById(`my-reserve-${slotNum}`);
-                    const endEl = document.getElementById('active-move-slot');
-                    
-                    window._hideActiveCardForAnim = true;
+                    startCardExecution(card);
                     updateMobileUI();
-                    
-                    animateFlight(startEl, endEl, card, 'play', () => {
-                        window._hideActiveCardForAnim = false;
-                        startCardExecution(card);
-                        updateMobileUI();
-                    });
                 }
             } else {
                 if(turnPhase === 1) { showDecisionPanel("Skip pawn move and play card?", `<button class="btn" onclick="closeDecisionPanel()">Cancel</button><button class="btn" onclick="confirmSkip('reserve', ${idx})">Yes</button>`); return; }
@@ -806,8 +639,7 @@
                 } else {
                     let btns = `<button class="btn" onclick="takeBlockCard()">Store Block</button>`;
                     document.getElementById('decision-card-anchor').innerHTML = generateCardHTML(drawnCard);
-                    const subText = "Store this Block card to use against future attacks.";
-                    animateFlight(document.getElementById('draw-pile-boundary'), document.getElementById('decision-card-anchor'), drawnCard, 'draw', () => showDecisionPanel(subText, btns, true));
+                    showDecisionPanel("Store this Block card to use against future attacks.", btns, true);
                 }
                 return;
             }
@@ -825,23 +657,14 @@
                     [activeKey]: drawnCard
                 });
                 
-                const startEl = document.getElementById('draw-pile-boundary');
-                const endEl = document.getElementById('active-move-slot');
-                
-                window._hideActiveCardForAnim = true;
+                startCardExecution(drawnCard); 
                 updateMobileUI(); 
-                
-                animateFlight(startEl, endEl, drawnCard, 'draw', () => {
-                    window._hideActiveCardForAnim = false;
-                    startCardExecution(drawnCard); 
-                    updateMobileUI(); 
-                });
             } else {
                 let btns = `<button class="btn" onclick="executeCard(0, 'draw')">Play</button>`;
                 const resCount = myRes.filter(c => c !== null).length;
                 if (resCount < 2) btns += `<button class="btn" onclick="reserveCard()">Reserve</button>`;
                 document.getElementById('decision-card-anchor').innerHTML = generateCardHTML(drawnCard);
-                animateFlight(document.getElementById('draw-pile-boundary'), document.getElementById('decision-card-anchor'), drawnCard, 'draw', () => showDecisionPanel("", btns, true));
+                showDecisionPanel("", btns, true);
             }
         }
 
@@ -852,9 +675,7 @@
             const blockKey = myColor === 'white' ? 'playerWhiteBlocks' : 'playerBlackBlocks';
             
             if (!isMobileMode) {
-                animateFlight(document.getElementById('decision-card-anchor'), document.getElementById(`my-block-shield`), card, 'reserve', () => {
-                    localData[blockKey].push(card); checkDeckResetOrEndTurn(); 
-                });
+                localData[blockKey].push(card); checkDeckResetOrEndTurn(); 
             }
         };
 
@@ -873,13 +694,12 @@
             let btns = `<button class="btn" onclick="cancelReserveFlight(${idx})">Cancel</button><button class="btn" onclick="executeCard(${idx}, 'reserve')">Play</button>`;
             
             document.getElementById('decision-card-anchor').innerHTML = generateCardHTML(card);
-            animateFlight(document.getElementById(`my-reserve-${idx+1}`), document.getElementById('decision-card-anchor'), card, 'reserve', () => showDecisionPanel("", btns, true));
+            showDecisionPanel("", btns, true);
         }
 
         window.cancelReserveFlight = function(idx) {
             closeDecisionPanel();
-            const card = (myColor === 'white' ? localData.playerWhiteReserve : localData.playerBlackReserve)[idx]; 
-            animateFlight(document.getElementById('decision-card-anchor'), document.getElementById(`my-reserve-${idx+1}`), card, 'cancel', () => renderCardSlots(localData));
+            renderCardSlots(localData);
         }
 
         window.reserveCard = async function() {
@@ -890,12 +710,10 @@
             const targetIdx = localData[reserveKey].indexOf(null);
             if (targetIdx === -1) return;
             
-            animateFlight(document.getElementById('decision-card-anchor'), document.getElementById(`my-reserve-${targetIdx+1}`), card, 'reserve', () => {
-                localData[reserveKey][targetIdx] = card; checkDeckResetOrEndTurn();
-            });
+            localData[reserveKey][targetIdx] = card; checkDeckResetOrEndTurn();
         };
 
-        window.executeCard = function(index, source) {
+        window.executeCard = async function(index, source) {
             closeDecisionPanel();
             let card;
             if (source === 'draw') { card = localData.deck.shift(); } 
@@ -909,7 +727,7 @@
             executingCardIndex = index;
             isDrawingState = false; 
             
-            animateFlight(document.getElementById('decision-card-anchor'), document.getElementById('active-card-container'), card, 'play', () => startCardExecution(card));
+            startCardExecution(card);
         };
 
         function startCardExecution(card) {
@@ -1143,27 +961,15 @@
             const cardToDiscard = activeCardExecution; activeCardExecution = null;
             document.getElementById('active-card-container').innerHTML = '';
             
+            localData.discardPile.push(cardToDiscard);
+            
             if (isMobileMode) {
-                setTimeout(() => {
-                    const startEl = document.getElementById('active-move-slot');
-                    const endEl = document.getElementById('draw-pile-boundary'); 
-                    
-                    window._hideActiveCardForAnim = true;
-                    updateMobileUI();
-                    
-                    animateFlight(startEl, endEl, cardToDiscard, 'discard', () => {
-                        window._hideActiveCardForAnim = false;
-                        localData.discardPile.push(cardToDiscard);
-                        checkDeckResetOrEndTurn();
-                    });
-                }, 800);
+                document.getElementById('active-card-panel').style.display = "none"; 
             } else {
-                animateFlight(document.getElementById('active-card-panel'), document.getElementById('discard-pile-boundary'), cardToDiscard, 'discard', async () => {
-                    localData.discardPile.push(cardToDiscard);
-                    document.getElementById('active-card-panel').style.display = "none"; document.getElementById('instructions-panel').style.display = "block";
-                    checkDeckResetOrEndTurn();
-                });
+                document.getElementById('active-card-panel').style.display = "none"; 
+                document.getElementById('instructions-panel').style.display = "block";
             }
+            await checkDeckResetOrEndTurn();
         }
 
         async function checkDeckResetOrEndTurn() {
